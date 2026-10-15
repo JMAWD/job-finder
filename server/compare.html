@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model comparison</title>
+<style>
+/* One form on top (server, code, CV, ad, task, models), then one column per model with its answer, time and cost. */
+:root { --bg: #f6f7f8; --surface: #fff; --ink: #0e1a24; --muted: #5d6b78; --line: #e1e5e9; --accent: #0b7a5b; --soft: #e2f3ec; --bad: #b42318; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0b131b; --surface: #131e28; --ink: #eef2f5; --muted: #a2afbb; --line: #223140; --accent: #0b7a5b; --soft: #0f2e24; --bad: #ff8a7a; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #0b131b; --surface: #131e28; --ink: #eef2f5; --muted: #a2afbb; --line: #223140; --accent: #0b7a5b; --soft: #0f2e24; --bad: #ff8a7a; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+main { max-width: 1400px; margin: 0 auto; padding: 24px 16px 60px; display: grid; gap: 18px; }
+h1 { margin: 0; font-size: 26px; } p { margin: 0; color: var(--muted); max-width: 75ch; }
+.form { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; }
+label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; flex: 1 1 220px; min-width: 0; }
+input, select, textarea { font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; width: 100%; }
+textarea { min-height: 160px; resize: vertical; }
+fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; margin: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; }
+legend { font-size: 13px; font-weight: 600; padding: 0 4px; }
+fieldset label { display: inline-flex; gap: 6px; align-items: center; font-weight: 400; flex: 0 0 auto; }
+fieldset input { width: auto; }
+button { font: inherit; font-weight: 600; border: 0; border-radius: 6px; padding: 10px 22px; background: var(--accent); color: #fff; cursor: pointer; }
+button:disabled { opacity: .5; cursor: default; }
+.status { font-size: 13.5px; color: var(--muted); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; align-items: start; }
+.col { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 8px; min-width: 0; }
+.col h2 { margin: 0; font-size: 16px; } .meta { font-size: 12.5px; color: var(--muted); }
+.out { font-size: 14px; overflow-wrap: anywhere; } .out h3 { font-size: 15px; margin: 12px 0 4px; } .out ul, .out ol { padding-left: 20px; margin: 4px 0; } .out p { color: var(--ink); margin: 6px 0; }
+.err { color: var(--bad); font-weight: 600; }
+.pick { display: flex; gap: 6px; align-items: center; font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Which model writes best?</h1>
+  <p>Paste a CV and a job ad, pick the models to compare and press Run. Each model gets exactly the same prompt through your tailoring server, and the answers appear side by side with time and cost. Nothing is saved except the server address and code, which stay in this browser.</p>
+  <form class="form" id="f">
+    <div class="row">
+      <label>Server address<input id="url" type="url" placeholder="https://….functions.fnc.fr-par.scw.cloud" required></label>
+      <label>Access code<input id="code" type="text" placeholder="ABCDE-FGHJK" required></label>
+      <label style="flex:0 1 160px">Task<select id="task"><option value="cv">Tailored CV</option><option value="letter">Cover letter</option><option value="match">Match check</option><option value="interview">Interview prep</option></select></label>
+      <label style="flex:0 1 140px">Language<select id="lang"><option value="sv">Svenska</option><option value="en">English</option></select></label>
+    </div>
+    <fieldset id="models"><legend>Models (the server's AI_MODELS setting must list them)</legend></fieldset>
+    <div class="row">
+      <label>CV (plain text)<textarea id="cv" placeholder="Paste the CV here"></textarea></label>
+      <label>Job ad<textarea id="ad" placeholder="Paste the job ad here"></textarea></label>
+    </div>
+    <div class="row" style="align-items:center"><button id="run" type="submit">Run</button><span class="status" id="status" aria-live="polite"></span></div>
+  </form>
+  <section class="cols" id="cols" aria-live="polite"></section>
+</main>
+<script>
+// Prices per million tokens (input, output) in euro, from Scaleway Generative APIs, October 2026
+const MODELS = [
+  ["mistral-medium-3.5-128b", "Mistral Medium 3.5", 1.50, 7.50, true],
+  ["qwen3.8-27b", "Qwen 3.8 27B", 0.60, 3.30, true],
+  ["glm-5.3", "GLM-5.3", 1.80, 5.50, true],
+  ["deepseek-v4.1-flash", "DeepSeek V4.1 Flash", 0.60, 1.80, false],
+  ["qwen3-235b-a22b-instruct-2507", "Qwen3 235B", 0.75, 2.25, false],
+];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const store = { get(k) { try { return localStorage.getItem(k) || ""; } catch { return ""; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+$("models").insertAdjacentHTML("beforeend", MODELS.map(([id, name, pi, po, on]) => `<label><input type="checkbox" value="${id}"${on ? " checked" : ""}> ${esc(name)} <span class="meta">€${pi.toFixed(2)} / €${po.toFixed(2)}</span></label>`).join(""));
+$("url").value = store.get("cmp-url"); $("code").value = store.get("cmp-code");
+// Small Markdown reader: headings, lists, bold. Everything is escaped first.
+function md(text) {
+  const lines = esc(text).split("\n"), out = []; let list = null;
+  const inline = s => s.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(^|\s)\*(\S.*?)\*(?=\s|$)/g, "$1<i>$2</i>");
+  const close = () => { if (list) { out.push(`</${list}>`); list = null; } };
+  for (const l of lines) {
+    const h = l.match(/^#{1,6}\s+(.*)/), ul = l.match(/^\s*[-*•]\s+(.*)/), ol = l.match(/^\s*\d+[.)]\s+(.*)/);
+    if (h) { close(); out.push(`<h3>${inline(h[1])}</h3>`); }
+    else if (ul || ol) { const tag = ul ? "ul" : "ol"; if (list !== tag) { close(); out.push(`<${tag}>`); list = tag; } out.push(`<li>${inline((ul || ol)[1])}</li>`); }
+    else if (!l.trim()) close();
+    else { close(); out.push(`<p>${inline(l)}</p>`); }
+  }
+  close(); return out.join("");
+}
+const ERR = { bad_code: "The access code wasn't accepted.", limit_reached: "This code has reached its hourly or daily limit.", origin_not_allowed: "The server doesn't allow this page. Add null to ALLOWED_ORIGINS.",
+  cv_too_short: "The CV is too short (at least 200 characters).", ad_too_short: "The job ad is too short (at least 100 characters).", too_long: "The CV or the ad is too long.", not_configured: "The server is missing AI_KEY or ACCESS_CODES.",
+  ai_busy: "The AI service is busy. Try again in a minute.", ai_timeout: "The AI took too long to answer.", ai_error: "The AI service answered with an error. Check that the model is available.", ai_empty: "The AI returned an empty answer." };
+$("f").addEventListener("submit", async e => {
+  e.preventDefault();
+  const url = $("url").value.trim(), code = $("code").value.trim(), picked = [...document.querySelectorAll("#models input:checked")].map(i => i.value);
+  if (!url || !code || !picked.length) { $("status").textContent = "Fill in the server address and access code, and pick at least one model."; return; }
+  store.set("cmp-url", url); store.set("cmp-code", code);
+  $("run").disabled = true; $("status").textContent = `Asking ${picked.length} ${picked.length === 1 ? "model" : "models"}… this can take up to a minute.`;
+  $("cols").innerHTML = picked.map(id => `<article class="col" data-model="${id}"><h2>${esc(MODELS.find(m => m[0] === id)[1])}</h2><div class="meta">Waiting…</div><div class="out"></div></article>`).join("");
+  const body = { code, task: $("task").value, lang: $("lang").value, cv: $("cv").value, job: { title: "", employer: "", text: $("ad").value } };
+  await Promise.all(picked.map(async id => {
+    const col = document.querySelector(`.col[data-model="${id}"]`), [, , pi, po] = MODELS.find(m => m[0] === id), t0 = performance.now();
+    try {
+      const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, model: id }) });
+      const j = await r.json().catch(() => ({}));
+      const secs = ((performance.now() - t0) / 1000).toFixed(1);
+      if (!r.ok) { col.querySelector(".meta").innerHTML = `<span class="err">${esc(ERR[j.error] || `Error ${r.status}`)}</span>`; return; }
+      if (j.model && j.model !== id) col.querySelector("h2").insertAdjacentHTML("beforeend", ` <span class="meta">(server used ${esc(j.model)}: add this model to AI_MODELS)</span>`);
+      const cost = j.tokens ? (j.tokens.in * pi + j.tokens.out * po) / 1e6 : null;
+      col.querySelector(".meta").textContent = `${secs} s` + (j.tokens ? ` · ${j.tokens.in} tokens in, ${j.tokens.out} out · about €${cost.toFixed(3)}` : "");
+      col.querySelector(".out").innerHTML = md(j.text);
+    } catch { col.querySelector(".meta").innerHTML = `<span class="err">Couldn't reach the server. Check the address, and open this file in Chrome or Edge.</span>`; }
+  }));
+  $("run").disabled = false; $("status").textContent = "Done. Read them side by side: which sounds most like a person, invents nothing, and uses the ad's own words where they're true?";
+});
+</script>
+</body>
+</html>

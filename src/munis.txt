@@ -1,0 +1,290 @@
+Ale|Västra Götaland
+Alingsås|Västra Götaland
+Alvesta|Kronoberg
+Aneby|Jönköping
+Arboga|Västmanland
+Arjeplog|Norrbotten
+Arvidsjaur|Norrbotten
+Arvika|Värmland
+Askersund|Örebro
+Avesta|Dalarna
+Bengtsfors|Västra Götaland
+Berg|Jämtland
+Bjurholm|Västerbotten
+Bjuv|Skåne
+Boden|Norrbotten
+Bollebygd|Västra Götaland
+Bollnäs|Gävleborg
+Borgholm|Kalmar
+Borlänge|Dalarna
+Borås|Västra Götaland
+Botkyrka|Stockholm
+Boxholm|Östergötland
+Bromölla|Skåne
+Bräcke|Jämtland
+Burlöv|Skåne
+Båstad|Skåne
+Dals-Ed|Västra Götaland
+Danderyd|Stockholm
+Degerfors|Örebro
+Dorotea|Västerbotten
+Eda|Värmland
+Ekerö|Stockholm
+Eksjö|Jönköping
+Emmaboda|Kalmar
+Enköping|Uppsala
+Eskilstuna|Södermanland
+Eslöv|Skåne
+Essunga|Västra Götaland
+Fagersta|Västmanland
+Falkenberg|Halland
+Falköping|Västra Götaland
+Falun|Dalarna
+Filipstad|Värmland
+Finspång|Östergötland
+Flen|Södermanland
+Forshaga|Värmland
+Färgelanda|Västra Götaland
+Gagnef|Dalarna
+Gislaved|Jönköping
+Gnesta|Södermanland
+Gnosjö|Jönköping
+Göteborg|Västra Götaland
+Gotland|Gotland
+Grums|Värmland
+Grästorp|Västra Götaland
+Gullspång|Västra Götaland
+Gällivare|Norrbotten
+Gävle|Gävleborg
+Götene|Västra Götaland
+Habo|Jönköping
+Hagfors|Värmland
+Hallsberg|Örebro
+Hallstahammar|Västmanland
+Halmstad|Halland
+Hammarö|Värmland
+Haninge|Stockholm
+Haparanda|Norrbotten
+Heby|Uppsala
+Hedemora|Dalarna
+Helsingborg|Skåne
+Herrljunga|Västra Götaland
+Hjo|Västra Götaland
+Hofors|Gävleborg
+Huddinge|Stockholm
+Hudiksvall|Gävleborg
+Hultsfred|Kalmar
+Hylte|Halland
+Håbo|Uppsala
+Hällefors|Örebro
+Härjedalen|Jämtland
+Härnösand|Västernorrland
+Härryda|Västra Götaland
+Hässleholm|Skåne
+Höganäs|Skåne
+Högsby|Kalmar
+Hörby|Skåne
+Höör|Skåne
+Jokkmokk|Norrbotten
+Järfälla|Stockholm
+Jönköping|Jönköping
+Kalix|Norrbotten
+Kalmar|Kalmar
+Karlsborg|Västra Götaland
+Karlshamn|Blekinge
+Karlskoga|Örebro
+Karlskrona|Blekinge
+Karlstad|Värmland
+Katrineholm|Södermanland
+Kil|Värmland
+Kinda|Östergötland
+Kiruna|Norrbotten
+Klippan|Skåne
+Knivsta|Uppsala
+Kramfors|Västernorrland
+Kristianstad|Skåne
+Kristinehamn|Värmland
+Krokom|Jämtland
+Kumla|Örebro
+Kungsbacka|Halland
+Kungsör|Västmanland
+Kungälv|Västra Götaland
+Kävlinge|Skåne
+Köping|Västmanland
+Laholm|Halland
+Landskrona|Skåne
+Laxå|Örebro
+Lekeberg|Örebro
+Leksand|Dalarna
+Lerum|Västra Götaland
+Lessebo|Kronoberg
+Lidingö|Stockholm
+Lidköping|Västra Götaland
+Lilla Edet|Västra Götaland
+Lindesberg|Örebro
+Linköping|Östergötland
+Ljungby|Kronoberg
+Ljusdal|Gävleborg
+Ljusnarsberg|Örebro
+Lomma|Skåne
+Ludvika|Dalarna
+Luleå|Norrbotten
+Lund|Skåne
+Lycksele|Västerbotten
+Lysekil|Västra Götaland
+Malmö|Skåne
+Malung-Sälen|Dalarna
+Malå|Västerbotten
+Mariestad|Västra Götaland
+Mark|Västra Götaland
+Markaryd|Kronoberg
+Mellerud|Västra Götaland
+Mjölby|Östergötland
+Mora|Dalarna
+Motala|Östergötland
+Mullsjö|Jönköping
+Munkedal|Västra Götaland
+Munkfors|Värmland
+Mölndal|Västra Götaland
+Mönsterås|Kalmar
+Mörbylånga|Kalmar
+Nacka|Stockholm
+Nora|Örebro
+Norberg|Västmanland
+Nordanstig|Gävleborg
+Nordmaling|Västerbotten
+Norrköping|Östergötland
+Norrtälje|Stockholm
+Norsjö|Västerbotten
+Nybro|Kalmar
+Nykvarn|Stockholm
+Nyköping|Södermanland
+Nynäshamn|Stockholm
+Nässjö|Jönköping
+Ockelbo|Gävleborg
+Olofström|Blekinge
+Orsa|Dalarna
+Orust|Västra Götaland
+Osby|Skåne
+Oskarshamn|Kalmar
+Ovanåker|Gävleborg
+Oxelösund|Södermanland
+Pajala|Norrbotten
+Partille|Västra Götaland
+Perstorp|Skåne
+Piteå|Norrbotten
+Ragunda|Jämtland
+Robertsfors|Västerbotten
+Ronneby|Blekinge
+Rättvik|Dalarna
+Sala|Västmanland
+Salem|Stockholm
+Sandviken|Gävleborg
+Sigtuna|Stockholm
+Simrishamn|Skåne
+Sjöbo|Skåne
+Skara|Västra Götaland
+Skellefteå|Västerbotten
+Skinnskatteberg|Västmanland
+Skurup|Skåne
+Skövde|Västra Götaland
+Smedjebacken|Dalarna
+Sollefteå|Västernorrland
+Sollentuna|Stockholm
+Solna|Stockholm
+Sorsele|Västerbotten
+Sotenäs|Västra Götaland
+Staffanstorp|Skåne
+Stenungsund|Västra Götaland
+Stockholm|Stockholm
+Storfors|Värmland
+Storuman|Västerbotten
+Strängnäs|Södermanland
+Strömstad|Västra Götaland
+Strömsund|Jämtland
+Sundbyberg|Stockholm
+Sundsvall|Västernorrland
+Sunne|Värmland
+Surahammar|Västmanland
+Svalöv|Skåne
+Svedala|Skåne
+Svenljunga|Västra Götaland
+Säffle|Värmland
+Säter|Dalarna
+Sävsjö|Jönköping
+Söderhamn|Gävleborg
+Söderköping|Östergötland
+Södertälje|Stockholm
+Sölvesborg|Blekinge
+Tanum|Västra Götaland
+Tibro|Västra Götaland
+Tidaholm|Västra Götaland
+Tierp|Uppsala
+Timrå|Västernorrland
+Tingsryd|Kronoberg
+Tjörn|Västra Götaland
+Tomelilla|Skåne
+Torsby|Värmland
+Torsås|Kalmar
+Tranemo|Västra Götaland
+Tranås|Jönköping
+Trelleborg|Skåne
+Trollhättan|Västra Götaland
+Trosa|Södermanland
+Tyresö|Stockholm
+Täby|Stockholm
+Töreboda|Västra Götaland
+Uddevalla|Västra Götaland
+Ulricehamn|Västra Götaland
+Umeå|Västerbotten
+Upplands Väsby|Stockholm
+Upplands-Bro|Stockholm
+Uppsala|Uppsala
+Uppvidinge|Kronoberg
+Vadstena|Östergötland
+Vaggeryd|Jönköping
+Valdemarsvik|Östergötland
+Vallentuna|Stockholm
+Vansbro|Dalarna
+Vara|Västra Götaland
+Varberg|Halland
+Vaxholm|Stockholm
+Vellinge|Skåne
+Vetlanda|Jönköping
+Vilhelmina|Västerbotten
+Vimmerby|Kalmar
+Vindeln|Västerbotten
+Vingåker|Södermanland
+Vårgårda|Västra Götaland
+Vänersborg|Västra Götaland
+Vännäs|Västerbotten
+Värmdö|Stockholm
+Värnamo|Jönköping
+Västervik|Kalmar
+Västerås|Västmanland
+Växjö|Kronoberg
+Ydre|Östergötland
+Ystad|Skåne
+Åmål|Västra Götaland
+Ånge|Västernorrland
+Åre|Jämtland
+Årjäng|Värmland
+Åsele|Västerbotten
+Åstorp|Skåne
+Åtvidaberg|Östergötland
+Älmhult|Kronoberg
+Älvdalen|Dalarna
+Älvkarleby|Uppsala
+Älvsbyn|Norrbotten
+Ängelholm|Skåne
+Öckerö|Västra Götaland
+Ödeshög|Östergötland
+Örebro|Örebro
+Örkelljunga|Skåne
+Örnsköldsvik|Västernorrland
+Östersund|Jämtland
+Österåker|Stockholm
+Östhammar|Uppsala
+Östra Göinge|Skåne
+Överkalix|Norrbotten
+Övertorneå|Norrbotten

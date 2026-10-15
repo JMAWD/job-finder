@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Finder</title>
+<meta name="description" content="Free job search for Sweden. Search Platsbanken and other job sites by place and keywords, see who is hiring, and keep track of your applications. No account needed.">
+<meta name="theme-color" content="#0e1a24">
+<!--__OG__-->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230e1a24'/%3E%3Ccircle cx='28' cy='28' r='14' fill='none' stroke='%2345d39b' stroke-width='6'/%3E%3Cpath d='M38 38l12 12' stroke='%2345d39b' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+/* Layout: dark masthead holding the search form (country, place, distance, keywords), a sticky filter bar for the results,
+   then one ruled row per employer that opens into its matching roles, contacts and your application notes.
+   A second tab lists every role you have marked, so applications stay tracked when the search changes. */
+:root {
+  --bg: #f6f7f8; --surface: #ffffff; --sunk: #f1f3f4; --ink: #0e1a24; --muted: #5d6b78; --line: #e1e5e9; --line-strong: #c3cbd2;
+  --accent: #0b7a5b; --accent-ink: #0b7a5b; --accent-soft: #e2f3ec; --on-accent: #ffffff;
+  --signal: #b42318; --signal-soft: #fdecea; --warn: #8a5300; --warn-soft: #fcf0dc;
+  --recruit: #3a4352; --recruit-soft: #e8eaee; --tag-bg: #eef1f3; --tag-fg: #344150; --mark: #fff1a8;
+  --mast-bg: #0e1a24; --mast-ink: #ffffff; --mast-muted: #a9b6c2; --mast-line: rgba(255,255,255,.16); --mast-accent: #45d39b; --mast-field: #16273a;
+  --focus: #0b7a5b; --shadow: 0 6px 20px rgba(14, 26, 36, .06);
+  --font-display: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
+  --radius: 5px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b131b; --surface: #131e28; --sunk: #0f1821; --ink: #eef2f5; --muted: #a2afbb; --line: #223140; --line-strong: #344656;
+    --accent: #0b7a5b; --accent-ink: #45d39b; --accent-soft: #0f2e24; --on-accent: #ffffff;
+    --signal: #ff8a7a; --signal-soft: #3a1714; --warn: #f0b04b; --warn-soft: #30230e;
+    --recruit: #c6cdd4; --recruit-soft: #24303b; --tag-bg: #1d2a36; --tag-fg: #c6cdd4; --mark: #5b4b00;
+    --mast-bg: #060d13; --mast-field: #102030; --focus: #45d39b; --shadow: 0 6px 20px rgba(0,0,0,.35); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b131b; --surface: #131e28; --sunk: #0f1821; --ink: #eef2f5; --muted: #a2afbb; --line: #223140; --line-strong: #344656;
+  --accent: #0b7a5b; --accent-ink: #45d39b; --accent-soft: #0f2e24; --on-accent: #ffffff;
+  --signal: #ff8a7a; --signal-soft: #3a1714; --warn: #f0b04b; --warn-soft: #30230e;
+  --recruit: #c6cdd4; --recruit-soft: #24303b; --tag-bg: #1d2a36; --tag-fg: #c6cdd4; --mark: #5b4b00;
+  --mast-bg: #060d13; --mast-field: #102030; --focus: #45d39b; --shadow: 0 6px 20px rgba(0,0,0,.35); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 4px 64px; }
+a { color: var(--accent-ink); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mono { font-family: var(--font-mono); font-size: 12.5px; }
+.label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+mark { background: var(--mark); color: inherit; border-radius: 2px; padding: 0 1px; }
+
+/* Masthead and search form */
+.mast { --ink: var(--mast-ink); --muted: var(--mast-muted); --line: var(--mast-line); --accent-ink: var(--mast-accent); background: var(--mast-bg); color: var(--ink); }
+.mast-inner { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 24px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--mast-accent); }
+h1 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: clamp(34px, 6vw, 54px); line-height: 1; letter-spacing: -.01em; margin: 10px 0; }
+.lede { max-width: 70ch; color: var(--muted); margin: 0; }
+.search { margin-top: 22px; display: grid; gap: 12px; }
+.search .row { align-items: flex-end; }
+.search .field > span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--mast-muted); }
+.search input[type="text"], .search select { background: var(--mast-field); color: var(--mast-ink); border-color: rgba(255,255,255,.22); }
+.search input::placeholder { color: #7f8d9a; }
+.f-country { flex: 0 0 150px; } .f-place { flex: 1 1 220px; } .f-radius { flex: 0 0 170px; } .f-since { flex: 0 0 160px; }
+.f-place input, .f-country select, .f-radius select, .f-since select { width: 100%; }
+.chips-in { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 40px; padding: 5px 8px; background: var(--mast-field); border: 1px solid rgba(255,255,255,.22); border-radius: var(--radius); cursor: text; }
+.chips-in:focus-within { outline: 2px solid var(--mast-accent); outline-offset: 1px; }
+.chips-in input { flex: 1 1 160px; min-width: 120px; border: 0; background: transparent; color: var(--mast-ink); font: inherit; font-size: 14px; padding: 3px 2px; outline: none; }
+.tok { display: inline-flex; align-items: center; gap: 4px; background: var(--mast-accent); color: #062a1e; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 2px 4px 2px 10px; }
+.tok.ex { background: #e7ecf0; color: #26323d; }
+.tok button { font: inherit; border: 0; background: rgba(0,0,0,.12); color: inherit; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; line-height: 1; padding: 0; }
+.f-kw { flex: 1 1 380px; min-width: 0; } .f-ex { flex: 1 1 260px; min-width: 0; }
+.hint { font-size: 12.5px; color: var(--mast-muted); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; font-size: 13.5px; }
+.opts label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.opts input { accent-color: var(--mast-accent); margin: 0; }
+.go { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.progress { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.msg { margin: 0; font-size: 13.5px; flex-basis: 100%; }
+.msg:empty { display: none; }
+.msg.err { color: #ffb4a8; }
+.stats { display: flex; flex-wrap: wrap; margin-top: 20px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.stat { flex: 1 1 140px; padding: 10px 16px 10px 0; display: grid; gap: 2px; }
+.stat + .stat { padding-left: 16px; border-left: 1px solid var(--line); }
+.stat b { font-family: var(--font-display); font-stretch: 112%; font-weight: 700; font-size: 26px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 13px; color: var(--muted); }
+.stat.hi b { color: var(--mast-accent); }
+
+/* Buttons and inputs */
+.btn { font: inherit; font-size: 13px; font-weight: 600; border-radius: var(--radius); border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent); padding: 7px 16px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; line-height: 1.3; }
+.btn:hover:not(:disabled) { filter: brightness(1.08); }
+.btn.big { font-size: 15px; padding: 10px 26px; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+.btn.ghost:hover:not(:disabled) { border-color: var(--ink); filter: none; }
+.btn.sm { font-size: 12.5px; padding: 4px 11px; }
+.btn:disabled { opacity: .5; cursor: default; }
+.copy { font: inherit; font-size: 11.5px; font-weight: 500; color: var(--muted); background: transparent; border: 1px solid var(--line-strong); border-radius: 4px; padding: 0 7px; line-height: 20px; cursor: pointer; flex: none; }
+.copy:hover { color: var(--ink); border-color: var(--ink); }
+.copy.done { color: var(--on-accent); background: var(--ink); border-color: var(--ink); }
+.linkbtn { font: inherit; font-size: 13px; color: var(--accent-ink); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+input[type="search"], input[type="text"], input[type="email"], input[type="tel"], input[type="url"], select, textarea { font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 7px 10px; min-width: 0; }
+input[aria-invalid="true"] { border-color: var(--signal); }
+
+/* Tabs and filter bar */
+.tabs { display: flex; gap: 4px; margin-top: 18px; border-bottom: 1px solid var(--line); }
+.tab { font: inherit; font-size: 14px; font-weight: 600; color: var(--muted); background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 12px; cursor: pointer; margin-bottom: -1px; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab .n { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 4px; }
+.controls { position: sticky; top: 0; z-index: 5; background: var(--bg); padding-block: 12px 10px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.field { display: grid; gap: 3px; }
+.grow { flex: 1 1 240px; min-width: 0; }
+.grow input { width: 100%; }
+.group { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; border: 1px solid var(--line-strong); border-radius: 999px; padding: 5px 11px; background: var(--surface); cursor: pointer; user-select: none; }
+.toggle input { accent-color: var(--accent); margin: 0; }
+.toggle:has(input:checked) { border-color: var(--ink); background: var(--tag-bg); }
+.spacer { flex: 1 1 auto; }
+.count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.note-bar { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+.note-bar:empty { display: none; }
+
+/* Company rows */
+.co { border-bottom: 1px solid var(--line); }
+.co-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; align-items: start; padding-block: 14px; }
+.exp { width: 32px; height: 32px; margin-top: 1px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.exp svg { width: 14px; height: 14px; transition: transform .15s ease; }
+.exp[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.exp[aria-expanded="true"] svg { transform: rotate(90deg); }
+.co-main { min-width: 0; cursor: pointer; display: grid; gap: 3px; }
+.co h2 { font-family: var(--font-display); font-stretch: 112%; font-weight: 700; font-size: 19px; line-height: 1.25; margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.logo { width: 26px; height: 26px; border-radius: 5px; object-fit: contain; background: #fff; border: 1px solid var(--line); flex: none; }
+.quick { display: flex; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.quick > span:not(:last-child)::after { content: "·"; margin: 0 8px; color: var(--line-strong); }
+.quick b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.roles-preview { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.roles-preview em { font-style: normal; color: var(--ink); }
+.co.hidden-co .co-main { opacity: .6; }
+.chip { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.chip.new { background: var(--accent); color: var(--on-accent); }
+.chip.via { background: var(--recruit-soft); color: var(--recruit); }
+.chip.cat { background: var(--tag-bg); color: var(--tag-fg); font-weight: 500; }
+.chip.kw { background: var(--accent-soft); color: var(--accent-ink); font-weight: 600; padding: 2px 8px; }
+.chip.loose { background: transparent; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line-strong); font-weight: 500; }
+.chip.applied { background: var(--ink); color: var(--bg); }
+.chip.soon { background: var(--signal-soft); color: var(--signal); }
+.chip.src { background: transparent; color: var(--accent-ink); box-shadow: inset 0 0 0 1px var(--accent-ink); font-weight: 500; }
+
+/* Open panel */
+.panel { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px 24px; padding: 2px 0 24px 46px; }
+.side { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.roles { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.sec-head h3 { margin: 0; font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.role { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 8px; box-shadow: var(--shadow); min-width: 0; }
+.role-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px 14px; flex-wrap: wrap; }
+.role-title { font-weight: 600; font-size: 15.5px; color: var(--ink); text-decoration: none; overflow-wrap: anywhere; }
+.role-title:hover { color: var(--accent-ink); text-decoration: underline; }
+.role-title .ext { font-size: 12px; color: var(--muted); margin-left: 3px; }
+.role-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; font-size: 12.5px; color: var(--muted); }
+.matches { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; font-size: 12.5px; color: var(--muted); }
+.snippet { margin: 0; font-size: 13.5px; color: var(--ink); line-height: 1.5; overflow-wrap: anywhere; }
+.hist { font-size: 12.5px; color: var(--muted); }
+.track { background: var(--sunk); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; padding: 10px 12px; display: grid; gap: 8px; }
+.track .row { gap: 8px; }
+.track select { padding: 5px 8px; font-size: 13px; }
+.track select[data-s="Applied"], .track select[data-s="Interview"], .track select[data-s="Offer"] { border-color: var(--accent); font-weight: 600; }
+.track textarea { width: 100%; min-height: 54px; resize: vertical; font-size: 13.5px; }
+.saved { font-size: 12px; color: var(--muted); }
+.role-contact { font-size: 12.5px; color: var(--muted); }
+.role-contact b { color: var(--ink); font-weight: 600; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 10px; min-width: 0; }
+.person { display: grid; gap: 3px; padding-bottom: 10px; border-bottom: 1px solid var(--line); min-width: 0; }
+.person:last-of-type { border-bottom: 0; padding-bottom: 0; }
+.p-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.p-name { font-weight: 600; }
+.kind { font-size: 11.5px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--tag-bg); color: var(--tag-fg); white-space: nowrap; }
+.kind.manager { background: var(--ink); color: var(--bg); }
+.kind.recruiter { background: var(--recruit-soft); color: var(--recruit); }
+.kind.mine { background: var(--accent-soft); color: var(--accent-ink); }
+.p-sub { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.p-line { display: flex; align-items: center; gap: 6px; font-size: 13px; min-width: 0; }
+.p-line a { color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.p-line a:hover { color: var(--accent-ink); }
+.p-line .linkbtn { font-size: 12.5px; flex: none; }
+.none { font-size: 13px; color: var(--muted); margin: 0; }
+.li-find { font-size: 13px; }
+.addform, .liform { display: grid; gap: 6px; width: 100%; }
+.addform input, .liform input { width: 100%; font-size: 13px; padding: 6px 9px; }
+.facts { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.facts b { color: var(--ink); font-weight: 600; }
+
+/* Applications tab */
+.apps { display: grid; gap: 22px; padding-top: 14px; }
+.app-group h3 { margin: 0 0 8px; font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.app-list { display: grid; gap: 10px; }
+.app { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 6px; }
+.app .role-meta b { color: var(--ink); font-weight: 600; }
+
+.empty { padding: 44px 0; color: var(--muted); max-width: 62ch; }
+.empty strong { color: var(--ink); display: block; font-size: 17px; margin-bottom: 4px; }
+footer { margin-top: 40px; padding-top: 18px; border-top: 2px solid var(--ink); font-size: 13.5px; color: var(--muted); display: grid; gap: 8px; max-width: 80ch; }
+footer h3 { font-family: var(--font-display); font-stretch: 112%; font-size: 15px; color: var(--ink); margin: 0 0 2px; }
+footer p { margin: 0; }
+
+@media (max-width: 980px) { .panel { grid-template-columns: minmax(0, 1fr); padding-left: 0; } }
+@media (max-width: 720px) {
+  .controls { position: static; }
+  .f-country, .f-radius, .f-since { flex: 1 1 140px; }
+  .roles-preview { white-space: normal; }
+  .stat { flex-basis: 45%; }
+  .stat + .stat { padding-left: 0; border-left: 0; }
+  .stat:nth-child(even) { padding-left: 16px; border-left: 1px solid var(--line); }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+
+/* Language switch, backup card and the about section */
+.mast-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.lang { display: inline-flex; border: 1px solid var(--mast-line); border-radius: 999px; padding: 2px; }
+.lang button { font: inherit; font-size: 12.5px; font-weight: 600; color: var(--mast-muted); background: none; border: 0; border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--mast-ink); color: var(--mast-bg); }
+.backup { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 10px; padding: 14px 16px; display: grid; gap: 8px; }
+.backup h3 { margin: 0; font-size: 15px; }
+.backup p { margin: 0; font-size: 13.5px; color: var(--muted); max-width: 70ch; }
+.backup .row { gap: 8px; }
+.backup .ok { color: var(--accent-ink); font-weight: 600; }
+.backup .err { color: var(--signal); font-weight: 600; }
+.tab:focus-visible { outline-offset: -2px; }
+footer .about { display: grid; gap: 8px; padding-top: 14px; margin-top: 6px; border-top: 1px solid var(--line); }
+footer .credit { color: var(--ink); }
+/* Step 2: the tailoring panel slides in from the right, over the list, with the ad and CV side by side and the AI's answer below */
+.tailor { position: fixed; inset: 0 0 0 auto; margin: 0; width: min(980px, 100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh; padding: 0; border: 0; background: var(--bg); color: var(--ink); box-shadow: -12px 0 40px rgba(0,0,0,.25); flex-direction: column; }
+.tailor[open] { display: flex; animation: tl-in .18s ease-out; }
+.tailor::backdrop { background: rgba(6, 13, 19, .55); }
+@keyframes tl-in { from { transform: translateX(28px); opacity: 0; } }
+body:has(.tailor[open]) { overflow: hidden; }
+.tl-head { --ink: var(--mast-ink); --muted: var(--mast-muted); --accent-ink: var(--mast-accent); background: var(--mast-bg); color: var(--ink); padding: 18px 20px 16px; display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; flex: none; }
+.tl-eyebrow { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--mast-accent); }
+.tl-head h2 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: clamp(20px, 3vw, 26px); line-height: 1.15; margin: 6px 0 4px; overflow-wrap: anywhere; }
+.tl-sub { font-size: 13.5px; color: var(--muted); }
+.tl-close { flex: none; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--mast-line); background: transparent; color: var(--mast-ink); font-size: 22px; line-height: 1; cursor: pointer; }
+.tl-close:hover { background: rgba(255,255,255,.1); }
+.tl-body { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; padding: 18px 20px 28px; display: grid; gap: 14px; align-content: start; }
+.tl-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.tl-box { display: grid; gap: 6px; min-width: 0; align-content: start; }
+.tl-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.tl-box textarea { width: 100%; min-height: 210px; resize: vertical; font-size: 13.5px; line-height: 1.45; }
+.tl-hint { font-size: 12.5px; color: var(--muted); margin: 0; }
+.tl-opts { align-items: flex-end; gap: 12px; }
+.tl-inline { display: grid; gap: 4px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.tl-inline input, .tl-inline select { font-family: var(--font-body); letter-spacing: 0; text-transform: none; }
+.tl-inline.grow { flex: 1 1 260px; }
+#tl-code { width: 150px; font-family: var(--font-mono); }
+.tl-tasks { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); }
+.tl-task { font: inherit; font-size: 14px; font-weight: 600; color: var(--muted); background: none; border: 0; border-bottom: 2px solid transparent; padding: 9px 10px; margin-bottom: -1px; cursor: pointer; }
+.tl-task[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tl-task:focus-visible { outline-offset: -2px; }
+.tl-dot { color: var(--accent-ink); font-size: 9px; vertical-align: 2px; }
+.tl-btn .tl-dot { color: inherit; }
+.tl-result { display: grid; gap: 10px; }
+.tl-desc { margin: 0; font-size: 13.5px; color: var(--muted); }
+.tl-status { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tl-err { margin: 0; color: var(--signal); font-weight: 600; font-size: 13.5px; }
+.tl-out { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 6px 22px 16px; box-shadow: var(--shadow); font-size: 14.5px; line-height: 1.6; max-width: 80ch; overflow-wrap: anywhere; }
+.tl-out:focus { outline: none; }
+.tl-out h4 { font-family: var(--font-display); font-size: 15.5px; margin: 16px 0 4px; }
+.tl-out p { margin: 8px 0; }
+.tl-out ul, .tl-out ol { margin: 6px 0; padding-left: 22px; }
+.tl-out li { margin: 3px 0; }
+.tl-privacy { border-top: 1px solid var(--line); padding-top: 12px; }
+@media (max-width: 760px) {
+  .tl-grid { grid-template-columns: minmax(0, 1fr); }
+  .tl-box textarea { min-height: 150px; }
+  .tl-head, .tl-body { padding-inline: 16px; }
+  #tl-code { width: 100%; }
+  .tl-inline { flex: 1 1 140px; }
+}
+@media (prefers-reduced-motion: reduce) { .tailor[open] { animation: none; } }
+</style>
+</head>
+<body>
+<header class="mast">
+  <div class="mast-inner">
+    <div class="mast-top">
+      <div class="eyebrow" data-t="eyebrow">Job Finder · live job ads</div>
+      <div class="lang" role="group" aria-label="Language / Språk">
+        <button type="button" data-lang="sv" aria-pressed="false" lang="sv">Svenska</button>
+        <button type="button" data-lang="en" aria-pressed="true" lang="en">English</button>
+      </div>
+    </div>
+    <h1 data-t="h1">Find who's hiring</h1>
+    <p class="lede" data-t="lede">Pick a place and add the words that describe the work you want, like a job title, a skill or a method. The app searches Platsbanken and other job sites, groups the ads by employer and keeps track of where you've applied.</p>
+    <form class="search" id="search" novalidate>
+      <div class="row">
+        <label class="field f-country"><span data-t="country">Country</span><select id="country"></select></label>
+        <label class="field f-place"><span data-t="place">City or county</span><input type="text" id="place" list="places" autocomplete="off" data-tp="place.ph" placeholder="e.g. Göteborg or Skåne län, empty for the whole country"></label>
+        <label class="field f-radius"><span data-t="distance">Distance</span><select id="radius">
+          <option value="0" data-t="r0">Only this municipality</option><option value="10" data-t="r10">Within 10 km</option><option value="25" selected data-t="r25">Within 25 km</option><option value="50" data-t="r50">Within 50 km</option><option value="100" data-t="r100">Within 100 km</option></select></label>
+        <label class="field f-since"><span data-t="published">Published</span><select id="since"><option value="" data-t="anytime">Any time</option><option value="1440" data-t="d1">Last 24 hours</option><option value="10080" data-t="d7">Last 7 days</option><option value="43200" data-t="d30">Last 30 days</option></select></label>
+      </div>
+      <div class="row">
+        <div class="field f-kw"><span id="kw-label" data-t="keywords">Keywords</span>
+          <div class="chips-in" id="kw-box"><input type="text" id="kw-input" aria-labelledby="kw-label" data-tp="kw.ph" placeholder="Type a word and press Enter, e.g. software engineer, FMEA, undersköterska"></div></div>
+        <div class="field f-ex"><span id="ex-label" data-t="exclude">Leave out ads with</span>
+          <div class="chips-in" id="ex-box"><input type="text" id="ex-input" aria-labelledby="ex-label" data-tp="ex.ph" placeholder="e.g. senior, säljare"></div></div>
+      </div>
+      <div class="opts">
+        <label><input type="checkbox" id="o-links" checked> <span data-t="o.links">Include other job sites</span></label>
+        <label><input type="checkbox" id="o-remote"> <span data-t="o.remote">Remote work possible</span></label>
+        <label><input type="checkbox" id="o-noexp"> <span data-t="o.noexp">No experience needed</span></label>
+      </div>
+      <div class="go">
+        <button class="btn big" id="go" type="submit" data-t="search">Search</button>
+        <span class="progress" id="progress" aria-live="polite"></span>
+        <span class="hint" id="last-search"></span>
+        <p class="msg" id="msg" aria-live="polite"></p>
+      </div>
+    </form>
+    <div class="stats" id="stats" hidden>
+      <div class="stat"><b id="s-co">–</b><span data-t="s.co">employers</span></div>
+      <div class="stat"><b id="s-op">–</b><span data-t="s.op">matching roles</span></div>
+      <div class="stat hi"><b id="s-new">–</b><span data-t="s.new">new since your last search</span></div>
+      <div class="stat"><b id="s-app">–</b><span data-t="s.app">roles you're tracking</span></div>
+    </div>
+  </div>
+</header>
+<datalist id="places"></datalist>
+
+<div class="wrap">
+  <div class="tabs" role="tablist" data-ta="tabs.label" aria-label="Views">
+    <button class="tab" role="tab" id="tab-res" aria-selected="true" aria-controls="view-res" type="button"><span data-t="tab.res">Employers</span><span class="n" id="n-res"></span></button>
+    <button class="tab" role="tab" id="tab-app" aria-selected="false" aria-controls="view-app" type="button" tabindex="-1"><span data-t="tab.app">My applications</span><span class="n" id="n-app"></span></button>
+  </div>
+
+  <section id="view-res" role="tabpanel" aria-labelledby="tab-res">
+    <div class="controls" data-ta="filters.label" aria-label="Filter the results">
+      <div class="row">
+        <div class="field grow"><label class="label" for="q" data-t="filter">Filter</label><input type="search" id="q" data-tp="filter.ph" placeholder="Employer, role, place or contact"></div>
+        <div class="field"><label class="label" for="field" data-t="field">Field</label><select id="field"><option value="" data-t="allfields">All fields</option></select></div>
+        <div class="field"><label class="label" for="emp" data-t="employment">Employment</label><select id="emp"><option value="" data-t="any">Any</option><option value="perm" data-t="perm">Permanent</option><option value="temp" data-t="temp">Temporary</option></select></div>
+        <div class="field"><label class="label" for="sort" data-t="sort">Sort</label><select id="sort"><option value="roles" data-t="sort.roles">Most matching roles</option><option value="newest" data-t="sort.newest">Newest ad</option><option value="deadline" data-t="sort.deadline">Closing soonest</option><option value="name" data-t="sort.name">A–Z</option></select></div>
+      </div>
+      <div class="row">
+        <div class="group"><span class="label" data-t="showonly">Show only</span>
+          <label class="toggle"><input type="checkbox" id="f-all"> <span data-t="f.all">Ads with every keyword</span></label>
+          <label class="toggle"><input type="checkbox" id="f-new"> <span data-t="f.new">New since last search</span></label>
+          <label class="toggle"><input type="checkbox" id="f-direct"> <span data-t="f.direct">Employers hiring directly</span></label>
+        </div>
+        <label class="toggle"><input type="checkbox" id="f-hidden"> <span data-t="f.hidden">Show employers I've hidden</span></label>
+        <span class="spacer"></span>
+        <button class="btn ghost sm" id="expand-all" type="button">Expand all</button>
+        <button class="btn ghost sm" id="export" type="button" data-t="export">Export CSV</button>
+      </div>
+      <div class="count" id="count" aria-live="polite"></div>
+    </div>
+    <p class="note-bar" id="note-bar"></p>
+    <main id="list"></main>
+  </section>
+
+  <section id="view-app" role="tabpanel" aria-labelledby="tab-app" hidden>
+    <div class="apps" id="apps"></div>
+  </section>
+
+  <footer>
+    <h3 data-t="how">How this works</h3>
+    <p data-th="foot.sources"></p>
+    <p data-th="foot.keywords"></p>
+    <p data-th="foot.place"></p>
+    <p data-th="foot.history"></p>
+    <p data-th="foot.data"></p>
+    <p><button class="linkbtn" type="button" id="goto-backup" data-t="foot.backup">Back up or restore your saved data</button></p>
+    <div class="about">
+      <h3 data-t="about">About Job Finder</h3>
+      <p data-th="about.indep"></p>
+      <p data-th="about.privacy"></p>
+      <p class="credit" id="credit"></p>
+    </div>
+  </footer>
+</div>
+<dialog id="tailor" class="tailor" aria-labelledby="tl-title"></dialog>
+<script>
+/*__APP__*/
+</script>
+</body>
+</html>
