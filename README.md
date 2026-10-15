@@ -54,4 +54,4 @@ The tests run the real page in Chromium with JobTech's services replaced by fixe
 
 Job Finder is an independent tool. It is not made by, affiliated with or endorsed by Arbetsförmedlingen. Job ads come from Arbetsförmedlingen's open data, published through [JobTech Dev](https://jobtechdev.se). Always check the original ad before you apply.
 
-Designed and built by John Mawdsley, with Claude as coding assistant. MIT licence.
+Designed and built by [John Mawdsley](https://www.linkedin.com/in/john-billy-mawdsley-0000b069/), with Claude as coding assistant. MIT licence.
