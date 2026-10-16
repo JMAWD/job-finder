@@ -120,9 +120,9 @@ const guessLang = text => {
 };
 function jobFor(id) {
   const a = results?.ads.find(x => x.id === id);
-  if (a) { const c = companies.find(x => x.ads.includes(a)); return { id, title: a.title, employer: c ? coName(c) : shortName(a.employer), muni: a.muni, url: a.url || adUrl(a.id), src: a.src, source: a.source, snippet: a.snippet }; }
+  if (a) { const c = companies.find(x => x.ads.includes(a)); return { id, title: a.title, employer: c ? coName(c) : shortName(a.employer), muni: a.muni, url: a.url || adUrl(a.id), src: a.src, source: a.source, snippet: a.snippet, apply: a.apply || (a.applyEmail ? `mailto:${a.applyEmail}` : "") }; }
   const sn = apps[id]?.snap;
-  return sn ? { id, title: sn.title, employer: sn.company, muni: sn.muni, url: sn.url, src: id.startsWith("L:") ? "links" : "pb", snippet: "" } : null;
+  return sn ? { id, title: sn.title, employer: sn.company, muni: sn.muni, url: sn.url, src: id.startsWith("L:") ? "links" : "pb", snippet: "", apply: sn.apply || "" } : null;
 }
 async function loadFullAd(job) {
   const e = tlEntry(job.id);
@@ -136,12 +136,26 @@ async function loadFullAd(job) {
     return text;
   } catch { return job.snippet || ""; }
 }
+// The apply button: the employer's own page or email, or for other job sites the ad on that site
+function applyHtml(job, big) {
+  const href = job.apply || (job.src === "links" ? job.url : "");
+  if (!href) return "";
+  const label = job.apply ? t("howapply") : t("tl.applyon", { site: job.source || t("othersite") });
+  return `<a class="btn ${big ? "" : "ghost "}sm" href="${esc(href)}" target="_blank" rel="noopener" data-tl="apply">${esc(label)}</a>`;
+}
+function appliedHtml(id) {
+  const st = apps[id]?.status;
+  if (tl.marked) return `<p class="tl-hint tl-ok" role="status">${esc(t("tl.marked"))}</p>`;
+  if (!tl.askApplied || ["Applied", "Interview", "Offer"].includes(st)) return "";
+  return `<div class="row tl-ask"><span>${esc(t("tl.markq"))}</span><button class="btn sm" type="button" data-tl="mark">${esc(t("tl.mark"))}</button></div>`;
+}
 function tailorHtml() {
   const job = tl, e = tlEntry(job.id), task = tl.task, out = e.out[task];
   const code = store.get("jf-code", "");
   const outLang = e.lang || tl.lang || lang;
   return `<div class="tl-head">
-      <div><div class="tl-eyebrow">${esc(t("tl.eyebrow"))}</div><h2 id="tl-title">${esc(job.title)}</h2><div class="tl-sub">${esc([job.employer, job.muni].filter(Boolean).join(" · "))} · <a href="${esc(job.url)}" target="_blank" rel="noopener">${esc(t("readad"))}</a></div></div>
+      <div><div class="tl-eyebrow">${esc(t("tl.eyebrow"))}</div><h2 id="tl-title">${esc(job.title)}</h2><div class="tl-sub">${esc([job.employer, job.muni].filter(Boolean).join(" · "))} · <a href="${esc(job.url)}" target="_blank" rel="noopener">${esc(t("readad"))}</a></div>
+        ${applyHtml(job, false) ? `<div class="tl-headapply">${applyHtml(job, false)}</div>` : ""}</div>
       <button class="tl-close" type="button" data-tl="close" aria-label="${esc(t("tl.close"))}">×</button>
     </div>
     <div class="tl-body">
@@ -165,9 +179,10 @@ function tailorHtml() {
         <div class="row"><button class="btn" type="button" data-tl="go"${tl.busy ? " disabled" : ""}>${esc(tl.busy ? t("tl.busy") : out ? t("tl.again") : t("tl.go"))}</button><span class="tl-status" id="tl-status">${esc(tl.status || "")}</span></div>
         ${tl.error ? `<p class="tl-err" role="alert">${tl.error}</p>` : ""}
         ${out ? `<div class="tl-out" tabindex="-1">${mdHtml(out.text)}</div>
-          <div class="row"><button class="btn ghost sm" type="button" data-tl="copy">${esc(t("copy"))}</button><button class="btn ghost sm" type="button" data-tl="word">${esc(t("tl.word"))}</button>
+          <div class="row"><button class="btn ghost sm" type="button" data-tl="copy">${esc(t("copy"))}</button><button class="btn ghost sm" type="button" data-tl="word">${esc(t("tl.word"))}</button>${applyHtml(job, true)}
           <span class="tl-hint">${esc(t("tl.made", { date: fmtDate(localDay(new Date(out.at))) }))}</span></div>
-          <p class="tl-hint">${esc(t("tl.check"))}</p>` : ""}
+          ${appliedHtml(job.id)}
+          <p class="tl-hint">${esc(t("tl.check"))}</p>` : appliedHtml(job.id)}
       </section>
       <p class="tl-hint tl-privacy">${esc(t("tl.privacy"))}</p>
     </div>`;
@@ -243,6 +258,13 @@ function onTailorClick(e) {
   else if (k === "task") { tl.task = el.dataset.task; tl.error = ""; tlEntry(tl.id).lastTask = tl.task; saveTailor(); drawTailor(`[data-task="${tl.task}"]`); }
   else if (k === "go") generate();
   else if (k === "load") $("tl-file").click();
+  else if (k === "apply") { if (!["Applied", "Interview", "Offer"].includes(apps[tl.id]?.status)) { tl.askApplied = true; setTimeout(() => { if (tl) drawTailor('[data-tl="mark"]'); }, 0); } }
+  else if (k === "mark") {
+    setStatus(tl.id, "Applied"); tl.askApplied = false; tl.marked = true;
+    renderStats(); renderApps();
+    const art = document.querySelector(`#list article.role[data-ad="${CSS.escape(tl.id)}"]`)?.closest("article.co"); if (art) rerenderCompany(art.dataset.id);
+    drawTailor(".tl-close");
+  }
   else if (k === "copy") { const o = tlEntry(tl.id).out[tl.task]; if (o) copyText(plainText(o.text), el); }
   else if (k === "word") {
     const o = tlEntry(tl.id).out[tl.task]; if (!o) return;

@@ -133,6 +133,18 @@ async def main():
             check('LibreOffice can open the Word file', (tmp / (word.stem + '.pdf')).exists(), conv.stderr[-300:])
             await pg.screenshot(path=str(SHOTS / 'tailor-en.png'))
 
+            # Applying from the panel
+            check('apply button in the panel header', await dlg.locator('.tl-head [data-tl=apply]').get_attribute('href') == 'https://apply.example/101')
+            async with ctx.expect_page() as newpage: await dlg.locator('.tl-result [data-tl=apply]').click()
+            await (await newpage.value).close()
+            await pg.wait_for_selector('#tailor [data-tl=mark]')
+            check('asks whether the application was sent', 'Sent your application?' in await dlg.locator('.tl-ask').inner_text())
+            await dlg.locator('[data-tl=mark]').click()
+            check('mark as applied from the panel', 'Marked as applied' in await dlg.inner_text() and await acme.locator('article.role[data-ad="101"] select[data-role=status]').input_value() == 'Applied')
+            async with ctx.expect_page() as newpage: await dlg.locator('.tl-result [data-tl=apply]').click()
+            await (await newpage.value).close(); await pg.wait_for_timeout(100)
+            check('no question once applied', await dlg.locator('[data-tl=mark]').count() == 0)
+
             # Errors from the AI service and the network
             post(FAKE + '/mode', {'status': 429})
             await dlg.locator('[data-tl=go]').click(); await pg.wait_for_selector('#tailor .tl-err', timeout=10000)
@@ -157,6 +169,7 @@ async def main():
             echo = pg.locator('article.co', has_text='Echo Apps'); await echo.locator('button.exp').click()
             await echo.locator('[data-tailor]').click(); await pg.wait_for_timeout(200)
             hint, adv = await dlg.locator('.tl-hint').first.inner_text(), await pg.input_value('#tl-ad')
+            check('other-site ad: apply on that site', await dlg.locator('.tl-head [data-tl=apply]').inner_text() == 'Apply on The Hub')
             check('other-site ad: asks for the full text', 'This ad is on The Hub' in hint and adv == 'Join us as a software engineer.', (hint, adv))
             await pg.keyboard.press('Escape')
 
