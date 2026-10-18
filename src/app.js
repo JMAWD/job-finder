@@ -5,7 +5,7 @@ const MUNIS = /*__MUNIS__*/;   // [municipality, county] for every Swedish munic
 
 /* ---------- Words in both languages ---------- */
 const I18N = {
-  "eyebrow": ["Job Finder · live job ads", "Job Finder · lediga jobb just nu"],
+  "eyebrow": ["Live job ads", "Lediga jobb just nu"],
   "h1": ["Find who's hiring", "Hitta vem som anställer"],
   "lede": ["Pick a place and add the words that describe the work you want, like a job title, a skill or a method. The app searches Platsbanken and other job sites, groups the ads by employer and keeps track of where you've applied.",
     "Välj en ort och skriv orden som beskriver jobbet du vill ha, till exempel en yrkestitel, en kunskap eller en metod. Appen söker i Platsbanken och på andra jobbsajter, grupperar annonserna per arbetsgivare och håller koll på var du har sökt."],
@@ -18,7 +18,9 @@ const I18N = {
   "o.links": ["Include other job sites", "Ta med andra jobbsajter"], "o.remote": ["Remote work possible", "Distansarbete möjligt"], "o.noexp": ["No experience needed", "Ingen erfarenhet krävs"],
   "search": ["Search", "Sök"],
   "s.co": ["employers", "arbetsgivare"], "s.op": ["matching roles", "matchande jobb"], "s.new": ["new since your last search", "nya sedan din senaste sökning"], "s.app": ["roles you're tracking", "jobb du följer"],
-  "tabs.label": ["Views", "Vyer"], "tab.res": ["Employers", "Arbetsgivare"], "tab.app": ["My applications", "Mina ansökningar"],
+  "tabs.label": ["Views", "Vyer"], "tab.res": ["Find jobs", "Hitta jobb"], "tab.app": ["My applications", "Mina ansökningar"], "tab.mentor": ["Mentor", "Mentor"],
+  "app.eyebrow": ["Saved in this browser", "Sparat i den här webbläsaren"], "app.h1": ["My applications", "Mina ansökningar"],
+  "app.lede": ["Every role you've saved or applied for, with your notes. They stay here when you search for something else.", "Alla jobb du har sparat eller sökt, med dina anteckningar. De ligger kvar här när du söker efter något annat."],
   "filters.label": ["Filter the results", "Filtrera resultaten"], "filter": ["Filter", "Filtrera"], "filter.ph": ["Employer, role, place or contact", "Arbetsgivare, jobb, ort eller kontakt"],
   "field": ["Field", "Yrkesområde"], "allfields": ["All fields", "Alla yrkesområden"], "employment": ["Employment", "Anställning"], "any": ["Any", "Alla"], "perm": ["Permanent", "Tillsvidare"], "temp": ["Temporary", "Tidsbegränsad"],
   "sort": ["Sort", "Sortera"], "sort.roles": ["Most matching roles", "Flest matchande jobb"], "sort.newest": ["Newest ad", "Nyaste annonsen"], "sort.deadline": ["Closing soonest", "Sista ansökningsdag först"], "sort.name": ["A–Z", "A–Ö"],
@@ -44,15 +46,15 @@ const I18N = {
   "credit": ["Made by {name}.", "Gjord av {name}."], "credit.code": ["Source code on GitHub", "Källkoden på GitHub"], "version": ["Version {v}", "Version {v}"],
 
   // Step 2: tailoring an application
-  "about.privacy.ai": ["<b>Privacy.</b> No account, no cookies, no tracking. Your searches and employer logos go directly to Arbetsförmedlingen's open job ad services. Your CV and a job ad leave your browser only when you press Generate in step 2: they go to the Job Finder server and on to an AI model hosted by Scaleway in Paris, which writes the answer. The server keeps no copy. Everything you save stays on your device.",
-    "<b>Integritet.</b> Inget konto, inga kakor, ingen spårning. Dina sökningar och arbetsgivarnas logotyper hämtas direkt från Arbetsförmedlingens öppna annonstjänster. Ditt CV och en annons lämnar webbläsaren bara när du trycker på Skapa i steg 2: då skickas de till Job Finders server och vidare till en AI-modell hos Scaleway i Paris, som skriver svaret. Servern sparar ingen kopia. Allt du sparar stannar på din enhet."],
+  "about.privacy.ai": ["<b>Privacy.</b> No account, no cookies, no tracking. Your searches and employer logos go directly to Arbetsförmedlingen's open job ad services. Your CV leaves your browser only when you press Generate in step 2 or Get advice in the Mentor: it goes, with the job ad in step 2, to the Job Finder server and on to an AI model hosted by Scaleway in Paris, which writes the answer. The server keeps no copy. Everything you save stays on your device.",
+    "<b>Integritet.</b> Inget konto, inga kakor, ingen spårning. Dina sökningar och arbetsgivarnas logotyper hämtas direkt från Arbetsförmedlingens öppna annonstjänster. Ditt CV lämnar webbläsaren bara när du trycker på Skapa i steg 2 eller Få råd i Mentorn: då skickas det, i steg 2 tillsammans med annonsen, till Job Finders server och vidare till en AI-modell hos Scaleway i Paris, som skriver svaret. Servern sparar ingen kopia. Allt du sparar stannar på din enhet."],
   "tl.open": ["Tailor my application", "Anpassa min ansökan"],
   "tl.eyebrow": ["Step 2 · tailor your application", "Steg 2 · anpassa din ansökan"], "tl.close": ["Close", "Stäng"],
   "tl.ad": ["The job ad", "Annonsen"], "tl.ad.ph": ["Paste the full job ad here", "Klistra in hela annonsen här"], "tl.ad.loading": ["Fetching the full ad…", "Hämtar hela annonsen…"],
   "tl.ad.hint": ["Fetched from Platsbanken. You can edit it, for example to cut parts that don't matter.", "Hämtad från Platsbanken. Du kan ändra i den, till exempel stryka delar som inte spelar roll."],
   "tl.ad.hintlinks": ["This ad is on {site}, so only a short extract is shown. Open the ad and paste the full text here for a much better result.", "Annonsen ligger på {site}, så här syns bara ett kort utdrag. Öppna annonsen och klistra in hela texten här för ett mycket bättre resultat."],
   "tl.cv": ["Your CV", "Ditt CV"], "tl.cv.ph": ["Paste your CV as text, or load a Word file", "Klistra in ditt CV som text, eller hämta en Word-fil"],
-  "tl.cv.hint": ["Kept in this browser and reused for every job.", "Sparas i den här webbläsaren och används för alla jobb."],
+  "tl.cv.hint": ["Kept in this browser, reused for every job and shared with the Mentor.", "Sparas i den här webbläsaren, används för alla jobb och delas med Mentorn."],
   "tl.load": ["Load from file", "Hämta från fil"],
   "tl.loaded": ["Loaded {name}. Check that the text looks right.", "Hämtade {name}. Kontrollera att texten ser rätt ut."],
   "tl.loadfail": ["Couldn't read that file. Open it in Word, select all, copy and paste it here.", "Kunde inte läsa filen. Öppna den i Word, markera allt, kopiera och klistra in här."],
@@ -88,6 +90,84 @@ const I18N = {
   "tl.e.timeout": ["It took too long to get an answer. Try again.", "Det tog för lång tid att få svar. Försök igen."],
   "tl.e.network": ["Couldn't reach the tailoring server. Check your connection and try again.", "Kunde inte nå servern. Kontrollera din uppkoppling och försök igen."],
   "tl.e.other": ["Something went wrong with the request. Try again.", "Något gick fel med förfrågan. Försök igen."],
+
+  // Mentor tab
+  "mt.eyebrow": ["Mentor · career advice", "Mentor · karriärråd"], "mt.h1": ["Your next step", "Ditt nästa steg"],
+  "mt.lede": ["The Mentor reads your CV, asks four quick questions and suggests roles you could apply for and what to learn next to stay in demand. It goes by your experience and your plans, never by your age.",
+    "Mentorn läser ditt CV, ställer fyra snabba frågor och föreslår jobb du kan söka och vad du kan lära dig för att vara eftertraktad framöver. Den utgår från din erfarenhet och dina planer, aldrig från din ålder."],
+  "mt.cv": ["Your CV", "Ditt CV"], "mt.cv.edit": ["Edit", "Ändra"], "mt.cv.done": ["Done", "Klar"],
+  "mt.cv.sum": ["{n} characters · starts “{start}”", "{n} tecken · börjar ”{start}”"],
+  "mt.cv.shared": ["Saved in this browser and shared with Tailor my application.", "Sparas i den här webbläsaren och används också i Anpassa min ansökan."],
+  "mt.cv.changed": ["Your CV has changed since this advice. Update the advice to include the changes.", "Ditt CV har ändrats sedan de här råden. Uppdatera råden för att få med ändringarna."],
+  "mt.read": ["What I read from the CV", "Det här läste jag i CV:t"], "mt.stage": ["Career stage", "Karriärfas"],
+  "mt.stage.early": ["Early career", "Tidigt i karriären"], "mt.stage.established": ["Established", "Etablerad"], "mt.stage.senior": ["Senior expert", "Senior expert"],
+  "mt.noage": ["Age isn't estimated or used.", "Ålder gissas inte och används inte."],
+  "mt.exp": ["Experience", "Erfarenhet"], "mt.yr1": ["{n} year", "{n} år"], "mt.yrN": ["{n} years", "{n} år"],
+  "mt.roles": ["Roles", "Roller"], "mt.edu": ["Education", "Utbildning"], "mt.certs": ["Certificates", "Certifikat"], "mt.domains": ["Areas", "Områden"], "mt.skills": ["Core skills", "Kärnkunskaper"], "mt.none": ["None listed", "Inga angivna"],
+  "mt.wrong": ["Something wrong? Edit your CV and update the advice.", "Stämmer något inte? Ändra ditt CV och uppdatera råden."],
+  "mt.q.title": ["What the CV can't tell me", "Det CV:t inte berättar"], "mt.q.hint": ["Change any answer and the advice updates straight away.", "Ändra ett svar så uppdateras råden direkt."],
+  "mt.q.horizon": ["How many more years do you see yourself working?", "Hur många år till ser du dig själv jobba?"],
+  "mt.h.under5": ["Under 5 years", "Under 5 år"], "mt.h.y5to10": ["5–10 years", "5–10 år"], "mt.h.y10plus": ["10+ years", "Över 10 år"], "mt.h.unsure": ["Not sure", "Vet inte"],
+  "mt.q.dir": ["Where do you want to go next?", "Vart vill du härnäst?"],
+  "mt.d.deeper": ["Go deeper in my field", "Fördjupa mig i mitt område"], "mt.d.lead": ["Lead people or projects", "Leda människor eller projekt"], "mt.d.change": ["Change direction", "Byta riktning"], "mt.d.advise": ["Advise and mentor others", "Ge råd och vara mentor"], "mt.d.any": ["Not sure yet", "Vet inte än"],
+  "mt.q.time": ["Time for learning each week", "Tid att lära dig varje vecka"],
+  "mt.t.t1": ["About 1 h", "Ungefär 1 h"], "mt.t.t3": ["2–4 h", "2–4 h"], "mt.t.t7": ["5–9 h", "5–9 h"], "mt.t.t10": ["10 h or more", "10 h eller mer"],
+  "mt.tp.t1": ["about 1 h a week", "ungefär 1 h i veckan"], "mt.tp.t3": ["2–4 h a week", "2–4 h i veckan"], "mt.tp.t7": ["5–9 h a week", "5–9 h i veckan"], "mt.tp.t10": ["10 h or more a week", "10 h eller mer i veckan"],
+  "mt.q.budget": ["Who would pay for courses?", "Vem skulle betala för kurser?"],
+  "mt.b.employer": ["My employer", "Min arbetsgivare"], "mt.b.self": ["I pay myself", "Jag betalar själv"], "mt.b.free": ["Free only", "Bara gratis"],
+  "mt.go": ["Get advice", "Få råd"], "mt.again": ["Update advice", "Uppdatera råden"], "mt.busy": ["Reading your CV…", "Läser ditt CV…"],
+  "mt.wait": ["Usually 30–90 seconds · {s} s", "Brukar ta 30–90 sekunder · {s} s"], "mt.made": ["Advice from {date}", "Råd från {date}"],
+  "mt.otherlang": ["This advice is in Swedish. Update it to get it in English.", "Råden är på engelska. Uppdatera dem för att få dem på svenska."],
+  "mt.privacy": ["When you press Get advice, your CV is sent to the Job Finder server and on to an AI model hosted by Scaleway in Paris. The server keeps no copy. The advice is saved only in this browser. Counts of open ads come straight from Platsbanken.",
+    "När du trycker på Få råd skickas ditt CV till Job Finders server och vidare till en AI-modell hos Scaleway i Paris. Servern sparar ingen kopia. Råden sparas bara i den här webbläsaren. Antalet lediga jobb hämtas direkt från Platsbanken."],
+  "mt.e.format": ["The advice came back in the wrong shape. Try again.", "Råden kom tillbaka i fel format. Försök igen."],
+  "mt.ph.title": ["Your advice will appear here", "Här kommer dina råd"],
+  "mt.ph.1": ["Roles you could apply for now, roles within reach, and a change of track.", "Jobb du kan söka nu, jobb inom räckhåll och ett byte av spår."],
+  "mt.ph.2": ["What to learn next, fitted to your time, budget and plans.", "Vad du kan lära dig härnäst, anpassat efter din tid, budget och dina planer."],
+  "mt.ph.3": ["One click from a suggested role to its job ads.", "Ett klick från ett föreslaget jobb till annonserna."],
+  "mt.needcv": ["Start by pasting your CV or loading a Word file.", "Börja med att klistra in ditt CV eller hämta en Word-fil."],
+  "mt.you": ["Your mentor", "Din mentor"], "mt.for": ["Advice for {name}", "Råd till {name}"], "mt.foryou": ["Advice for you", "Råd till dig"], "mt.adjusted": ["Adjusted for your answers.", "Anpassat efter dina svar."],
+  "mt.hl.under5": ["With a shorter time frame, I've kept to things that pay off within about a year and a half.", "Med en kortare tidshorisont har jag hållit mig till sådant som lönar sig inom ungefär ett och ett halvt år."],
+  "mt.hl.y5to10": ["Five to ten years leaves room for one bigger qualification next to a few quick wins.", "Fem till tio år ger plats för en större utbildning vid sidan av några snabba vinster."],
+  "mt.hl.y10plus": ["You have plenty of working years ahead, so it's worth building skills that take a while but will still matter in ten years.", "Du har många yrkesår kvar, så det är värt att bygga kunskaper som tar tid men fortfarande spelar roll om tio år."],
+  "mt.hl.unsure": ["You're not sure about the time frame, so I've leaned toward things that pay off within two years and keep your options open.", "Du är osäker på tidshorisonten, så jag har lutat åt sådant som lönar sig inom två år och håller dörrarna öppna."],
+  "mt.tl.t1": ["With about an hour a week, short courses and ones your employer can schedule in work time come first.", "Med ungefär en timme i veckan kommer korta kurser och sådana som arbetsgivaren kan lägga på arbetstid först."],
+  "mt.bl.free": ["You asked for free options, so anything with a fee is set aside below.", "Du bad om gratisalternativ, så allt som kostar pengar ligger längre ner bland det som valts bort."],
+  "mt.bl.self": ["Since you'd pay yourself, anything over 5 000 SEK is set aside below.", "Eftersom du betalar själv ligger allt över 5 000 kr längre ner bland det som valts bort."],
+  "mt.dl.any": ["Pick a direction to sharpen the advice.", "Välj en riktning för att skärpa råden."],
+  "mt.roles.title": ["Roles to consider", "Jobb att överväga"], "mt.where": ["Open ads now in {place}", "Lediga jobb just nu i {place}"], "mt.counting": ["Counting open ads…", "Räknar lediga jobb…"],
+  "mt.tier.direct": ["Direct fit", "Passar nu"], "mt.tier.stretch": ["Stretch", "Inom räckhåll"], "mt.tier.pivot": ["Pivot", "Nytt spår"],
+  "mt.sub.direct": ["You could apply now", "Du kan söka nu"], "mt.sub.stretch": ["Within reach with a gap or two", "Inom räckhåll med en lucka eller två"],
+  "mt.sub.pivot": ["A change of track", "Ett byte av spår"], "mt.sub.maybe": ["If you ever want a change", "Om du någon gång vill byta"],
+  "mt.fit": ["Fits your direction", "Passar din riktning"], "mt.long": ["{d} to close the gaps", "{d} att täppa till luckorna"],
+  "mt.match": ["How well your CV matches typical ads for this role", "Hur väl ditt CV matchar typiska annonser för jobbet"],
+  "mt.gaps": ["Gaps", "Luckor"], "mt.nogaps": ["None that matter", "Inga som spelar roll"],
+  "mt.open1": ["{n} open ad", "{n} ledigt jobb"], "mt.openN": ["{n} open ads", "{n} lediga jobb"], "mt.open0": ["No open ads right now", "Inga lediga jobb just nu"],
+  "mt.search": ["Search these jobs", "Sök de här jobben"],
+  "mt.learn.title": ["What to learn next", "Vad du kan lära dig härnäst"], "mt.learn.sub": ["Best fit first, matched to your four answers", "Bäst passande först, utifrån dina fyra svar"],
+  "mt.quick": ["Quick win", "Snabb vinst"], "mt.free": ["Free", "Gratis"], "mt.cost": ["≈ {n} SEK", "≈ {n} kr"], "mt.costabout": ["about {n} SEK", "ungefär {n} kr"],
+  "mt.eff.self": ["{h} h · {d} at {pace}", "{h} h · {d} med {pace}"], "mt.eff.class1": ["1 day, usually in work time", "1 dag, oftast på arbetstid"], "mt.eff.class": ["{n} days, usually in work time", "{n} dagar, oftast på arbetstid"],
+  "mt.eff.prep": [" · {h} h preparation", " · {h} h förberedelser"], "mt.eff.prog": ["{h} h a week for {d}", "{h} h i veckan i {d}"],
+  "mt.week1": ["about 1 week", "ungefär 1 vecka"], "mt.weeks": ["about {n} weeks", "ungefär {n} veckor"], "mt.months": ["about {n} months", "ungefär {n} månader"], "mt.year1": ["about 1 year", "ungefär 1 år"], "mt.yearsd": ["about {n} years", "ungefär {n} år"],
+  "mt.demand": ["Named in {p}% of {n} recent ads for {role}", "Nämns i {p} % av {n} aktuella annonser för {role}"], "mt.demand.rare": ["Rarely named in recent ads for {role}", "Nämns sällan i aktuella annonser för {role}"],
+  "mt.learn.none": ["Nothing fits all four answers. More weekly time or a wider budget opens things up, and the list below shows what came close.", "Inget passar alla fyra svaren. Mer tid i veckan eller en större budget öppnar upp, och listan nedan visar vad som var nära."],
+  "mt.skipped": ["Considered, not suggested ({n})", "Övervägt men inte föreslaget ({n})"],
+  "mt.r.prog": ["Needs about {h} h a week for {d}. You said {pace}.", "Kräver ungefär {h} h i veckan i {d}. Du angav {pace}."],
+  "mt.r.class": ["At {pace}, the preparation alone would take {d}.", "Med {pace} skulle förberedelserna ensamma ta {d}."],
+  "mt.r.self": ["At {pace} it would take {d}.", "Med {pace} skulle det ta {d}."],
+  "mt.r.late": ["That's late to pay off for the time frame you gave.", "Det lönar sig sent med tanke på tidshorisonten du angav."],
+  "mt.r.horizon": ["It takes {d} before it pays off. That's long for the time frame you gave.", "Det tar {d} innan det lönar sig. Det är långt med tanke på tidshorisonten du angav."],
+  "mt.r.free": ["Costs {c}, and you asked for free options only.", "Kostar {c}, och du bad bara om gratisalternativ."],
+  "mt.r.selfpay": ["{c} is a lot to pay yourself. Worth asking your employer.", "{c} är mycket att betala själv. Fråga gärna din arbetsgivare."],
+  "mt.check": ["Treat this as a starting point. The AI is told to build only on your CV, but it can still get course details wrong, so check prices and dates with the provider.",
+    "Se det här som en utgångspunkt. AI:n är instruerad att bara bygga på ditt CV, men den kan ändå få kursdetaljer fel, så kontrollera priser och datum hos utbildaren."],
+  "mt.how": ["How this advice is built", "Så tas råden fram"],
+  "mt.how.cv": ["From the CV", "Från CV:t"], "mt.how.cv.d": ["Years of experience, roles and seniority, skills, certificates and education.", "År i arbetslivet, roller och senioritet, kunskaper, certifikat och utbildning."],
+  "mt.how.ans": ["From your answers", "Från dina svar"], "mt.how.ans.d": ["Time frame, direction, weekly learning time and who pays.", "Tidshorisont, riktning, tid att lära dig per vecka och vem som betalar."],
+  "mt.how.ads": ["From job ads", "Från jobbannonser"], "mt.how.ads.d": ["Open ads for each suggested role, and how often each skill shows up in them, straight from Platsbanken.", "Lediga jobb för varje föreslaget jobb, och hur ofta varje kunskap nämns i dem, direkt från Platsbanken."],
+  "mt.how.never": ["Never used", "Används aldrig"], "mt.how.never.d": ["Age, birth year, or graduation year as a stand-in for age.", "Ålder, födelseår eller examensår som ett sätt att gissa ålder."],
+  "empty.mentor": ["Not sure what to search for? The Mentor reads your CV and suggests roles that fit your experience.", "Vet du inte vad du ska söka efter? Mentorn läser ditt CV och föreslår jobb som passar din erfarenhet."],
+  "empty.mentor.go": ["Open the Mentor", "Öppna Mentorn"],
 
   // Search messages
   "need.input": ["Add at least one keyword or a place, otherwise the search covers every job ad in the country.", "Lägg till minst ett sökord eller en ort, annars blir det alla jobbannonser i hela landet."],
@@ -263,7 +343,7 @@ function applyLang() {
 }
 document.querySelector(".lang").addEventListener("click", e => {
   const b = e.target.closest("button[data-lang]"); if (!b || b.dataset.lang === lang) return;
-  lang = b.dataset.lang; store.set("jf-lang", lang); $("msg").textContent = ""; applyLang(); render(); if (tl) drawTailor();
+  lang = b.dataset.lang; store.set("jf-lang", lang); $("msg").textContent = ""; applyLang(); render(); if (ABOUT.tailor) { mt.error = ""; mt.cvMsg = ""; renderMentor(); } if (tl) drawTailor();
 });
 
 /* ---------- Search form ---------- */
@@ -820,7 +900,8 @@ function render() {
   fillFields();
   const vis = renderStats() || [];
   if (!results) {
-    $("list").innerHTML = `<div class="empty"><strong>${esc(t("empty.title"))}</strong>${esc(t("empty.text"))}</div>`;
+    $("list").innerHTML = `<div class="empty"><strong>${esc(t("empty.title"))}</strong>${esc(t("empty.text"))}${ABOUT.tailor ? `
+      <div class="empty-mentor"><span>${esc(t("empty.mentor"))}</span><button class="btn ghost sm" type="button" data-act="goto-mentor">${esc(t("empty.mentor.go"))}</button></div>` : ""}</div>`;
     $("count").textContent = ""; $("note-bar").textContent = "";
   } else {
     $("list").innerHTML = vis.length ? vis.map(companyHtml).join("") : `<div class="empty"><strong>${esc(t("nomatch.title"))}</strong>${esc(t("nomatch.text"))}</div>`;
@@ -911,7 +992,8 @@ function downloadBlob(text, name, type) {
   link.href = url; link.download = name; document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 function downloadBackup() {
-  const data = { apps, hidden: [...hidden], people, links, search: store.get("jf-search", null), seen: store.get("jf-seen", {}), prefs: store.get("jf-prefs", {}), lang, cv: store.get("jf-cv", ""), tailor: tailorStore };
+  const data = { apps, hidden: [...hidden], people, links, search: store.get("jf-search", null), seen: store.get("jf-seen", {}), prefs: store.get("jf-prefs", {}), lang, cv: store.get("jf-cv", ""), tailor: tailorStore,
+    mentor: store.get("jf-mentor", null), mentorAnswers: mtAns };
   downloadBlob(JSON.stringify({ app: "job-finder", version: 1, exported: new Date().toISOString(), data }, null, 1), `job-finder-backup-${today()}.json`, "application/json");
   store.set("jf-backup-at", today()); backupMsg = null; renderApps();
 }
@@ -941,9 +1023,11 @@ function restoreBackup(file) {
     if (isObj(d.search) && !store.get("jf-search", null)) { store.set("jf-search", d.search); fillForm(d.search); }
     if (typeof d.cv === "string" && d.cv.trim() && !store.get("jf-cv", "").trim()) store.set("jf-cv", d.cv);
     if (isObj(d.tailor)) { for (const [id, x] of Object.entries(d.tailor)) if (isObj(x) && !tailorStore[id]) tailorStore[id] = { ad: typeof x.ad === "string" ? x.ad : undefined, extra: String(x.extra || ""), lang: x.lang === "en" ? "en" : x.lang === "sv" ? "sv" : undefined, lastTask: TASKS.includes(x.lastTask) ? x.lastTask : undefined, out: isObj(x.out) ? Object.fromEntries(Object.entries(x.out).filter(([k, o]) => TASKS.includes(k) && isObj(o) && typeof o.text === "string")) : {} }; saveTailor(); }
+    if (validMentor(d.mentor) && !mentor) { mentor = { at: String(d.mentor.at || ""), lang: d.mentor.lang === "en" ? "en" : "sv", cvHash: String(d.mentor.cvHash || ""), data: d.mentor.data, counts: null }; store.set("jf-mentor", mentor); }
+    if (isObj(d.mentorAnswers) && !store.get("jf-mentor-ans", null)) { for (const [k, opts] of MT_Q) if (opts.includes(d.mentorAnswers[k])) mtAns[k] = d.mentorAnswers[k]; store.set("jf-mentor-ans", mtAns); }
     const ok = [store.set("jf-apps", apps), store.set("jf-hidden", [...hidden]), store.set("jf-people", people), store.set("jf-links", links)].every(Boolean);
     backupMsg = { ok, text: ok ? t("bk.ok", { apps: tn(nApps, "bk.apps1", "bk.appsN"), contacts: tn(nPeople, "bk.ppl1", "bk.pplN"), hidden: tn(nHidden, "bk.hid1", "bk.hidN") }) : t("bk.nostore") };
-    render();
+    render(); renderMentor();
   };
   reader.readAsText(file);
 }
@@ -965,7 +1049,8 @@ async function copyText(text, btn) {
 $("list").addEventListener("click", e => {
   const el = e.target.closest("[data-act]"); if (!el || e.target.closest("a")) return;
   const art = el.closest("article.co"), key = art?.dataset.id, act = el.dataset.act;
-  if (act === "toggle") setOpen(key, !openIds.has(key));
+  if (act === "goto-mentor") { selectTab("mentor"); window.scrollTo(0, 0); $("tab-mentor").focus(); }
+  else if (act === "toggle") setOpen(key, !openIds.has(key));
   else if (act === "copy") copyText(el.dataset.copy, el);
   else if (act === "add-person") { addingFor.add(key); rerenderCompany(key, 'input[name="n"]'); }
   else if (act === "cancel-person") { addingFor.delete(key); rerenderCompany(key, 'button[data-act="add-person"]'); }
@@ -1030,19 +1115,30 @@ $("expand-all").addEventListener("click", () => {
   for (const c of vis) if (all) openIds.delete(c.key); else openIds.add(c.key);
   store.set("jf-open", [...openIds]); render();
 });
-function selectTab(app, focus) {
-  $("tab-res").setAttribute("aria-selected", String(!app)); $("tab-app").setAttribute("aria-selected", String(app));
-  $("tab-res").tabIndex = app ? -1 : 0; $("tab-app").tabIndex = app ? 0 : -1;
-  $("view-res").hidden = app; $("view-app").hidden = !app;
-  if (app) renderApps();
-  if (focus) $(app ? "tab-app" : "tab-res").focus();
+// The three parts of the suite: Find jobs, My applications and the Mentor (only when there is an AI server)
+const VIEWS = () => ABOUT.tailor ? ["res", "app", "mentor"] : ["res", "app"];
+let currentView = "res";
+function selectTab(name, focus) {
+  if (!VIEWS().includes(name)) name = "res";
+  const was = currentView; currentView = name;
+  for (const v of ["res", "app", "mentor"]) {
+    const on = v === name, b = $("tab-" + v);
+    b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1; $("view-" + v).hidden = !on;
+  }
+  store.set("jf-tab", name);
+  if (name === "app") renderApps();
+  if (name === "mentor") { renderMentor(); mtCount(); }
+  if (name !== was) window.scrollTo(0, 0);
+  if (focus) $("tab-" + name).focus();
 }
-$("tab-res").addEventListener("click", () => selectTab(false));
-$("tab-app").addEventListener("click", () => selectTab(true));
+for (const v of ["res", "app", "mentor"]) $("tab-" + v).addEventListener("click", () => selectTab(v));
 document.querySelector(".tabs").addEventListener("keydown", e => {
-  if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) { e.preventDefault(); selectTab(e.key === "ArrowRight" || e.key === "End", true); }
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+  e.preventDefault();
+  const vs = VIEWS(), i = vs.indexOf(currentView);
+  selectTab(e.key === "Home" ? vs[0] : e.key === "End" ? vs[vs.length - 1] : vs[(i + (e.key === "ArrowRight" ? 1 : vs.length - 1)) % vs.length], true);
 });
-$("goto-backup").addEventListener("click", () => { selectTab(true); $("backup")?.scrollIntoView({ block: "start" }); $("bk-down")?.focus(); });
+$("goto-backup").addEventListener("click", () => { selectTab("app"); $("backup")?.scrollIntoView({ block: "start" }); $("bk-down")?.focus(); });
 
 /* ---------- CSV export ---------- */
 function csvCell(v) { const s = String(v ?? ""); return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }
@@ -1062,10 +1158,15 @@ $("export").addEventListener("click", () => {
 
 /*__TAILOR__*/
 
+/*__MENTOR__*/
+
 /* ---------- Start ---------- */
 if (ABOUT.tailor) document.querySelector('[data-th="about.privacy"]').dataset.th = "about.privacy.ai";
+$("tab-mentor").hidden = !ABOUT.tailor;
 initTailor();
+initMentor();
 applyLang();
 loadPrefs();
 fillForm(store.get("jf-search", null) || { country: "SE", place: "", radius: 25, terms: [], excludes: [], links: true });
 render();
+selectTab({ "#mentor": "mentor", "#applications": "app", "#jobs": "res" }[location.hash] || store.get("jf-tab", "res"));

@@ -2,9 +2,10 @@
 /*
   Job Finder tailoring server: one Scaleway Serverless Function (Node 22).
 
-  The browser sends a CV, a job ad and which text it wants. This function checks the beta access code,
-  limits how much each code can use, sends the request to Scaleway Generative APIs (Paris) with the
-  prompts kept here on the server, and returns the text. It never stores or logs CV or ad text.
+  The browser sends a CV, a job ad and which text it wants, or only the CV for the Mentor tab. This function
+  checks the beta access code, limits how much each code can use, sends the request to Scaleway Generative APIs
+  (Paris) with the prompts kept here on the server, and returns the text (or, for the Mentor, the advice as JSON).
+  It never stores or logs CV or ad text.
 
   Environment variables (set on the function in the Scaleway console):
     ALLOWED_ORIGINS   comma-separated sites allowed to call it, e.g. https://name.github.io  (add "null" to allow the downloaded file)
@@ -18,7 +19,7 @@
     ACCESS_CODES      comma-separated SHA-256 hashes of the beta access codes (make them with make-codes.mjs)
 */
 const crypto = require("crypto");
-const { PROMPTS, TASKS } = require("./prompts.js");
+const { PROMPTS, TASKS, AD_TASKS, parseMentor } = require("./prompts.js");
 
 const MAX_CV = 20000, MAX_AD = 20000, MAX_EXTRA = 2000;
 const usage = new Map();   // access code hash -> timestamps of recent requests (per running instance)
@@ -60,14 +61,14 @@ function header(event, name) {
   return k ? String(h[k]) : "";
 }
 
-async function callModel(messages, model) {
+async function callModel(messages, model, { maxTokens = 2500, temperature = 0.4, timeout = 90000 } = {}) {
   const base = env("AI_BASE_URL") || "https://api.scaleway.ai/v1";
-  const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 90000);
+  const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), timeout);
   try {
     const r = await fetch(`${base.replace(/\/+$/, "")}/chat/completions`, {
       method: "POST", signal: ctrl.signal,
       headers: { "Authorization": `Bearer ${env("AI_KEY")}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model, messages, temperature: 0.4, max_tokens: 2500 }),
+      body: JSON.stringify({ model, messages, temperature, max_tokens: maxTokens }),
     });
     if (!r.ok) return { error: r.status === 429 ? "ai_busy" : "ai_error", status: r.status };
     const j = await r.json();
@@ -96,9 +97,10 @@ async function handle(event) {
   if (!h) return fail(401, "bad_code", okOrigin);
   const task = req.task, lang = req.lang === "en" ? "en" : "sv";
   if (!TASKS.includes(task)) return fail(400, "bad_task", okOrigin, { tasks: TASKS });
-  const cv = typeof req.cv === "string" ? req.cv.trim() : "", ad = typeof req.job?.text === "string" ? req.job.text.trim() : "";
+  const needsAd = AD_TASKS.includes(task);
+  const cv = typeof req.cv === "string" ? req.cv.trim() : "", ad = needsAd && typeof req.job?.text === "string" ? req.job.text.trim() : "";
   if (cv.length < 200) return fail(400, "cv_too_short", okOrigin);
-  if (ad.length < 100) return fail(400, "ad_too_short", okOrigin);
+  if (needsAd && ad.length < 100) return fail(400, "ad_too_short", okOrigin);
   if (cv.length > MAX_CV || ad.length > MAX_AD) return fail(413, "too_long", okOrigin, { maxCv: MAX_CV, maxAd: MAX_AD });
   const limit = overLimit(h);
   if (limit) return fail(429, "limit_reached", okOrigin, limit);
@@ -107,11 +109,15 @@ async function handle(event) {
   const extra = typeof req.extra === "string" ? req.extra.slice(0, MAX_EXTRA) : "";
   const started = Date.now();
   const model = req.model && list("AI_MODELS").includes(req.model) ? req.model : (env("AI_MODEL") || "mistral-medium-3.5-128b");
-  const out = await callModel(PROMPTS[task](lang, { cv, job, extra }), model);
+  const mentor = task === "mentor";
+  const out = await callModel(PROMPTS[task](lang, { cv, job, extra, year: new Date().getFullYear() }), model,
+    mentor ? { maxTokens: 4000, temperature: 0.3, timeout: 110000 } : undefined);
+  const data = mentor && !out.error ? parseMentor(out.text) : null;
+  if (mentor && !out.error && !data) out.error = "ai_bad_format";
   // Only sizes and timings are logged, never the CV or the ad
   console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null }));
   if (out.error) return fail(out.error === "ai_busy" ? 503 : 502, out.error, okOrigin);
-  return reply(200, { text: out.text, model: out.model, tokens: out.tokens }, okOrigin);
+  return reply(200, mentor ? { data, model: out.model, tokens: out.tokens } : { text: out.text, model: out.model, tokens: out.tokens }, okOrigin);
 }
 
 module.exports = { handle, _test: { usage, sha256 } };

@@ -68,6 +68,7 @@ async def main():
             await pg.goto(off.as_uri())
             await pg.fill('#place', 'Göteborg'); await pg.fill('#kw-input', 'software engineer'); await pg.press('#kw-input', 'Enter'); await search(pg)
             check('no tailor buttons without a server', await pg.locator('[data-tailor]').count() == 0)
+            check('no Mentor without a server', await pg.locator('#tab-mentor').is_hidden() and await pg.locator('[data-act=goto-mentor]').count() == 0)
 
             await pg.goto(page.as_uri()); await search(pg)
             acme = pg.locator('article.co', has_text='Acme Robotics'); await acme.locator('button.exp').click()

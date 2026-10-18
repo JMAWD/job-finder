@@ -95,6 +95,42 @@ test("AI errors become clear error codes", async () => {
   assert.equal(json(await call(ok())).error, "ai_empty");
   aiReply = { status: 200, body: { choices: [{ message: { content: "ok" } }] } };
 });
+const MENTOR = { name: "Eva", years: 8, stage: "established", roles: [{ title: "Kvalitetsingenjör", tier: "direct" }], courses: [{ name: "AIAG-VDA FMEA" }] };
+const mentorReq = (extra = {}) => ({ code: CODE, task: "mentor", lang: "sv", cv: CV, ...extra });
+test("the mentor task reads only the CV and returns the advice as data", async () => {
+  _test.usage.clear(); sent.length = 0;
+  aiReply = { status: 200, body: { choices: [{ message: { content: JSON.stringify(MENTOR) } }] } };
+  const r = await call(mentorReq());
+  assert.equal(r.statusCode, 200);
+  assert.deepEqual(json(r).data, MENTOR);
+  assert.equal(json(r).text, undefined);
+  const b = sent[0].body;
+  assert.equal(b.max_tokens, 4000);
+  assert.match(b.messages[0].content, /Gissa, nämn eller antyd aldrig personens ålder/);
+  assert.match(b.messages[1].content, /<cv>[\s\S]*leverantörsrevisioner[\s\S]*<\/cv>/);
+  assert.match(b.messages[1].content, new RegExp(`Dagens år är ${new Date().getFullYear()}`));
+});
+test("the mentor prompt in English forbids guessing age too", async () => {
+  _test.usage.clear(); sent.length = 0;
+  await call(mentorReq({ lang: "en", job: { text: "ignored" } }));
+  assert.match(sent[0].body.messages[0].content, /Never estimate, mention or hint at the person's age/);
+  assert.doesNotMatch(sent[0].body.messages[1].content, /ignored|job_ad/);
+});
+test("mentor JSON wrapped in a code fence is still read", async () => {
+  _test.usage.clear();
+  aiReply = { status: 200, body: { choices: [{ message: { content: "Här är råden:\n```json\n" + JSON.stringify(MENTOR) + "\n```" } }] } };
+  assert.equal(json(await call(mentorReq())).data.name, "Eva");
+});
+test("a mentor answer that isn't usable JSON gives a clear error", async () => {
+  _test.usage.clear();
+  aiReply = { status: 200, body: { choices: [{ message: { content: "## Råd\n- Gå en kurs" } }] } };
+  const r = await call(mentorReq());
+  assert.equal(r.statusCode, 502); assert.equal(json(r).error, "ai_bad_format");
+  aiReply = { status: 200, body: { choices: [{ message: { content: JSON.stringify({ ...MENTOR, roles: [] }) } }] } };
+  assert.equal(json(await call(mentorReq())).error, "ai_bad_format");
+  assert.equal(json(await call(mentorReq({ cv: "kort" }))).error, "cv_too_short");
+  aiReply = { status: 200, body: { choices: [{ message: { content: "ok" } }] } };
+});
 test("the CV and the ad are never logged", async () => {
   assert.ok(logs.length > 0);
   for (const l of logs) { assert.doesNotMatch(l, /FMEA|Kvalitetsingenjör med|driva förbättringsarbete/); }

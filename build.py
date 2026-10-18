@@ -4,7 +4,7 @@
 
 Writes index.html (for GitHub Pages) and "Job Finder.html" (the same page, to download and open as a file).
 Fill in config.json first: your name, LinkedIn, GitHub, the repo link and the site address.
-tailor_url is the address of the tailoring server (see server/SETUP.md). Leave it empty to build without step 2."""
+tailor_url is the address of the tailoring server (see server/SETUP.md). Leave it empty to build without step 2 and the Mentor."""
 import json, pathlib, html
 
 here = pathlib.Path(__file__).parent
@@ -17,6 +17,7 @@ js = (here / 'src' / 'app.js').read_text(encoding='utf-8')
 js = js.replace('/*__MUNIS__*/', json.dumps(munis, ensure_ascii=False, separators=(',', ':')), 1)
 js = js.replace('/*__ABOUT__*/', json.dumps(about, ensure_ascii=False), 1)
 js = js.replace('/*__TAILOR__*/', (here / 'src' / 'tailor.js').read_text(encoding='utf-8'), 1)
+js = js.replace('/*__MENTOR__*/', (here / 'src' / 'mentor.js').read_text(encoding='utf-8'), 1)
 
 page = (here / 'src' / 'shell.html').read_text(encoding='utf-8')
 og = ''
