@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Job Finder</title>
 <meta name="description" content="Free job search for Sweden. Search Platsbanken and other job sites by place and keywords, see who is hiring, and keep track of your applications. No account needed.">
-<meta name="theme-color" content="#0e1a24">
+<meta name="theme-color" content="#1c6b5a">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Job Finder">
 <meta property="og:description" content="Free job search for Sweden. Search Platsbanken and other job sites by place and keywords, see who is hiring, and keep track of your applications.">
@@ -14,19 +14,23 @@
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="627">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://jmawd.github.io/job-finder/">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230e1a24'/%3E%3Ccircle cx='28' cy='28' r='14' fill='none' stroke='%2345d39b' stroke-width='6'/%3E%3Cpath d='M38 38l12 12' stroke='%2345d39b' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c6b5a'/%3E%3Ccircle cx='28' cy='28' r='14' fill='none' stroke='%23ffd86a' stroke-width='6'/%3E%3Cpath d='M38 38l12 12' stroke='%23ffd86a' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
-/* Layout: a dark top bar with the suite's three parts (Find jobs, My applications, Mentor) and the language switch.
+/* Layout: a seafoam top bar with the suite's three parts (Find jobs, My applications, Mentor) and the language switch.
    Find jobs has the masthead with the search form, a sticky filter bar and one ruled row per employer that opens into
    its matching roles, contacts and your notes. My applications lists every role you have marked. The Mentor reads the
    CV on the left and shows roles and courses on the right, re-ranked as the four answers change. */
+/* Colours: "seafoam and sunshine". Calm seafoam greens for the page and buttons, a sunny yellow for keyword chips,
+   the search button and the "tracking" chip. Every text colour keeps at least 4.5:1 contrast on its background. */
 :root {
-  --bg: #f6f7f8; --surface: #ffffff; --sunk: #f1f3f4; --ink: #0e1a24; --muted: #5d6b78; --line: #e1e5e9; --line-strong: #c3cbd2;
-  --accent: #0b7a5b; --accent-ink: #0b7a5b; --accent-soft: #e2f3ec; --on-accent: #ffffff;
-  --signal: #b42318; --signal-soft: #fdecea; --warn: #8a5300; --warn-soft: #fcf0dc;
-  --recruit: #3a4352; --recruit-soft: #e8eaee; --tag-bg: #eef1f3; --tag-fg: #344150; --mark: #fff1a8;
-  --mast-bg: #0e1a24; --mast-ink: #ffffff; --mast-muted: #a9b6c2; --mast-line: rgba(255,255,255,.16); --mast-accent: #45d39b; --mast-field: #16273a;
-  --focus: #0b7a5b; --shadow: 0 6px 20px rgba(14, 26, 36, .06); --pivot: #2f5d9e; --pivot-soft: #e3ebf6;
+  --bg: #f4faf7; --surface: #ffffff; --sunk: #eaf4ef; --ink: #1f3a34; --muted: #536e67; --line: #dcebe4; --line-strong: #b6d1c7;
+  --accent: #23806b; --accent-ink: #1d7461; --accent-soft: #ddf1ea; --on-accent: #ffffff;
+  --signal: #b42318; --signal-soft: #fdecea; --warn: #7e5100; --warn-soft: #fdf1d2;
+  --recruit: #3e5450; --recruit-soft: #e2edea; --tag-bg: #eaf3ef; --tag-fg: #35514a; --mark: #fce59a;
+  --sun: #f6c445; --sun-ink: #5c4300;
+  --mast-bg: #1c6b5a; --mast-ink: #ffffff; --mast-muted: #cde8de; --mast-line: rgba(255,255,255,.2); --mast-accent: #ffd86a; --mast-accent-ink: #4a3500;
+  --mast-field: #ffffff; --mast-field-ink: #1f3a34; --mast-field-line: rgba(255,255,255,.5); --mast-placeholder: #62807a; --mast-err: #ffd7cf;
+  --focus: #23806b; --shadow: 0 6px 20px rgba(31, 58, 52, .07); --pivot: #2d649e; --pivot-soft: #e2edf8; --backdrop: rgba(15, 40, 35, .5);
   --font-display: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
@@ -34,19 +38,21 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0b131b; --surface: #131e28; --sunk: #0f1821; --ink: #eef2f5; --muted: #a2afbb; --line: #223140; --line-strong: #344656;
-    --accent: #0b7a5b; --accent-ink: #45d39b; --accent-soft: #0f2e24; --on-accent: #ffffff;
-    --signal: #ff8a7a; --signal-soft: #3a1714; --warn: #f0b04b; --warn-soft: #30230e;
-    --recruit: #c6cdd4; --recruit-soft: #24303b; --tag-bg: #1d2a36; --tag-fg: #c6cdd4; --mark: #5b4b00;
-    --mast-bg: #060d13; --mast-field: #102030; --focus: #45d39b; --shadow: 0 6px 20px rgba(0,0,0,.35); --pivot: #8daae2; --pivot-soft: #1d2942; color-scheme: dark;
+    --bg: #0f1e1b; --surface: #162926; --sunk: #122420; --ink: #e9f5f1; --muted: #a2bcb4; --line: #24403a; --line-strong: #37584f;
+    --accent: #23806b; --accent-ink: #5ed3b2; --accent-soft: #143a31; --on-accent: #ffffff;
+    --signal: #ff8a7a; --signal-soft: #3a1714; --warn: #f6c445; --warn-soft: #382d0c;
+    --recruit: #c2d4ce; --recruit-soft: #22362f; --tag-bg: #1c332d; --tag-fg: #c2d4ce; --mark: #5b4b00;
+    --mast-bg: #143f36; --mast-muted: #b4d3c9; --mast-field: #0f2420; --mast-field-ink: #e9f5f1; --mast-field-line: rgba(255,255,255,.22); --mast-placeholder: #7f9a92;
+    --focus: #5ed3b2; --shadow: 0 6px 20px rgba(0,0,0,.35); --pivot: #93b8e8; --pivot-soft: #1c2b40; --backdrop: rgba(3, 12, 10, .6); color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0b131b; --surface: #131e28; --sunk: #0f1821; --ink: #eef2f5; --muted: #a2afbb; --line: #223140; --line-strong: #344656;
-  --accent: #0b7a5b; --accent-ink: #45d39b; --accent-soft: #0f2e24; --on-accent: #ffffff;
-  --signal: #ff8a7a; --signal-soft: #3a1714; --warn: #f0b04b; --warn-soft: #30230e;
-  --recruit: #c6cdd4; --recruit-soft: #24303b; --tag-bg: #1d2a36; --tag-fg: #c6cdd4; --mark: #5b4b00;
-  --mast-bg: #060d13; --mast-field: #102030; --focus: #45d39b; --shadow: 0 6px 20px rgba(0,0,0,.35); --pivot: #8daae2; --pivot-soft: #1d2942; color-scheme: dark;
+  --bg: #0f1e1b; --surface: #162926; --sunk: #122420; --ink: #e9f5f1; --muted: #a2bcb4; --line: #24403a; --line-strong: #37584f;
+  --accent: #23806b; --accent-ink: #5ed3b2; --accent-soft: #143a31; --on-accent: #ffffff;
+  --signal: #ff8a7a; --signal-soft: #3a1714; --warn: #f6c445; --warn-soft: #382d0c;
+  --recruit: #c2d4ce; --recruit-soft: #22362f; --tag-bg: #1c332d; --tag-fg: #c2d4ce; --mark: #5b4b00;
+  --mast-bg: #143f36; --mast-muted: #b4d3c9; --mast-field: #0f2420; --mast-field-ink: #e9f5f1; --mast-field-line: rgba(255,255,255,.22); --mast-placeholder: #7f9a92;
+  --focus: #5ed3b2; --shadow: 0 6px 20px rgba(0,0,0,.35); --pivot: #93b8e8; --pivot-soft: #1c2b40; --backdrop: rgba(3, 12, 10, .6); color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -59,7 +65,7 @@ a { color: var(--accent-ink); }
 mark { background: var(--mark); color: inherit; border-radius: 2px; padding: 0 1px; }
 
 /* Masthead and search form */
-.mast { --ink: var(--mast-ink); --muted: var(--mast-muted); --line: var(--mast-line); --accent-ink: var(--mast-accent); background: var(--mast-bg); color: var(--ink); }
+.mast { --ink: var(--mast-ink); --muted: var(--mast-muted); --line: var(--mast-line); --accent-ink: var(--mast-accent); --accent: var(--mast-accent); --on-accent: var(--mast-accent-ink); --focus: var(--mast-accent); background: var(--mast-bg); color: var(--ink); }
 .mast-inner { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 26px 24px; }
 .mast.compact .mast-inner { padding-block: 22px 26px; }
 .mast.compact h1 { font-size: clamp(28px, 4.6vw, 42px); }
@@ -69,15 +75,15 @@ h1 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; fon
 .search { margin-top: 22px; display: grid; gap: 12px; }
 .search .row { align-items: flex-end; }
 .search .field > span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--mast-muted); }
-.search input[type="text"], .search select { background: var(--mast-field); color: var(--mast-ink); border-color: rgba(255,255,255,.22); }
-.search input::placeholder { color: #7f8d9a; }
+.search input[type="text"], .search select { background: var(--mast-field); color: var(--mast-field-ink); border-color: var(--mast-field-line); }
+.search input::placeholder { color: var(--mast-placeholder); }
 .f-country { flex: 0 0 150px; } .f-place { flex: 1 1 220px; } .f-radius { flex: 0 0 170px; } .f-since { flex: 0 0 160px; }
 .f-place input, .f-country select, .f-radius select, .f-since select { width: 100%; }
-.chips-in { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 40px; padding: 5px 8px; background: var(--mast-field); border: 1px solid rgba(255,255,255,.22); border-radius: var(--radius); cursor: text; }
+.chips-in { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 40px; padding: 5px 8px; background: var(--mast-field); border: 1px solid var(--mast-field-line); border-radius: var(--radius); cursor: text; }
 .chips-in:focus-within { outline: 2px solid var(--mast-accent); outline-offset: 1px; }
-.chips-in input { flex: 1 1 160px; min-width: 120px; border: 0; background: transparent; color: var(--mast-ink); font: inherit; font-size: 14px; padding: 3px 2px; outline: none; }
-.tok { display: inline-flex; align-items: center; gap: 4px; background: var(--mast-accent); color: #062a1e; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 2px 4px 2px 10px; }
-.tok.ex { background: #e7ecf0; color: #26323d; }
+.search .chips-in input { flex: 1 1 160px; min-width: 120px; border: 0; background: transparent; color: var(--mast-field-ink); font: inherit; font-size: 14px; padding: 3px 2px; outline: none; }
+.tok { display: inline-flex; align-items: center; gap: 4px; background: var(--mast-accent); color: var(--mast-accent-ink); font-size: 13px; font-weight: 600; border-radius: 999px; padding: 2px 4px 2px 10px; }
+.tok.ex { background: var(--tag-bg); color: var(--tag-fg); }
 .tok button { font: inherit; border: 0; background: rgba(0,0,0,.12); color: inherit; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; line-height: 1; padding: 0; }
 .f-kw { flex: 1 1 380px; min-width: 0; } .f-ex { flex: 1 1 260px; min-width: 0; }
 .hint { font-size: 12.5px; color: var(--mast-muted); }
@@ -88,7 +94,7 @@ h1 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; fon
 .progress { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .msg { margin: 0; font-size: 13.5px; flex-basis: 100%; }
 .msg:empty { display: none; }
-.msg.err { color: #ffb4a8; }
+.msg.err { color: var(--mast-err); }
 .stats { display: flex; flex-wrap: wrap; margin-top: 20px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .stat { flex: 1 1 140px; padding: 10px 16px 10px 0; display: grid; gap: 2px; }
 .stat + .stat { padding-left: 16px; border-left: 1px solid var(--line); }
@@ -112,7 +118,7 @@ input[type="search"], input[type="text"], input[type="email"], input[type="tel"]
 input[aria-invalid="true"] { border-color: var(--signal); }
 
 /* Top bar: the suite's parts as tabs */
-.topbar { background: var(--mast-bg); color: var(--mast-ink); border-bottom: 1px solid var(--mast-line); }
+.topbar { --focus: var(--mast-accent); background: var(--mast-bg); color: var(--mast-ink); border-bottom: 1px solid var(--mast-line); }
 .topbar-inner { max-width: 1180px; margin: 0 auto; padding-inline: 16px; display: flex; flex-wrap: wrap; align-items: stretch; gap: 0 24px; }
 .brand { display: flex; align-items: center; gap: 9px; font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: 17px; letter-spacing: -.01em; padding-block: 12px; white-space: nowrap; }
 .brand svg { width: 26px; height: 26px; flex: none; }
@@ -159,7 +165,7 @@ input[aria-invalid="true"] { border-color: var(--signal); }
 .chip.cat { background: var(--tag-bg); color: var(--tag-fg); font-weight: 500; }
 .chip.kw { background: var(--accent-soft); color: var(--accent-ink); font-weight: 600; padding: 2px 8px; }
 .chip.loose { background: transparent; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line-strong); font-weight: 500; }
-.chip.applied { background: var(--ink); color: var(--bg); }
+.chip.applied { background: var(--sun); color: var(--sun-ink); }
 .chip.soon { background: var(--signal-soft); color: var(--signal); }
 .chip.src { background: transparent; color: var(--accent-ink); box-shadow: inset 0 0 0 1px var(--accent-ink); font-weight: 500; }
 
@@ -252,10 +258,10 @@ footer .credit { color: var(--ink); }
 /* Step 2: the tailoring panel slides in from the right, over the list, with the ad and CV side by side and the AI's answer below */
 .tailor { position: fixed; inset: 0 0 0 auto; margin: 0; width: min(980px, 100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh; padding: 0; border: 0; background: var(--bg); color: var(--ink); box-shadow: -12px 0 40px rgba(0,0,0,.25); flex-direction: column; }
 .tailor[open] { display: flex; animation: tl-in .18s ease-out; }
-.tailor::backdrop { background: rgba(6, 13, 19, .55); }
+.tailor::backdrop { background: var(--backdrop); }
 @keyframes tl-in { from { transform: translateX(28px); opacity: 0; } }
 body:has(.tailor[open]) { overflow: hidden; }
-.tl-head { --ink: var(--mast-ink); --muted: var(--mast-muted); --accent-ink: var(--mast-accent); background: var(--mast-bg); color: var(--ink); padding: 18px 20px 16px; display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; flex: none; }
+.tl-head { --ink: var(--mast-ink); --muted: var(--mast-muted); --accent-ink: var(--mast-accent); --focus: var(--mast-accent); background: var(--mast-bg); color: var(--ink); padding: 18px 20px 16px; display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; flex: none; }
 .tl-eyebrow { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--mast-accent); }
 .tl-head h2 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: clamp(20px, 3vw, 26px); line-height: 1.15; margin: 6px 0 4px; overflow-wrap: anywhere; }
 .tl-sub { font-size: 13.5px; color: var(--muted); }
@@ -415,7 +421,7 @@ body:has(.tailor[open]) { overflow: hidden; }
 <body>
 <header class="topbar">
   <div class="topbar-inner">
-    <div class="brand"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#16273a"/><circle cx="28" cy="28" r="14" fill="none" stroke="#45d39b" stroke-width="6"/><path d="M38 38l12 12" stroke="#45d39b" stroke-width="7" stroke-linecap="round"/></svg><span>Job Finder</span></div>
+    <div class="brand"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#134f42"/><circle cx="28" cy="28" r="14" fill="none" stroke="#ffd86a" stroke-width="6"/><path d="M38 38l12 12" stroke="#ffd86a" stroke-width="7" stroke-linecap="round"/></svg><span>Job Finder</span></div>
     <nav class="tabs" role="tablist" data-ta="tabs.label" aria-label="Views">
       <button class="tab" role="tab" id="tab-res" aria-selected="true" aria-controls="view-res" type="button"><span data-t="tab.res">Find jobs</span><span class="n" id="n-res"></span></button>
       <button class="tab" role="tab" id="tab-app" aria-selected="false" aria-controls="view-app" type="button" tabindex="-1"><span data-t="tab.app">My applications</span><span class="n" id="n-app"></span></button>
