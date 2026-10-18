@@ -665,7 +665,7 @@ const I18N = {
   "mt.hl.unsure": ["You're not sure about the time frame, so I've leaned toward things that pay off within two years and keep your options open.", "Du är osäker på tidshorisonten, så jag har lutat åt sådant som lönar sig inom två år och håller dörrarna öppna."],
   "mt.tl.t1": ["With about an hour a week, short courses and ones your employer can schedule in work time come first.", "Med ungefär en timme i veckan kommer korta kurser och sådana som arbetsgivaren kan lägga på arbetstid först."],
   "mt.bl.free": ["You asked for free options, so anything with a fee is set aside below.", "Du bad om gratisalternativ, så allt som kostar pengar ligger längre ner bland det som valts bort."],
-  "mt.bl.self": ["Since you'd pay yourself, anything over 5 000 SEK is set aside below.", "Eftersom du betalar själv ligger allt över 5 000 kr längre ner bland det som valts bort."],
+  "mt.bl.self": ["Since you'd pay yourself, anything over 25 000 SEK is set aside below.", "Eftersom du betalar själv ligger allt över 25 000 kr längre ner bland det som valts bort."],
   "mt.dl.any": ["Pick a direction to sharpen the advice.", "Välj en riktning för att skärpa råden."],
   "mt.roles.title": ["Roles to consider", "Jobb att överväga"], "mt.where": ["Open ads now in {place}", "Lediga jobb just nu i {place}"], "mt.counting": ["Counting open ads…", "Räknar lediga jobb…"],
   "mt.tier.direct": ["Direct fit", "Passar nu"], "mt.tier.stretch": ["Stretch", "Inom räckhåll"], "mt.tier.pivot": ["Pivot", "Nytt spår"],
@@ -2020,7 +2020,7 @@ function initTailor() {
 const MT_H = { under5: 18, y5to10: 36, y10plus: 72, unsure: 24 };   // time frame -> months a course may take to pay off
 const MT_DIRS = ["deeper", "lead", "change", "advise"];
 const MT_T = { t1: 1, t3: 3, t7: 7, t10: 10 };                       // weekly learning time -> hours
-const MT_B = { employer: Infinity, self: 5000, free: 0 };             // who pays -> highest course cost in SEK
+const MT_B = { employer: Infinity, self: 25000, free: 0 };             // who pays -> highest course cost in SEK
 const MT_Q = [["horizon", Object.keys(MT_H), "mt.h."], ["dir", [...MT_DIRS, "any"], "mt.d."], ["time", Object.keys(MT_T), "mt.t."], ["budget", Object.keys(MT_B), "mt.b."]];
 const MENTOR_TIMEOUT = 125000;
 const MT_DEFAULTS = { horizon: "unsure", dir: "any", time: "t3", budget: "employer" };

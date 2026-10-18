@@ -133,7 +133,7 @@ const I18N = {
   "mt.hl.unsure": ["You're not sure about the time frame, so I've leaned toward things that pay off within two years and keep your options open.", "Du är osäker på tidshorisonten, så jag har lutat åt sådant som lönar sig inom två år och håller dörrarna öppna."],
   "mt.tl.t1": ["With about an hour a week, short courses and ones your employer can schedule in work time come first.", "Med ungefär en timme i veckan kommer korta kurser och sådana som arbetsgivaren kan lägga på arbetstid först."],
   "mt.bl.free": ["You asked for free options, so anything with a fee is set aside below.", "Du bad om gratisalternativ, så allt som kostar pengar ligger längre ner bland det som valts bort."],
-  "mt.bl.self": ["Since you'd pay yourself, anything over 5 000 SEK is set aside below.", "Eftersom du betalar själv ligger allt över 5 000 kr längre ner bland det som valts bort."],
+  "mt.bl.self": ["Since you'd pay yourself, anything over 25 000 SEK is set aside below.", "Eftersom du betalar själv ligger allt över 25 000 kr längre ner bland det som valts bort."],
   "mt.dl.any": ["Pick a direction to sharpen the advice.", "Välj en riktning för att skärpa råden."],
   "mt.roles.title": ["Roles to consider", "Jobb att överväga"], "mt.where": ["Open ads now in {place}", "Lediga jobb just nu i {place}"], "mt.counting": ["Counting open ads…", "Räknar lediga jobb…"],
   "mt.tier.direct": ["Direct fit", "Passar nu"], "mt.tier.stretch": ["Stretch", "Inom räckhåll"], "mt.tier.pivot": ["Pivot", "Nytt spår"],

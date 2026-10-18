@@ -99,7 +99,12 @@ async def main():
             await pg.click('label[for=mt-budget-free]')
             check('paid courses set aside when only free ones will do', await m.locator('.mt-course', has_text='UGL').count() == 0
                   and 'Costs about 26,000 SEK, and you asked for free options only.' in await text_of(m.locator('.mt-skipped')))
-            await pg.click('label[for=mt-budget-employer]'); await pg.click('label[for=mt-dir-deeper]'); await pg.click('label[for=mt-horizon-under5]')
+            await pg.click('label[for=mt-budget-self]')
+            check('paying yourself sets aside courses over 25 000 SEK', await m.locator('.mt-course', has_text='UGL').count() == 0
+                  and 'About 26,000 SEK is a lot to pay yourself.' in await text_of(m.locator('.mt-skipped')) and 'over 25 000 SEK' in await m.locator('.mt-note').inner_text())
+            await pg.click('label[for=mt-dir-deeper]')
+            check('a 14 000 SEK certification still fits when paying yourself', await m.locator('.mt-course', has_text='AIAG-VDA').count() == 1)
+            await pg.click('label[for=mt-budget-employer]'); await pg.click('label[for=mt-horizon-under5]')
             check('long road flagged for a short time frame', 'About 2.5 years to close the gaps' in await m.locator('.mt-role', has_text='Functional Safety Engineer').inner_text())
             skipped = await text_of(m.locator('.mt-skipped'))
             check('slow payoff set aside with the reason', 'ISO 26262 Functional Safety Engineer' in skipped and 'before it pays off' in skipped and 'long for the time frame you gave' in skipped, skipped)

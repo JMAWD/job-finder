@@ -6,7 +6,7 @@
 const MT_H = { under5: 18, y5to10: 36, y10plus: 72, unsure: 24 };   // time frame -> months a course may take to pay off
 const MT_DIRS = ["deeper", "lead", "change", "advise"];
 const MT_T = { t1: 1, t3: 3, t7: 7, t10: 10 };                       // weekly learning time -> hours
-const MT_B = { employer: Infinity, self: 5000, free: 0 };             // who pays -> highest course cost in SEK
+const MT_B = { employer: Infinity, self: 25000, free: 0 };             // who pays -> highest course cost in SEK
 const MT_Q = [["horizon", Object.keys(MT_H), "mt.h."], ["dir", [...MT_DIRS, "any"], "mt.d."], ["time", Object.keys(MT_T), "mt.t."], ["budget", Object.keys(MT_B), "mt.b."]];
 const MENTOR_TIMEOUT = 125000;
 const MT_DEFAULTS = { horizon: "unsure", dir: "any", time: "t3", budget: "employer" };
