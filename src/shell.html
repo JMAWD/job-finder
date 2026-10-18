@@ -246,6 +246,27 @@ footer p { margin: 0; }
 .backup .ok { color: var(--accent-ink); font-weight: 600; }
 .backup .err { color: var(--signal); font-weight: 600; }
 .tab:focus-visible { outline-offset: -2px; }
+/* Welcome back: on return visits, a card in the seafoam band under the top bar with new ads for the last search and applications to follow up on */
+.welcome { --ink: var(--mast-ink); --muted: var(--mast-muted); --line: var(--mast-line); --line-strong: var(--mast-field-line); --accent-ink: var(--mast-accent); --accent: var(--mast-accent); --on-accent: var(--mast-accent-ink); --focus: var(--mast-accent); background: var(--mast-bg); color: var(--ink); }
+.welcome-inner { max-width: 1180px; margin: 0 auto; padding: 18px 16px 0; }
+.wb-card { max-width: 860px; border: 1px solid var(--mast-line); border-left: 4px solid var(--mast-accent); border-radius: 10px; background: rgba(255,255,255,.06); padding: 14px 16px 16px; display: grid; gap: 12px; }
+.wb-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.wb-head h2 { margin: 0; font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: 20px; line-height: 1.2; }
+.wb-x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--mast-line); background: transparent; color: var(--ink); font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
+.wb-x:hover { background: rgba(255,255,255,.1); }
+.wb-ads { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.wb-ads p { margin: 0; flex: 1 1 300px; font-size: 14.5px; }
+.wb-fu { display: grid; gap: 8px; border-top: 1px solid var(--mast-line); padding-top: 12px; }
+.wb-fu h3 { margin: 0; font-size: 15px; }
+.wb-sub { margin: 0; font-size: 13.5px; color: var(--muted); max-width: 70ch; }
+.wb-fu ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 12px; }
+.wb-fu li { display: grid; gap: 6px; }
+.wb-role { display: grid; gap: 1px; min-width: 0; }
+.wb-role a { color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
+.wb-role span { font-size: 12.5px; color: var(--muted); }
+.wb-ok { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--accent-ink); }
+.wb-ok:focus { outline: none; }
+.wb-fu .linkbtn { justify-self: start; color: var(--accent-ink); }
 footer .about { display: grid; gap: 8px; padding-top: 14px; margin-top: 6px; border-top: 1px solid var(--line); }
 footer .credit { color: var(--ink); }
 /* Step 2: the tailoring panel slides in from the right, over the list, with the ad and CV side by side and the AI's answer below */
@@ -426,6 +447,7 @@ body:has(.tailor[open]) { overflow: hidden; }
     </div>
   </div>
 </header>
+<section class="welcome" id="welcome" aria-labelledby="wb-title" hidden></section>
 <datalist id="places"></datalist>
 
 <section id="view-res" role="tabpanel" aria-labelledby="tab-res">

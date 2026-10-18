@@ -6,7 +6,7 @@
 The JobTech services are replaced with fixed answers, so the tests run offline and give the same result every time.
 Screenshots of the example data are written to docs/screenshots/."""
 import asyncio, json, pathlib, sys
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from urllib.parse import urlparse, parse_qs
 from playwright.async_api import async_playwright
 
@@ -33,6 +33,9 @@ SW = [ad('101', 'Software Engineer till Acme', 'Acme Robotics AB', '5560000001',
       ad('102', 'Senior Software Engineer', 'Acme Robotics AB', '5560000001', GBG, 'Senior software engineer för plattformen.'),
       ad('103', 'Backend developer', 'Bolt Systems AB', '5560000002', MOL, 'Vi behöver en software engineer med Python.', deadline=2, duration='6 månader eller längre'),
       ad('104', 'Systemutvecklare', 'Bemanningsfirman Rekrytering AB', '5560000003', GBG, 'För vår kunds räkning söker vi en software engineer.')]
+# A new ad that only turns up once STATE['fresh'] is set, published an hour ago, for the welcome-back count
+NEW = ad('106', 'Software Engineer, embedded', 'Delta Tech AB', '5560000005', GBG, 'Vi söker en software engineer för inbyggda system.')
+NEW['publication_date'] = (datetime.now() - timedelta(hours=1)).isoformat(timespec='seconds')
 FMEA = [SW[0], ad('105', 'Kvalitetsingenjör', 'Cog Industri AB', '5560000004', MOL, 'Riskanalys och kvalitetssäkring i produktionen.', field='Teknik')]
 LINKS = [{"id": "l1", "headline": "Fullstack Software Engineer", "brief": "Join us as a software engineer.", "occupation_group": {"concept_id": "g_sw", "label": "x"}, "occupation_field": {"concept_id": "f", "label": "Data/IT"},
           "employer": {"name": "Echo Apps AB"}, "workplace_addresses": [{"municipality": "Mölndal", "municipality_concept_id": "mMOL", "region_concept_id": "rVG", "country": "Sverige"}],
@@ -50,7 +53,9 @@ async def jobsearch(route):
     if q.get('qfields') == ['location']:
         hits = {'göteborg': [GBG] * 5 + [MOL], 'skåne': [MAL] * 3}.get(term, [])
         return await route.fulfill(**ok({"total": {"value": len(hits)}, "hits": [{"id": f"g{i}", "workplace_address": w} for i, w in enumerate(hits)]}))
-    hits = SW if 'software' in term else FMEA if 'fmea' in term else []
+    hits = SW + ([NEW] if STATE.get('fresh') else []) if 'software' in term else FMEA if 'fmea' in term else []
+    after = q.get('published-after', [''])[0]
+    if after.isdigit(): hits = [h for h in hits if datetime.fromisoformat(h['publication_date']) >= datetime.now() - timedelta(minutes=int(after))]
     await route.fulfill(**ok({"total": {"value": len(hits)}, "hits": hits}))
 async def joblinks(route):
     q = parse_qs(urlparse(route.request.url).query)
@@ -78,6 +83,8 @@ async def main():
         await ctx.route('https://jobsearch.api.jobtechdev.se/**', jobsearch)
         await ctx.route('https://links.api.jobtechdev.se/**', joblinks)
         await ctx.route('https://historical.api.jobtechdev.se/**', history)
+        # Lets a test set the time of the last visit for the next load. The page saves the visit time when it unloads, so it can't be set before a reload.
+        await ctx.add_init_script("const v = sessionStorage.getItem('wb-visit'); if (v) { localStorage.setItem('jf-visit', v); sessionStorage.removeItem('wb-visit'); }")
         pg = await ctx.new_page(); errors = []; pg.on('pageerror', lambda e: errors.append(str(e)))
         await pg.goto(PAGE)
 
@@ -111,6 +118,8 @@ async def main():
         await pg.select_option('#emp', 'temp'); check('temporary filter', await pg.locator('article.co').count() == 1); await pg.select_option('#emp', '')
 
         await role.locator('select[data-role=status]').select_option('Applied')
+        applied_at = "JSON.parse(localStorage.getItem('jf-apps'))['101'].appliedAt"
+        check('applying records the date', bool(await pg.evaluate(applied_at)))
         acme = pg.locator('article.co', has_text='Acme Robotics')
         await acme.locator('textarea[data-role=note]').fill('Sent CV on Monday'); await pg.wait_for_timeout(600)
         await pg.screenshot(path=str(SHOTS / 'results-en.png'))
@@ -123,6 +132,7 @@ async def main():
         await pg.evaluate('localStorage.clear()'); await pg.reload(); await pg.click('#tab-app')
         await pg.set_input_files('#bk-file', backup); await pg.wait_for_timeout(300)
         check('backup restores', 'Restored 1 tracked role' in await pg.locator('#backup [role=status]').inner_text())
+        check('backup keeps the date applied', bool(await pg.evaluate(applied_at)))
         await pg.click('#tab-res')
 
         STATE['offline'] = True; await pg.fill('#place', 'Lund')
@@ -141,6 +151,57 @@ async def main():
         check('no sideways scroll on a phone', await pg.evaluate('document.documentElement.scrollWidth') <= 375)
         check('navigation on the first phone screen', await pg.evaluate("document.getElementById('tab-mentor').getBoundingClientRect().bottom <= 900 && document.getElementById('tab-mentor').getBoundingClientRect().right <= 375"))
         await pg.screenshot(path=str(SHOTS / 'phone-sv.png'))
+
+        # Welcome back: a return visit two days later, with one new ad for the last search and two applications due a follow-up
+        wbx, ago = pg.locator('#welcome'), lambda d: (datetime.now() - timedelta(days=d)).isoformat()
+        check('no welcome on a first visit or a reload', await wbx.is_hidden())
+        await pg.set_viewport_size({'width': 1280, 'height': 1000}); await pg.click('.lang button[data-lang=en]')
+        await pg.evaluate("""([ago3, ago15, ago8, closed, open]) => {
+          const r = JSON.parse(localStorage.getItem('jf-results')); r.at = ago3; localStorage.setItem('jf-results', JSON.stringify(r));
+          const apps = JSON.parse(localStorage.getItem('jf-apps')), snap = (title, company, deadline) => ({ title, company, deadline, url: 'https://x.example/' + title, contacts: [] });
+          apps['101'].appliedAt = ago15;
+          apps['105'] = { status: 'Applied', note: '', updatedAt: ago8, appliedAt: ago8, snap: snap('Kvalitetsingenjör', 'Cog Industri', closed) };
+          apps['102'] = { status: 'Applied', note: '', updatedAt: ago8, appliedAt: ago8, snap: snap('Senior Software Engineer', 'Acme Robotics', open) };
+          localStorage.setItem('jf-apps', JSON.stringify(apps));
+          sessionStorage.setItem('wb-visit', JSON.stringify(ago3));
+        }""", [ago(3), ago(15), ago(8), day(-1), day(10)])
+        STATE['fresh'] = True
+        await pg.reload()
+        counted = lambda word: f"(p => p && !p.textContent.includes('{word}'))(document.querySelector('#welcome .wb-ads p'))"
+        await pg.wait_for_function(counted('Checking'), timeout=15000)
+        txt = await wbx.inner_text()
+        check('welcome back greets a return visit', txt.startswith('Welcome back.'), txt)
+        check('welcome back counts new ads since the last search', '1 new ad has come up on Platsbanken since ' in txt and 'for "software engineer" and "FMEA" in Göteborg.' in txt, txt)
+        fu = await wbx.locator('.wb-fu li').all_inner_texts()
+        check('follow-ups: oldest first, a closed deadline after 7 days, an open one waits for 14', len(fu) == 2 and fu[0].startswith('Software Engineer till Acme')
+              and 'applied 15 days ago' in fu[0] and fu[1].startswith('Kvalitetsingenjör') and 'closed' in fu[1], fu)
+        mail = await wbx.locator('li[data-ad="101"] a[href^="mailto:"]').get_attribute('href')
+        check('follow-up emails the contact named in the ad', mail.startswith('mailto:anna.svensson@acme.example?subject=My%20application%20for%20Software%20Engineer'), mail)
+        await pg.screenshot(path=str(SHOTS / 'welcome-en.png'))
+        await wbx.locator('li[data-ad="101"] [data-wb=done]').click()
+        check('marking a follow-up done', 'Noted.' in await wbx.locator('li[data-ad="101"]').inner_text()
+              and await pg.evaluate("(a => a.followedUp === new Date(Date.now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10) && a.nudgeAfter > a.followedUp)(JSON.parse(localStorage.getItem('jf-apps'))['101'])"))
+        await wbx.locator('[data-wb=show]').click()
+        await pg.wait_for_function("document.getElementById('msg').textContent.startsWith('Found')", timeout=20000)
+        names = [x.split('\n')[0] for x in await pg.locator('article.co h2').all_inner_texts()]
+        check('show the new ones runs the search and lists only the new ad', names == ['Delta Tech'] and await pg.locator('#f-new').is_checked(), names)
+        check('my applications shows the follow-up', 'Followed up' in await pg.locator('#apps').inner_text() and 'Applied ' in await pg.locator('#apps').inner_text())
+        await pg.reload()
+        check('no greeting again on a reload, the one-off filter is gone', await wbx.is_hidden() and not await pg.locator('#f-new').is_checked())
+
+        await pg.click('.lang button[data-lang=sv]')
+        await pg.evaluate("v => sessionStorage.setItem('wb-visit', JSON.stringify(v))", ago(1))
+        await pg.reload()
+        await pg.wait_for_function(counted('Kollar'), timeout=15000)
+        txt = await wbx.inner_text()
+        check('Swedish welcome, nothing new since the search, followed-up role left out', txt.startswith('Välkommen tillbaka.') and 'Inget nytt i Platsbanken sedan tidigare i dag' in txt
+              and 'Dags att höra av dig?' in txt and 'Software Engineer till Acme' not in txt and 'Kvalitetsingenjör' in txt, txt)
+        await pg.set_viewport_size({'width': 375, 'height': 900})
+        check('welcome card fits a phone', await pg.evaluate('document.documentElement.scrollWidth') <= 375)
+        await wbx.locator('li[data-ad="105"] [data-wb=later]').click()
+        check('remind me in a week', 'Jag påminner dig om en vecka.' in await wbx.inner_text() and await pg.evaluate("JSON.parse(localStorage.getItem('jf-apps'))['105'].nudgeAfter") == (TODAY + timedelta(days=7)).isoformat())
+        await wbx.locator('[data-wb=close]').click()
+        check('welcome card closes', await wbx.is_hidden())
         check('no script errors', not errors, errors)
         await browser.close()
     print(f'{len(passed)} checks passed')

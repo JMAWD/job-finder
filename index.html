@@ -253,6 +253,27 @@ footer p { margin: 0; }
 .backup .ok { color: var(--accent-ink); font-weight: 600; }
 .backup .err { color: var(--signal); font-weight: 600; }
 .tab:focus-visible { outline-offset: -2px; }
+/* Welcome back: on return visits, a card in the seafoam band under the top bar with new ads for the last search and applications to follow up on */
+.welcome { --ink: var(--mast-ink); --muted: var(--mast-muted); --line: var(--mast-line); --line-strong: var(--mast-field-line); --accent-ink: var(--mast-accent); --accent: var(--mast-accent); --on-accent: var(--mast-accent-ink); --focus: var(--mast-accent); background: var(--mast-bg); color: var(--ink); }
+.welcome-inner { max-width: 1180px; margin: 0 auto; padding: 18px 16px 0; }
+.wb-card { max-width: 860px; border: 1px solid var(--mast-line); border-left: 4px solid var(--mast-accent); border-radius: 10px; background: rgba(255,255,255,.06); padding: 14px 16px 16px; display: grid; gap: 12px; }
+.wb-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.wb-head h2 { margin: 0; font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: 20px; line-height: 1.2; }
+.wb-x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--mast-line); background: transparent; color: var(--ink); font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
+.wb-x:hover { background: rgba(255,255,255,.1); }
+.wb-ads { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.wb-ads p { margin: 0; flex: 1 1 300px; font-size: 14.5px; }
+.wb-fu { display: grid; gap: 8px; border-top: 1px solid var(--mast-line); padding-top: 12px; }
+.wb-fu h3 { margin: 0; font-size: 15px; }
+.wb-sub { margin: 0; font-size: 13.5px; color: var(--muted); max-width: 70ch; }
+.wb-fu ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 12px; }
+.wb-fu li { display: grid; gap: 6px; }
+.wb-role { display: grid; gap: 1px; min-width: 0; }
+.wb-role a { color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
+.wb-role span { font-size: 12.5px; color: var(--muted); }
+.wb-ok { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--accent-ink); }
+.wb-ok:focus { outline: none; }
+.wb-fu .linkbtn { justify-self: start; color: var(--accent-ink); }
 footer .about { display: grid; gap: 8px; padding-top: 14px; margin-top: 6px; border-top: 1px solid var(--line); }
 footer .credit { color: var(--ink); }
 /* Step 2: the tailoring panel slides in from the right, over the list, with the ad and CV side by side and the AI's answer below */
@@ -433,6 +454,7 @@ body:has(.tailor[open]) { overflow: hidden; }
     </div>
   </div>
 </header>
+<section class="welcome" id="welcome" aria-labelledby="wb-title" hidden></section>
 <datalist id="places"></datalist>
 
 <section id="view-res" role="tabpanel" aria-labelledby="tab-res">
@@ -719,6 +741,25 @@ const I18N = {
   "empty.mentor": ["Not sure what to search for? The Mentor reads your CV and suggests roles that fit your experience.", "Vet du inte vad du ska söka efter? Mentorn läser ditt CV och föreslår jobb som passar din erfarenhet."],
   "empty.mentor.go": ["Open the Mentor", "Öppna Mentorn"],
 
+  // Welcome back: news since the last visit
+  "wb.hi": ["Welcome back.", "Välkommen tillbaka."], "wb.hi.name": ["Welcome back, {name}.", "Välkommen tillbaka, {name}."],
+  "wb.checking": ["Checking Platsbanken for new ads since your last search…", "Kollar om det har kommit nya annonser i Platsbanken sedan din senaste sökning…"],
+  "wb.new1": ["1 new ad has come up on Platsbanken {when} for {search}.", "1 ny annons har kommit upp i Platsbanken {when} för {search}."],
+  "wb.newN": ["{n} new ads have come up on Platsbanken {when} for {search}.", "{n} nya annonser har kommit upp i Platsbanken {when} för {search}."],
+  "wb.new0": ["Nothing new on Platsbanken {when} for {search}.", "Inget nytt i Platsbanken {when} för {search}."],
+  "wb.search": ["{terms} in {place}", "{terms} i {place}"], "wb.and": [" and ", " och "],
+  "wb.today": ["since earlier today", "sedan tidigare i dag"], "wb.yday": ["since yesterday", "sedan i går"], "wb.wday": ["since {day}", "sedan i {day}s"], "wb.date": ["since {date}", "sedan den {date}"],
+  "wb.show": ["Show the new ones", "Visa de nya"], "wb.shown": ["They're in the list below, marked New.", "De finns i listan nedan, märkta Ny."],
+  "wb.fu.title": ["Time to follow up?", "Dags att höra av dig?"],
+  "wb.fu.text1": ["It's been a while since you applied for this one. A short, friendly message asking how it's going shows you're still interested.", "Det var ett tag sedan du sökte det här jobbet. Ett kort och vänligt meddelande där du frågar hur det går visar att du fortfarande är intresserad."],
+  "wb.fu.textN": ["It's been a while since you applied for these. A short, friendly message asking how it's going shows you're still interested.", "Det var ett tag sedan du sökte de här jobben. Ett kort och vänligt meddelande där du frågar hur det går visar att du fortfarande är intresserad."],
+  "wb.ago": ["applied {n} days ago", "sökt för {n} dagar sedan"], "wb.closed": ["closed {date}", "sista dag var {date}"],
+  "wb.mail": ["Email {name}", "Mejla {name}"], "wb.call": ["Call {name}", "Ring {name}"], "wb.subject": ["My application for {role}", "Min ansökan till {role}"],
+  "wb.done": ["I've followed up", "Jag har hört av mig"], "wb.later": ["Remind me in a week", "Påminn mig om en vecka"],
+  "wb.noted": ["Noted. I'll leave this one for two weeks.", "Noterat. Jag tar inte upp det här jobbet igen på två veckor."], "wb.snoozed": ["I'll remind you in a week.", "Jag påminner dig om en vecka."],
+  "wb.moreapps": ["+{n} more in My applications", "+{n} till i Mina ansökningar"],
+  "app.applied": ["Applied {date}", "Sökt {date}"], "app.followed": ["Followed up {date}", "Följde upp {date}"],
+
   // Search messages
   "need.input": ["Add at least one keyword or a place, otherwise the search covers every job ad in the country.", "Lägg till minst ett sökord eller en ort, annars blir det alla jobbannonser i hela landet."],
   "p.place": ["Finding the place…", "Letar upp orten…"], "p.pb": ["Searching Platsbanken…", "Söker i Platsbanken…"], "p.pbn": ["Searching Platsbanken… {n} ads", "Söker i Platsbanken… {n} annonser"],
@@ -893,7 +934,7 @@ function applyLang() {
 }
 document.querySelector(".lang").addEventListener("click", e => {
   const b = e.target.closest("button[data-lang]"); if (!b || b.dataset.lang === lang) return;
-  lang = b.dataset.lang; store.set("jf-lang", lang); $("msg").textContent = ""; applyLang(); render(); if (ABOUT.tailor) { mt.error = ""; mt.cvMsg = ""; renderMentor(); } if (tl) drawTailor();
+  lang = b.dataset.lang; store.set("jf-lang", lang); $("msg").textContent = ""; applyLang(); render(); renderWelcome(); if (ABOUT.tailor) { mt.error = ""; mt.cvMsg = ""; renderMentor(); } if (tl) drawTailor();
 });
 
 /* ---------- Search form ---------- */
@@ -970,6 +1011,8 @@ async function pool(items, n, fn) {
   await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => { while (next < items.length) { const k = next++; await fn(items[k], k); } }));
 }
 const progress = m => { $("progress").textContent = m; };
+// A keyword as a search parameter. Phrases are quoted so they are searched as phrases.
+const qPart = q0 => q0 ? `q=${encodeURIComponent(/\s/.test(q0) ? `"${q0}"` : q0)}&` : "";
 
 /* ---------- Turning a typed place into search parameters ---------- */
 // Platsbanken's own ads know where they are, so a quick location search gives the place's id and centre.
@@ -1079,7 +1122,7 @@ async function runSearch() {
     const ads = new Map(), capped = [];
     progress(t("p.pb"));
     await pool(queries, 3, async q0 => {
-      const q = q0 ? `q=${encodeURIComponent(/\s/.test(q0) ? `"${q0}"` : q0)}&` : "";
+      const q = qPart(q0);
       let off = 0, total = 1;
       while (off < total && off < MAX_PER_TERM) {
         const j = await getJSON(`${JS_API}/search?${q}${loc}${extra}&limit=100&offset=${off}`);
@@ -1112,7 +1155,7 @@ async function runSearch() {
         };
         progress(t("p.links"));
         await pool(queries.flatMap(q0 => regions.map(r => [q0, r])), 3, async ([q0, r]) => {
-          const q = q0 ? `q=${encodeURIComponent(/\s/.test(q0) ? `"${q0}"` : q0)}&` : "";
+          const q = qPart(q0);
           let off = 0, total = 1;
           while (off < total && off < MAX_LINKS_PER_TERM) {
             const j = await getJSON(`${LINKS_API}/joblinks?${q}${r ? `region=${r}&` : ""}limit=100&offset=${off}`, 3);
@@ -1523,7 +1566,7 @@ function renderApps() {
       const sn = x.snap || {}, live = results?.ads.some(a => a.id === id);
       return `<div class="app" data-ad="${esc(id)}">
         <div class="role-head"><a class="role-title" href="${esc(sn.url || adUrl(id))}" target="_blank" rel="noopener">${esc(sn.title || t("role"))}<span class="ext" aria-hidden="true">↗</span></a></div>
-        <div class="role-meta"><b>${esc(sn.company || "")}</b>${sn.muni ? `<span>${esc(sn.muni)}</span>` : ""}${sn.deadline ? deadlineHtml(sn.deadline, ["Rejected", "Not interested"].includes(s)) : ""}<span>${esc(t("updated", { date: fmtDate(localDay(new Date(x.updatedAt || Date.now()))) }))}</span>${live ? "" : `<span>${esc(t("notlive"))}</span>`}</div>
+        <div class="role-meta"><b>${esc(sn.company || "")}</b>${sn.muni ? `<span>${esc(sn.muni)}</span>` : ""}${sn.deadline ? deadlineHtml(sn.deadline, ["Rejected", "Not interested"].includes(s)) : ""}${x.appliedAt && SENT.has(s) ? `<span>${esc(t("app.applied", { date: fmtDate(localDay(new Date(x.appliedAt))) }))}</span>` : ""}${x.followedUp && SENT.has(s) ? `<span>${esc(t("app.followed", { date: fmtDate(x.followedUp) }))}</span>` : ""}<span>${esc(t("updated", { date: fmtDate(localDay(new Date(x.updatedAt || Date.now()))) }))}</span>${live ? "" : `<span>${esc(t("notlive"))}</span>`}</div>
         ${(sn.contacts || []).length ? `<div class="role-contact">${esc(t("contact"))} ${sn.contacts.map(p => `<b>${esc(p.n)}</b>${p.e ? ` <a href="mailto:${esc(p.e)}">${esc(p.e)}</a>` : ""}`).join("; ")}</div>` : ""}
         <div class="track"><div class="row">${statusSelect(id, s)}${sn.apply ? `<a class="btn ghost sm" href="${esc(sn.apply)}" target="_blank" rel="noopener">${esc(t("howapply"))}</a>` : ""}${tailorBtn(id)}</div>
           ${noteHtml(id, sn.title || t("role"), x.note)}</div>
@@ -1531,10 +1574,14 @@ function renderApps() {
   }).join("") : `<div class="empty"><strong>${esc(t("apps.empty.title"))}</strong>${esc(t("apps.empty.text"))}</div>`;
   $("apps").innerHTML = backupHtml() + groups;
 }
+// Moving to Applied from Saved, Not interested or no status starts a new application, so its date and any follow-up are reset.
+// Moving back to Applied from Interview, Offer or Rejected keeps the original date.
+const SENT = new Set(["Applied", "Interview", "Offer", "Rejected"]);
 function setStatus(id, status) {
-  const prev = apps[id] || {}, a = results?.ads.find(x => x.id === id);
+  const prev = apps[id] || {}, a = results?.ads.find(x => x.id === id), now = new Date().toISOString();
+  const fresh = status === "Applied" && !SENT.has(prev.status || "");
   if (!status && !prev.note) delete apps[id];
-  else apps[id] = { ...prev, status, updatedAt: new Date().toISOString(), snap: a ? snapOf(a) : prev.snap };
+  else apps[id] = { ...prev, status, updatedAt: now, snap: a ? snapOf(a) : prev.snap, ...(fresh ? { appliedAt: now, followedUp: undefined, nudgeAfter: undefined } : {}) };
   store.set("jf-apps", apps);
 }
 function downloadBlob(text, name, type) {
@@ -1559,7 +1606,9 @@ function restoreBackup(file) {
     if (isObj(d.apps)) for (const [id, x] of Object.entries(d.apps)) {
       if (!isObj(x) || (x.status && !STATUSES.includes(x.status))) continue;
       const cur = apps[id];
-      if (!cur || (x.updatedAt || "") > (cur.updatedAt || "")) { apps[id] = { status: x.status || "", note: String(x.note || ""), updatedAt: x.updatedAt || "", snap: isObj(x.snap) ? x.snap : undefined }; nApps++; }
+      const date = v => typeof v === "string" && /^\d{4}-\d{2}-\d{2}/.test(v) ? v : undefined;
+      if (!cur || (x.updatedAt || "") > (cur.updatedAt || "")) { apps[id] = { status: x.status || "", note: String(x.note || ""), updatedAt: x.updatedAt || "", snap: isObj(x.snap) ? x.snap : undefined,
+        appliedAt: date(x.appliedAt), followedUp: date(x.followedUp), nudgeAfter: date(x.nudgeAfter) }; nApps++; }
     }
     if (Array.isArray(d.hidden)) for (const k of d.hidden) if (typeof k === "string" && !hidden.has(k)) { hidden.add(k); nHidden++; }
     if (isObj(d.people)) for (const [k, list] of Object.entries(d.people)) {
@@ -1639,7 +1688,7 @@ function onStatus(e) {
   setStatus(el.dataset.ad, el.value);
   const art = el.closest("article.co");
   if (art) rerenderCompany(art.dataset.id, el.value ? `textarea[data-ad="${CSS.escape(el.dataset.ad)}"]` : `select[data-ad="${CSS.escape(el.dataset.ad)}"]`);
-  renderStats(); renderApps();
+  renderStats(); renderApps(); renderWelcome();
 }
 function flushNote(el) {
   const id = el.dataset.ad;
@@ -1705,6 +1754,115 @@ $("export").addEventListener("click", () => {
   }
   downloadBlob("﻿" + rows.map(r => r.map(csvCell).join(",")).join("\r\n"), `job-finder-${today()}.csv`, "text/csv;charset=utf-8");
 });
+
+/* ---------- Welcome back: news since the last visit ---------- */
+// A visit counts as a return when it starts at least 6 hours after the page was last open. It's greeted with what has changed:
+// how many new Platsbanken ads match the last search, and which applications have waited long enough to follow up on.
+// Everything is worked out in the browser from saved data and one count per keyword from Platsbanken. No AI, no server.
+const RETURN_AFTER = 6 * 36e5;
+// Follow up 7 days after applying once the deadline has passed (or there is none), or after 14 days whatever the deadline. Stop after 60 days.
+const NUDGE_DAYS = 7, NUDGE_ANYWAY = 14, NUDGE_UNTIL = 60, SNOOZE_DONE = 14, SNOOZE_LATER = 7;
+const WDAYS = [["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], ["söndag", "måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag"]];
+const addDays = n => localDay(new Date(Date.now() + n * 864e5));
+const joinList = a => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + t("wb.and") + a[a.length - 1];
+let wb = null;   // { due: [{ id, days, closed }], count: "checking" | "fail" | "shown" | { n, more }, done: { id -> "noted" | "snoozed" }, closed }
+function sinceLabel(iso) {
+  const d = localDay(new Date(iso)), n = -daysTo(d);
+  if (n <= 0) return t("wb.today");
+  if (n === 1) return t("wb.yday");
+  if (n < 7) return t("wb.wday", { day: WDAYS[L()][new Date(d + "T12:00:00").getDay()] });
+  return t("wb.date", { date: fmtDate(d) });
+}
+// Applications from before this version have no appliedAt, so the last update stands in for it. That only makes a nudge come later.
+const appliedOn = x => localDay(new Date(x.appliedAt || x.updatedAt || Date.now()));
+function dueFollowUps() {
+  const now = today();
+  return Object.entries(apps).filter(([, x]) => x.status === "Applied" && (!x.nudgeAfter || x.nudgeAfter <= now)).map(([id, x]) => {
+    const days = -daysTo(appliedOn(x)), dl = x.snap?.deadline || "";
+    return { id, days, closed: dl && dl < now ? dl : "", open: !!dl && dl >= now };
+  }).filter(f => f.days <= NUDGE_UNTIL && (f.days >= NUDGE_ANYWAY || (f.days >= NUDGE_DAYS && !f.open))).sort((a, b) => b.days - a.days);
+}
+// Runs the last search again for ads published since it ran, leaving out ads already seen and ads with excluded words
+async function newAdsSinceSearch() {
+  const r = results;
+  if (!r || !r.params || !r.geo || !r.at) throw new Error("no saved search");
+  const p = r.params, mins = Math.max(1, Math.ceil((Date.now() - new Date(r.at)) / 60000));
+  const extra = `&published-after=${p.since ? Math.min(mins, +p.since) : mins}` + (p.remote ? "&remote=true" : "") + (p.noexp ? "&experience=false" : "");
+  const loc = locationParam(r.geo, p.radius), exRes = (p.excludes || []).map(termRe);
+  const known = new Set(store.get("jf-seen", {})[r.sig] || r.ads.map(a => a.id)), fresh = new Set();
+  let more = false;
+  await pool(p.terms.length ? p.terms : [""], 3, async q0 => {
+    const j = await getJSON(`${JS_API}/search?${qPart(q0)}${loc}${extra}&limit=100`, 2);
+    if (j.total.value > j.hits.length) more = true;
+    for (const h of j.hits) { const a = fromPB(h); if (!known.has(a.id) && !exRes.some(re => re.test(a._text))) fresh.add(a.id); }
+  });
+  return { n: fresh.size, more };
+}
+function followUpContact(sn) { const ps = sn.contacts || []; return ps.find(p => p.e) || ps.find(p => p.p) || null; }
+function welcomeHtml() {
+  const first = ((typeof mentor !== "undefined" && mentor?.data?.name) || "").trim().split(/\s+/)[0];
+  const parts = [];
+  if (results && wb.count !== "fail") {
+    const p = results.params, when = sinceLabel(results.at);
+    const search = t("wb.search", { terms: p.terms.length ? joinList(p.terms.map(x => `"${x}"`)) : t("note.all"), place: placeLabel(results.geo) });
+    let line, btn = "";
+    if (wb.count === "checking") line = t("wb.checking");
+    else if (wb.count === "shown") line = t("wb.shown");
+    else if (!wb.count.n) line = t("wb.new0", { when, search });
+    else {
+      line = tn(wb.count.n, "wb.new1", "wb.newN", { n: wb.count.n + (wb.count.more ? "+" : ""), when, search });
+      btn = `<button class="btn sm" type="button" data-wb="show">${esc(t("wb.show"))}</button>`;
+    }
+    parts.push(`<div class="wb-ads"><p>${esc(line)}</p>${btn}</div>`);
+  }
+  const items = wb.due.filter(f => wb.done[f.id] || apps[f.id]?.status === "Applied"), shown = items.slice(0, 3);
+  if (items.length) parts.push(`<div class="wb-fu"><h3>${esc(t("wb.fu.title"))}</h3><p class="wb-sub">${esc(t(items.length === 1 ? "wb.fu.text1" : "wb.fu.textN"))}</p>
+    <ul>${shown.map(f => {
+      const sn = apps[f.id]?.snap || {}, done = wb.done[f.id], who = followUpContact(sn);
+      const meta = [sn.company, t("wb.ago", { n: f.days }), f.closed && t("wb.closed", { date: fmtDate(f.closed) })].filter(Boolean).join(" · ");
+      const reach = who?.e ? `<a class="btn ghost sm" href="mailto:${esc(who.e)}?subject=${esc(encodeURIComponent(t("wb.subject", { role: sn.title || "" })))}">${esc(t("wb.mail", { name: who.n }))}</a>`
+        : who?.p ? `<a class="btn ghost sm" href="${esc(telHref(who.p))}">${esc(t("wb.call", { name: who.n }))}</a>` : "";
+      return `<li data-ad="${esc(f.id)}"><div class="wb-role"><a href="${esc(sn.url || adUrl(f.id))}" target="_blank" rel="noopener">${esc(sn.title || t("role"))}</a><span>${esc(meta)}</span></div>
+        ${done ? `<p class="wb-ok" role="status" tabindex="-1">${esc(t(done === "noted" ? "wb.noted" : "wb.snoozed"))}</p>`
+          : `<div class="row">${reach}<button class="btn sm" type="button" data-wb="done" data-ad="${esc(f.id)}">${esc(t("wb.done"))}</button><button class="btn ghost sm" type="button" data-wb="later" data-ad="${esc(f.id)}">${esc(t("wb.later"))}</button></div>`}</li>`;
+    }).join("")}</ul>${items.length > shown.length ? `<button class="linkbtn" type="button" data-wb="apps">${esc(t("wb.moreapps", { n: items.length - shown.length }))}</button>` : ""}</div>`);
+  return `<div class="welcome-inner"><div class="wb-card"><div class="wb-head"><h2 id="wb-title">${esc(first ? t("wb.hi.name", { name: first }) : t("wb.hi"))}</h2>
+    <button class="wb-x" type="button" data-wb="close" aria-label="${esc(t("tl.close"))}">×</button></div>${parts.join("")}</div></div>`;
+}
+function renderWelcome() {
+  const el = $("welcome"), due = !!wb && wb.due.some(f => wb.done[f.id] || apps[f.id]?.status === "Applied");
+  // With nothing to follow up on, the card waits for the count rather than appearing and then vanishing if Platsbanken can't be reached
+  const live = !!wb && !wb.closed && (due || (!!results && wb.count !== "fail" && wb.count !== "checking"));
+  el.hidden = !live; el.innerHTML = live ? welcomeHtml() : "";
+}
+$("welcome").addEventListener("click", e => {
+  const b = e.target.closest("[data-wb]"); if (!b || !wb) return;
+  const act = b.dataset.wb, id = b.dataset.ad;
+  if (act === "close") { wb.closed = true; renderWelcome(); }
+  else if (act === "apps") selectTab("app", true);
+  else if (act === "show") {
+    wb.count = "shown"; renderWelcome();
+    fillForm(results.params); $("f-new").checked = true;   // only for this visit; the saved filter choices stay as they were
+    selectTab("res"); runSearch();
+  } else if ((act === "done" || act === "later") && apps[id]) {
+    const done = act === "done";
+    apps[id] = { ...apps[id], nudgeAfter: addDays(done ? SNOOZE_DONE : SNOOZE_LATER), ...(done ? { followedUp: today(), updatedAt: new Date().toISOString() } : {}) };
+    store.set("jf-apps", apps); wb.done[id] = done ? "noted" : "snoozed";
+    renderWelcome(); renderApps();
+    $("welcome").querySelector(`li[data-ad="${CSS.escape(id)}"] .wb-ok`)?.focus();
+  }
+});
+function initWelcome() {
+  const last = store.get("jf-visit", null), now = Date.now();
+  // Someone who used the app before this version has no visit time yet, but saved data shows they've been here
+  const returning = last ? now - new Date(last) >= RETURN_AFTER : !!(results || Object.keys(apps).length);
+  store.set("jf-visit", new Date(now).toISOString());
+  addEventListener("pagehide", () => store.set("jf-visit", new Date().toISOString()));
+  if (!returning) return;
+  wb = { due: dueFollowUps(), count: results ? "checking" : "fail", done: {}, closed: false };
+  renderWelcome();
+  if (results) newAdsSinceSearch().then(c => { wb.count = c; }, e => { console.warn("Couldn't count new ads", e); wb.count = "fail"; }).then(renderWelcome);
+}
 
 /* ---------- Step 2: tailor an application to one job ----------
    Opens a panel over the list with the full ad, the person's CV and four things the AI can write.
@@ -2417,6 +2575,7 @@ loadPrefs();
 fillForm(store.get("jf-search", null) || { country: "SE", place: "", radius: 25, terms: [], excludes: [], links: true });
 render();
 selectTab({ "#mentor": "mentor", "#applications": "app", "#jobs": "res" }[location.hash] || store.get("jf-tab", "res"));
+initWelcome();
 
 </script>
 </body>

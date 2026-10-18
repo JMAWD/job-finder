@@ -16,6 +16,7 @@
 - Groups the ads by employer, shows the contact people named in the ads, and links to a LinkedIn search for people at the employer.
 - Hiring history: when you open an employer it checks the past two years of Platsbanken ads, so you can see whether that kind of role comes up there regularly.
 - Tracks applications as Saved, Applied, Interview, Offer, Rejected or Not interested, with notes. They stay in My applications when you search for something else.
+- Welcome back: when you return after a while, a card at the top tells you how many new Platsbanken ads match your last search since you ran it, with a button that shows just those. It also lists applications that have waited long enough to follow up on (7 days after applying once the deadline has passed, or 14 days whatever the deadline), with a link to email or call the contact named in the ad. Mark a follow-up as done or ask to be reminded in a week. It's all worked out in your browser, with no AI.
 - Three parts in one app, in the top bar: Find jobs, My applications and the Mentor.
 - Step 2, tailor my application: each role has a button that opens a panel with the full ad and your CV (paste it or load a Word file). It writes a match check, a tailored CV, a cover letter or interview prep, in Swedish or English, which you can copy or download as a Word file. The AI is told never to invent experience that isn't in your CV.
 - Mentor: reads your CV once and shows what it read (experience, roles, career stage), then asks four quick questions: how many more years you see yourself working, where you want to go next, how much time you have for learning each week and who pays for courses. It suggests roles in three tiers (apply now, within reach, a change of track) and a learning plan, and sets aside anything that doesn't fit your answers with the reason. Changing an answer re-ranks the advice at once, without a new AI call. Each role shows how many ads are open right now and has a button that runs the search in Find jobs; each course shows how often its skill is named in recent ads for that role. Career stage comes only from experience and seniority, and the AI is told never to estimate or use age.
@@ -25,6 +26,8 @@
 ![Tailoring a cover letter](docs/screenshots/tailor-en.png)
 
 ![The Mentor](docs/screenshots/mentor-en.png)
+
+![Welcome back](docs/screenshots/welcome-en.png)
 
 ## How it works
 
@@ -54,7 +57,7 @@ python3 tests/test_mentor.py          # the Mentor, the same way
 cd server && node --test              # the server on its own
 ```
 
-The tests run the real page in Chromium with JobTech's services replaced by fixed example data, so they work offline. They cover the search requests, keyword tags, filters, application tracking, backup and restore, error messages, Swedish and English, and phone width. The step 2 and Mentor tests run the server locally with a stand-in for the AI service and check the full ad, Word files in and out, access codes, errors, the Mentor's answers re-ranking roles and courses, the jump from a role to Find jobs and the backup. The companies and people in the screenshots are made up.
+The tests run the real page in Chromium with JobTech's services replaced by fixed example data, so they work offline. They cover the search requests, keyword tags, filters, application tracking, the welcome-back card and follow-up reminders, backup and restore, error messages, Swedish and English, and phone width. The step 2 and Mentor tests run the server locally with a stand-in for the AI service and check the full ad, Word files in and out, access codes, errors, the Mentor's answers re-ranking roles and courses, the jump from a role to Find jobs and the backup. The companies and people in the screenshots are made up.
 
 ## About
 
