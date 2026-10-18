@@ -144,6 +144,7 @@ const I18N = {
   "mt.match": ["How well your CV matches typical ads for this role", "Hur väl ditt CV matchar typiska annonser för jobbet"],
   "mt.gaps": ["Gaps", "Luckor"], "mt.nogaps": ["None that matter", "Inga som spelar roll"],
   "mt.open1": ["{n} open ad", "{n} ledigt jobb"], "mt.openN": ["{n} open ads", "{n} lediga jobb"], "mt.open0": ["No open ads right now", "Inga lediga jobb just nu"],
+  "mt.open0.nat": ["None here right now · {n} in Sweden", "Inga här just nu · {n} i Sverige"], "mt.search.all": ["Search all of Sweden", "Sök i hela Sverige"],
   "mt.search": ["Search these jobs", "Sök de här jobben"],
   "mt.learn.title": ["What to learn next", "Vad du kan lära dig härnäst"], "mt.learn.sub": ["Best fit first, matched to your four answers", "Bäst passande först, utifrån dina fyra svar"],
   "mt.quick": ["Quick win", "Snabb vinst"], "mt.free": ["Free", "Gratis"], "mt.cost": ["≈ {n} SEK", "≈ {n} kr"], "mt.costabout": ["about {n} SEK", "ungefär {n} kr"],

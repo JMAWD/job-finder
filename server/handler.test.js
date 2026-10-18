@@ -109,11 +109,13 @@ test("the mentor task reads only the CV and returns the advice as data", async (
   assert.match(b.messages[0].content, /Gissa, nämn eller antyd aldrig personens ålder/);
   assert.match(b.messages[1].content, /<cv>[\s\S]*leverantörsrevisioner[\s\S]*<\/cv>/);
   assert.match(b.messages[1].content, new RegExp(`Dagens år är ${new Date().getFullYear()}`));
+  assert.match(b.messages[1].content, /inte ett allmänt ord som "utbildning"/);
 });
 test("the mentor prompt in English forbids guessing age too", async () => {
   _test.usage.clear(); sent.length = 0;
   await call(mentorReq({ lang: "en", job: { text: "ignored" } }));
   assert.match(sent[0].body.messages[0].content, /Never estimate, mention or hint at the person's age/);
+  assert.match(sent[0].body.messages[1].content, /not a generic word like "utbildare" or "konsult"/);
   assert.doesNotMatch(sent[0].body.messages[1].content, /ignored|job_ad/);
 });
 test("mentor JSON wrapped in a code fence is still read", async () => {

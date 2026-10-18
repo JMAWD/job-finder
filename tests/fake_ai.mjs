@@ -29,7 +29,7 @@ const MENTOR = {
     course("ISO 26262 Functional Safety Engineer", "Course, 4 days plus exam", "class", { hours: 110, days: 4, cost_sek: 35000, ramp_months: 24 }, ["deeper"], { deeper: 7 }, "ISO 26262", "Functional Safety Engineer", "The entry ticket for functional safety roles."),
     course("Software testing, university course", "University, 25% pace, one term", "program", { hours: 200, months: 5, hours_per_week: 10, cost_sek: 0, ramp_months: 0 }, ["change"], { change: 7 }, "testning", "Software Test Engineer", "Free and gives formal credits."),
     course("AI tools for quality work", "Self-paced online", "self", { hours: 6, cost_sek: 0, ramp_months: 0 }, ["deeper", "lead", "change", "advise"], 6, "AI", "Kvalitetsingenjör", "A few hours is enough to start saving time."),
-    course("Train the trainer", "Classroom, 2 days", "class", { hours: 16, days: 2, cost_sek: 11000, ramp_months: 1 }, ["advise"], { advise: 8 }, "utbildning", "FMEA Trainer", "Helps you teach what you know."),
+    course("Train the trainer", "Classroom, 2 days", "class", { hours: 16, days: 2, cost_sek: 11000, ramp_months: 1 }, ["advise"], { advise: 8 }, "utbildning", "Kvalitetsingenjör", "Helps you teach what you know."),
   ],
 };
 const ANSWERS = {

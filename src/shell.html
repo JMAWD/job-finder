@@ -392,6 +392,16 @@ body:has(.tailor[open]) { overflow: hidden; }
 .mt-how dd { margin: 0; font-size: 13px; color: var(--muted); }
 .mt-how .never dt { color: var(--warn); }
 @media (max-width: 720px) { .mt-note { padding: 16px; } .mt-note-text { font-size: 15.5px; } }
+/* On narrower screens, once there is advice: the mentor's note, then the four answers, then roles and courses, with the CV cards last */
+@media (max-width: 979px) {
+  .mentor.has-advice .mt-side, .mentor.has-advice .mt-main { display: contents; }
+  .mentor.has-advice .mt-note { order: 1; }
+  .mentor.has-advice .mt-qs-card { order: 2; }
+  .mentor.has-advice .mt-main > section { order: 3; }
+  .mentor.has-advice .mt-side > .mt-card:not(.mt-qs-card) { order: 4; }
+  .mentor.has-advice .mt-main > .mt-how { order: 5; }
+  .mentor.has-advice .mt-main > .mt-note { order: 1; }
+}
 @media (prefers-reduced-motion: reduce) { .mt-note.flash { animation: none; } }
 </style>
 </head>

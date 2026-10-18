@@ -24,6 +24,8 @@ async def mentor_search(route):
     q = parse_qs(urlparse(route.request.url).query)
     if 'kvalitetsingenjör' in q.get('q', [''])[0].lower() and q.get('qfields') != ['location']:
         return await route.fulfill(**ok({"total": {"value": 34}, "hits": QA}))
+    if 'kvalitetschef' in q.get('q', [''])[0].lower():   # none near Göteborg, seven in the whole country
+        return await route.fulfill(**ok({"total": {"value": 7 if 'country' in q else 0}, "hits": []}))
     await ad_or_search(route)
 
 async def text_of(locator):
@@ -85,10 +87,14 @@ async def main():
 
             await pg.wait_for_function("(document.querySelector('#mt-main .mt-block-head p') || {}).textContent === 'Open ads now in all of Sweden'", timeout=10000)
             check('open ads counted from Platsbanken', '34 open ads' in await m.locator('.mt-role', has_text='Kvalitetsingenjör').inner_text()
-                  and 'No open ads right now' in await m.locator('.mt-role', has_text='Quality Manager').inner_text())
+                  and '7 open ads' in await m.locator('.mt-role', has_text='Quality Manager').inner_text()
+                  and 'No open ads right now' in await m.locator('.mt-role', has_text='Production Manager').inner_text())
             check('how often a skill is named in those ads', 'Named in 25% of 12 recent ads for Kvalitetsingenjör' in await m.locator('.mt-course', has_text='Python for engineers').inner_text()
                   and 'Named in 75% of 12' in await m.locator('.mt-course', has_text='AIAG-VDA').inner_text()
                   and 'Rarely named' in await m.locator('.mt-course', has_text='AI tools').inner_text())
+            check('no share shown for a generic word like "utbildning"', await m.locator('.mt-course', has_text='Train the trainer').locator('.mt-demand').count() == 0)
+            order = await m.locator('.mt-course h4').all_inner_texts()
+            check('unsure of direction: courses ranked by the track the person is on', order == ['AIAG-VDA FMEA (2019 method)', 'Train the trainer', 'AI tools for quality work', 'UGL leadership course', 'Python for engineers'], order)
 
             # The four answers re-rank the advice in the browser
             await pg.click('label[for=mt-dir-lead]')
@@ -131,6 +137,19 @@ async def main():
             check('Tailor uses the CV from the Mentor', await pg.input_value('#tl-cv') == cv_loaded and 'shared with the Mentor' in await pg.locator('#tailor').inner_text())
             await pg.keyboard.press('Escape')
 
+            # A role with no ads near the place searched shows the national count and offers a country-wide search
+            await pg.evaluate('window.scrollTo(0, 0)'); await pg.fill('#place', 'Göteborg')
+            await pg.evaluate("document.getElementById('msg').textContent = ''"); await pg.click('#go')
+            await pg.wait_for_function("document.getElementById('msg').textContent.length > 0", timeout=20000)
+            await pg.click('#tab-mentor')
+            await pg.wait_for_function("(document.querySelector('#mt-main .mt-block-head p') || {}).textContent === 'Open ads now in Göteborg + 25 km'", timeout=10000)
+            qm = m.locator('.mt-role', has_text='Quality Manager')
+            check('none here, national count shown', 'None here right now · 7 in Sweden' in await qm.inner_text() and await qm.locator('[data-mt=search]').inner_text() == 'Search all of Sweden')
+            await qm.locator('[data-mt=search]').click()
+            await pg.wait_for_function("document.getElementById('msg').textContent.length > 0", timeout=20000)
+            toks = await pg.evaluate("[...document.querySelectorAll('#kw-box .tok')].map(t => t.firstChild.textContent)")
+            check('country-wide search from that role', await pg.input_value('#place') == '' and toks == ['kvalitetschef'], toks)
+
             # A changed CV marks the advice as older
             await pg.click('#tab-mentor'); await m.locator('[data-mt=edit]').first.click()
             await pg.fill('#mt-cv', cv_loaded + '\nLedde ett FMEA-team på fyra personer.'); await m.locator('[data-mt=done]').click()
@@ -154,6 +173,8 @@ async def main():
                   and 'Lediga jobb just nu i hela Sverige' in await m.inner_text())
             await pg.set_viewport_size({'width': 375, 'height': 812}); await pg.wait_for_timeout(200)
             check('no sideways scroll on a phone', await pg.evaluate('document.documentElement.scrollWidth') <= 375)
+            tops = await pg.evaluate("['.mt-note', '.mt-qs-card', '.mt-role', '#mt-cv-label'].map(s => document.querySelector('#mentor ' + s).getBoundingClientRect().top)")
+            check('on a phone the advice comes first, the CV cards last', tops == sorted(tops), tops)
             await m.locator('.mt-note').scroll_into_view_if_needed(); await pg.evaluate('window.scrollBy(0, -12)'); await pg.wait_for_timeout(900)
             await pg.screenshot(path=str(SHOTS / 'mentor-phone-sv.png'))
             await pg.set_viewport_size({'width': 1280, 'height': 1000}); await pg.click('.lang button[data-lang=en]')

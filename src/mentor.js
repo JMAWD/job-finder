@@ -58,7 +58,16 @@ const validMentor = m => !!(m && typeof m === "object" && m.data && Array.isArra
 if (mentor && !validMentor(mentor)) mentor = null;
 
 /* ---------- The four answers re-rank the pool ---------- */
-function mtCourse(c) {
+// With a direction picked, a course ranks by its score for that direction. With "Not sure yet" it ranks by the directions
+// the person's direct-fit roles already point to, so courses for another track don't come first.
+function mtPrio(c, d) {
+  if (mtAns.dir !== "any") return c.prio[mtAns.dir] ?? 5;
+  const vals = Object.values(c.prio), home = [...new Set(d.roles.filter(r => r.tier === "direct").flatMap(r => r.dirs))];
+  const fit = home.map(k => c.prio[k]).filter(v => v != null);
+  if (fit.length) return Math.max(...fit);
+  return (vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 5) - (home.length ? 4 : 0);
+}
+function mtCourse(c, d) {
   const dir = mtAns.dir;
   if (dir !== "any" && c.dirs.length && !c.dirs.includes(dir)) return null;
   const h = MT_T[mtAns.time], perMonth = h * 4.33, pace = t("mt.tp." + mtAns.time);
@@ -78,12 +87,10 @@ function mtCourse(c) {
   if (timeMsg) reasons.push(timeMsg);
   if (payoff > MT_H[mtAns.horizon]) reasons.push(timeMsg ? t("mt.r.late") : t("mt.r.horizon", { d: mtDur(payoff) }));
   if (c.cost > MT_B[mtAns.budget]) reasons.push(cap(t(mtAns.budget === "free" ? "mt.r.free" : "mt.r.selfpay", { c: t("mt.costabout", { n: c.cost.toLocaleString(numLoc()) }) })));
-  const vals = Object.values(c.prio);
-  const prio = dir === "any" ? (vals.length ? Math.max(...vals) : 5) : (c.prio[dir] ?? 5);
-  return { c, completion, reasons, prio, quick: completion <= 2.5 && c.ramp <= 1 };
+  return { c, completion, reasons, prio: mtPrio(c, d), quick: completion <= 2.5 && c.ramp <= 1 };
 }
 function mtCourses(d) {
-  const all = d.courses.map(mtCourse).filter(Boolean).sort((a, b) => b.prio - a.prio);
+  const all = d.courses.map(c => mtCourse(c, d)).filter(Boolean).sort((a, b) => b.prio - a.prio || a.c.cost - b.c.cost);
   return { shown: all.filter(x => !x.reasons.length).slice(0, 6), skipped: all.filter(x => x.reasons.length) };
 }
 function mtRoles(d) {
@@ -104,6 +111,11 @@ function mtPlace() {
   if (!g || !p) return { loc: `country=${SE_ID}`, label: t("allswe") };
   return { loc: locationParam(g, p.radius), label: placeLabel(g) + (hasRadius(g, p) ? ` + ${p.radius} km` : "") };
 }
+// Words that turn up in most Swedish ads whatever the job, so how often they're named says nothing about a skill
+const MT_GENERIC = new Set(["utbildning", "utbildningar", "erfarenhet", "ledarskap", "ledare", "kommunikation", "samarbete", "ansvar", "kvalitet",
+  "teknik", "projekt", "projektledning", "kunskap", "kunskaper", "kompetens", "engelska", "svenska", "korkort", "b-korkort", "service", "konsult",
+  "education", "experience", "leadership", "communication", "teamwork", "training", "quality", "management", "project", "english", "swedish",
+  "driving licence", "driving license", "consulting"]);
 const mtRoleFor = (d, c) => { const f = fold(c.forRole); return f ? d.roles.find(r => fold(r.title) === f) || d.roles.find(r => fold(r.title).includes(f) || f.includes(fold(r.title))) : null; };
 const mtCountsHere = () => { const c = mentor?.counts; return c && c.loc === mtPlace().loc ? c : null; };
 async function mtCount() {
@@ -119,14 +131,20 @@ async function mtCount() {
       roles[fold(r.title)] = +j.total?.value || 0;
       if (n > 1) texts.set(r, (j.hits || []).map(h => fold(`${h.headline || ""} ${h.description?.text || ""}`)));
     });
+    // Roles with no ads here get the count for all of Sweden, so a suggestion isn't written off because of the place
+    const national = {}, countryLoc = `country=${SE_ID}`;
+    if (loc !== countryLoc) await pool(d.roles.filter(r => roles[fold(r.title)] === 0), 3, async r => {
+      const q = encodeURIComponent(/\s/.test(r.search) ? `"${r.search}"` : r.search);
+      national[fold(r.title)] = +(await getJSON(`${JS_API}/search?q=${q}&${countryLoc}&limit=1`, 2)).total?.value || 0;
+    });
     const demand = {};
     for (const c of d.courses) {
-      const r = mtRoleFor(d, c), list = r && texts.get(r);
-      if (!list || list.length < 10 || !c.skill) continue;
+      const r = mtRoleFor(d, c), list = r && texts.get(r), skill = fold(c.skill).trim();
+      if (!list || list.length < 10 || !skill || MT_GENERIC.has(skill) || skill === fold(r.search).trim()) continue;
       const re = termRe(c.skill);
       demand[fold(c.name)] = { p: Math.round(100 * list.filter(x => re.test(x)).length / list.length), n: list.length, role: r.title };
     }
-    if (mentor && mentor.data === d) { mentor.counts = { loc, at: new Date().toISOString(), roles, demand }; store.set("jf-mentor", mentor); }
+    if (mentor && mentor.data === d) { mentor.counts = { loc, at: new Date().toISOString(), roles, national, demand }; store.set("jf-mentor", mentor); }
   } catch (e) { console.warn("Open-ad counts could not be loaded", e); mt.countFailedFor = loc; }
   mt.counting = false; renderMentorMain();
 }
@@ -165,7 +183,7 @@ function mtReadCard(d) {
   </section>`;
 }
 function mtQuestions() {
-  return `<section class="card mt-card" aria-labelledby="mt-q">
+  return `<section class="card mt-card mt-qs-card" aria-labelledby="mt-q">
     <div class="sec-head"><h3 id="mt-q">${esc(t("mt.q.title"))}</h3></div>
     <p class="tl-hint">${esc(t("mt.q.hint"))}</p>
     <form class="mt-qs" id="mt-qs" novalidate>${MT_Q.map(([k, opts, p]) => `<fieldset><legend>${esc(t("mt.q." + k))}</legend><div class="mt-opts">${opts.map(v =>
@@ -188,14 +206,16 @@ function mtRoleCard(r, tier) {
   const badges = [], counts = mtCountsHere(), n = counts ? counts.roles[fold(r.title)] : undefined;
   if (tier !== "direct" && mtAns.dir !== "any" && r.dirs.includes(mtAns.dir)) badges.push(`<span class="mt-badge fit">${esc(t("mt.fit"))}</span>`);
   if (r.gapMonths > MT_H[mtAns.horizon]) badges.push(`<span class="mt-badge long">${esc(cap(t("mt.long", { d: mtDur(r.gapMonths) })))}</span>`);
-  const open = mt.counting && !counts ? "…" : n == null ? "" : n ? tn(n, "mt.open1", "mt.openN", { n: n.toLocaleString(numLoc()) }) : t("mt.open0");
+  const nat = n === 0 ? counts.national?.[fold(r.title)] || 0 : 0;
+  const open = mt.counting && !counts ? "…" : n == null ? "" : n ? tn(n, "mt.open1", "mt.openN", { n: n.toLocaleString(numLoc()) })
+    : nat ? t("mt.open0.nat", { n: nat.toLocaleString(numLoc()) }) : t("mt.open0");
   return `<article class="mt-role t-${tier}">
     <div class="mt-role-top"><h4>${esc(r.title)}</h4>
       <div class="mt-match" title="${esc(t("mt.match"))}"><span>${r.match}%</span><span class="mt-meter" aria-hidden="true"><i style="width:${r.match}%"></i></span></div></div>
     ${badges.length ? `<div class="mt-badges">${badges.join("")}</div>` : ""}
     ${r.why ? `<p class="mt-why">${esc(r.why)}</p>` : ""}
     <div class="mt-gaps"><span class="label">${esc(t("mt.gaps"))}</span>${r.gaps.length ? r.gaps.map(g => `<span class="chip cat">${esc(g)}</span>`).join("") : `<span class="mt-muted">${esc(t("mt.nogaps"))}</span>`}</div>
-    <div class="mt-role-foot"><span class="mono mt-open">${esc(open)}</span><button class="btn sm" type="button" data-mt="search" data-q="${esc(r.search)}">${esc(t("mt.search"))}</button></div>
+    <div class="mt-role-foot"><span class="mono mt-open">${esc(open)}</span><button class="btn sm" type="button" data-mt="search" data-q="${esc(r.search)}"${nat ? ' data-all="1"' : ""}>${esc(t(nat ? "mt.search.all" : "mt.search"))}</button></div>
   </article>`;
 }
 function mtTier(tier, sub, roles) {
@@ -264,6 +284,7 @@ function renderMentorSide(focusSel) {
   mtDraw("mt-side", mtCvCard() + mtGoCard() + (mentor ? mtReadCard(mentor.data) : "") + mtQuestions(), focusSel);
 }
 function renderMentorMain(flash) {
+  $("mentor")?.classList.toggle("has-advice", !!mentor);
   mtDraw("mt-main", mtMainHtml());
   if (flash) { const n = document.querySelector("#mt-main .mt-note"); if (n) { n.classList.remove("flash"); void n.offsetWidth; n.classList.add("flash"); } }
 }
@@ -308,8 +329,9 @@ async function getAdvice() {
 }
 
 /* ---------- From a suggested role to the job ads ---------- */
-function mtSearch(q) {
+function mtSearch(q, all) {
   selectTab("res");
+  if (all) { $("place").value = ""; syncRadius(); }
   terms.splice(0, terms.length, q); kwBox.draw();
   window.scrollTo(0, 0);
   runSearch();
@@ -338,7 +360,7 @@ function initMentor() {
     else if (k === "done") { mtSaveCv(); mt.editing = false; mt.cvMsg = ""; renderMentorSide('[data-mt="edit"]'); renderMentorMain(); }
     else if (k === "load") $("mt-file").click();
     else if (k === "go") getAdvice();
-    else if (k === "search") mtSearch(b.dataset.q);
+    else if (k === "search") mtSearch(b.dataset.q, b.dataset.all === "1");
   });
   m.addEventListener("input", e => {
     if (e.target.id === "mt-cv") { clearTimeout(mtTimers.cv); mtTimers.cv = setTimeout(mtSaveCv, 400); }
