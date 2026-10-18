@@ -270,7 +270,7 @@ function renderMentorMain(flash) {
 function renderMentor() { if (!ABOUT.tailor) return; renderMentorSide(); renderMentorMain(); }
 
 /* ---------- Asking the server ---------- */
-const MT_ERRORS = { ...TL_ERRORS, ai_bad_format: "mt.e.format" };
+const MT_ERRORS = { ...TL_ERRORS, ai_bad_format: "mt.e.format", bad_task: "mt.e.server" };
 async function getAdvice() {
   if (mt.busy) return;
   mtSaveCv();

@@ -653,6 +653,7 @@ const I18N = {
   "mt.privacy": ["When you press Get advice, your CV is sent to the Job Finder server and on to an AI model hosted by Scaleway in Paris. The server keeps no copy. The advice is saved only in this browser. Counts of open ads come straight from Platsbanken.",
     "När du trycker på Få råd skickas ditt CV till Job Finders server och vidare till en AI-modell hos Scaleway i Paris. Servern sparar ingen kopia. Råden sparas bara i den här webbläsaren. Antalet lediga jobb hämtas direkt från Platsbanken."],
   "mt.e.format": ["The advice came back in the wrong shape. Try again.", "Råden kom tillbaka i fel format. Försök igen."],
+  "mt.e.server": ["The Mentor isn't switched on for the server yet. Try again later.", "Mentorn är inte påslagen på servern än. Försök igen senare."],
   "mt.ph.title": ["Your advice will appear here", "Här kommer dina råd"],
   "mt.ph.1": ["Roles you could apply for now, roles within reach, and a change of track.", "Jobb du kan söka nu, jobb inom räckhåll och ett byte av spår."],
   "mt.ph.2": ["What to learn next, fitted to your time, budget and plans.", "Vad du kan lära dig härnäst, anpassat efter din tid, budget och dina planer."],
@@ -2284,7 +2285,7 @@ function renderMentorMain(flash) {
 function renderMentor() { if (!ABOUT.tailor) return; renderMentorSide(); renderMentorMain(); }
 
 /* ---------- Asking the server ---------- */
-const MT_ERRORS = { ...TL_ERRORS, ai_bad_format: "mt.e.format" };
+const MT_ERRORS = { ...TL_ERRORS, ai_bad_format: "mt.e.format", bad_task: "mt.e.server" };
 async function getAdvice() {
   if (mt.busy) return;
   mtSaveCv();

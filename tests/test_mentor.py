@@ -141,6 +141,10 @@ async def main():
             await go.click(); await pg.wait_for_selector('#mentor .tl-err', timeout=15000)
             check('unusable answer: clear message, advice kept', 'came back in the wrong shape' in await m.locator('.tl-err').inner_text() and await m.locator('.mt-note').count() == 1)
             post(FAKE + '/mode', {'mentorBad': False})
+            await pg.route(SERVER + '/**', lambda r: r.fulfill(status=400, content_type='application/json', headers={'access-control-allow-origin': '*'}, body='{"error": "bad_task"}'))
+            await go.click(); await pg.wait_for_selector('#mentor .tl-err', timeout=10000)
+            check('a server without the Mentor yet: clear message', "isn't switched on for the server yet" in await m.locator('.tl-err').inner_text())
+            await pg.unroute(SERVER + '/**')
 
             # Swedish and a phone
             await pg.click('.lang button[data-lang=sv]')
