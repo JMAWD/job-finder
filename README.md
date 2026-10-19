@@ -58,7 +58,9 @@ python3 tests/test_mentor.py          # the Mentor, the same way
 cd server && node --test              # the server on its own
 ```
 
-The tests run the real page in Chromium with JobTech's services replaced by fixed example data, so they work offline. They cover the search requests, keyword tags, filters, application tracking, the welcome-back card and follow-up reminders, backup and restore, error messages, Swedish and English, and phone width. The step 2 and Mentor tests run the server locally with a stand-in for the AI service and check the full ad, Word files in and out, access codes, errors, the Mentor's answers re-ranking roles and courses, the jump from a role to Find jobs and the backup. The companies and people in the screenshots are made up.
+The demo video is made the same way, with made-up ads and a stand-in AI: `python3 demo/record.py && python3 demo/compose.py` writes `demo/out/job-finder-demo.mp4`.
+
+The tests run the real page in Chromium with JobTech's services replaced by fixed example data, so they work offline. They cover the search requests, keyword tags, filters, application tracking, the welcome-back card and follow-up reminders, the colour themes and their contrast, backup and restore, error messages, Swedish and English, and phone width. The step 2 and Mentor tests run the server locally with a stand-in for the AI service and check the full ad, Word files in and out, access codes, errors, the Mentor's answers re-ranking roles and courses, the jump from a role to Find jobs and the backup. The companies and people in the screenshots are made up.
 
 ## About
 
