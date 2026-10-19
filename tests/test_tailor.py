@@ -133,6 +133,9 @@ async def main():
             conv = subprocess.run(['soffice', '--headless', '--convert-to', 'pdf', '--outdir', str(tmp), str(word)], capture_output=True, timeout=120)
             check('LibreOffice can open the Word file', (tmp / (word.stem + '.pdf')).exists(), conv.stderr[-300:])
             await pg.screenshot(path=str(SHOTS / 'tailor-en.png'))
+            await pg.evaluate("document.documentElement.dataset.palette = 'terracotta'")
+            check('the panel follows the chosen colours', await dlg.locator('.tl-head').evaluate('e => getComputedStyle(e).backgroundColor') == 'rgb(156, 74, 51)')
+            await pg.evaluate("delete document.documentElement.dataset.palette")
 
             # Applying from the panel
             check('apply button in the panel header', await dlg.locator('.tl-head [data-tl=apply]').get_attribute('href') == 'https://apply.example/101')

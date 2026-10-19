@@ -7,45 +7,102 @@
 <meta name="description" content="Free job search for Sweden. Search Platsbanken and other job sites by place and keywords, see who is hiring, and keep track of your applications. No account needed.">
 <meta name="theme-color" content="#1c6b5a">
 <!--__OG__-->
+<script>try { const p = JSON.parse(localStorage.getItem("jf-palette")); if (["lavender", "ocean", "terracotta"].includes(p)) document.documentElement.dataset.palette = p; } catch {}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c6b5a'/%3E%3Ccircle cx='28' cy='28' r='14' fill='none' stroke='%23ffd86a' stroke-width='6'/%3E%3Cpath d='M38 38l12 12' stroke='%23ffd86a' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
 /* Layout: a seafoam top bar with the suite's three parts (Find jobs, My applications, Mentor) and the language switch.
    Find jobs has the masthead with the search form, a sticky filter bar and one ruled row per employer that opens into
    its matching roles, contacts and your notes. My applications lists every role you have marked. The Mentor reads the
    CV on the left and shows roles and courses on the right, re-ranked as the four answers change. */
-/* Colours: "seafoam and sunshine". Calm seafoam greens for the page and buttons, a sunny yellow for keyword chips,
-   the search button and the "tracking" chip. Every text colour keeps at least 4.5:1 contrast on its background. */
+/* Colours: four themes the person picks with the circles in the Find jobs masthead (data-palette on <html>, saved in
+   the browser). Seafoam and sunshine is the default; lavender and peach, ocean and mint, terracotta and sand only set
+   what differs. Each has a light and a dark version, and every text colour keeps at least 4.5:1 contrast on its
+   background (tests/test_app.py checks this). --pop is each theme's second colour, used for the "tracking" chip. */
 :root {
-  --bg: #f4faf7; --surface: #ffffff; --sunk: #eaf4ef; --ink: #1f3a34; --muted: #536e67; --line: #dcebe4; --line-strong: #b6d1c7;
-  --accent: #23806b; --accent-ink: #1d7461; --accent-soft: #ddf1ea; --on-accent: #ffffff;
-  --signal: #b42318; --signal-soft: #fdecea; --warn: #7e5100; --warn-soft: #fdf1d2;
-  --recruit: #3e5450; --recruit-soft: #e2edea; --tag-bg: #eaf3ef; --tag-fg: #35514a; --mark: #fce59a;
-  --sun: #f6c445; --sun-ink: #5c4300;
-  --mast-bg: #1c6b5a; --mast-ink: #ffffff; --mast-muted: #cde8de; --mast-line: rgba(255,255,255,.2); --mast-accent: #ffd86a; --mast-accent-ink: #4a3500;
-  --mast-field: #ffffff; --mast-field-ink: #1f3a34; --mast-field-line: rgba(255,255,255,.5); --mast-placeholder: #62807a; --mast-err: #ffd7cf;
-  --focus: #23806b; --shadow: 0 6px 20px rgba(31, 58, 52, .07); --pivot: #2d649e; --pivot-soft: #e2edf8; --backdrop: rgba(15, 40, 35, .5);
+  --signal: #b42318; --signal-soft: #fdecea; --warn: #7e5100; --warn-soft: #fdf1d2; --on-accent: #ffffff; --mast-ink: #ffffff;
+  --mast-line: rgba(255,255,255,.2); --mast-field-line: rgba(255,255,255,.5); --mast-err: #ffd7cf;
+  --bg: #f4faf7; --surface: #ffffff; --sunk: #eaf4ef; --ink: #1f3a34; --muted: #536e67; --line: #dcebe4; --line-strong: #b6d1c7; --accent: #23806b;
+  --accent-ink: #1d7461; --accent-soft: #ddf1ea; --recruit: #3e5450; --recruit-soft: #e2edea; --tag-bg: #eaf3ef; --tag-fg: #35514a; --mark: #fce59a;
+  --pop: #f6c445; --pop-ink: #5c4300; --mast-bg: #1c6b5a; --mast-muted: #cde8de; --mast-accent: #ffd86a; --mast-accent-ink: #4a3500;
+  --mast-field: #ffffff; --mast-field-ink: #1f3a34; --mast-placeholder: #62807a; --brand-tile: #134f42; --focus: #23806b;
+  --shadow: 0 6px 20px rgba(31, 58, 52, .07); --pivot: #2d649e; --pivot-soft: #e2edf8; --backdrop: rgba(15, 40, 35, .5);
   --font-display: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
   --radius: 5px;
 }
+:root[data-palette="lavender"] {
+  --bg: #f7f5fd; --surface: #ffffff; --sunk: #efecfa; --ink: #2b2650; --muted: #5f5a84; --line: #e6e2f6; --line-strong: #c6bfe9; --accent: #6355c4;
+  --accent-ink: #5546b5; --accent-soft: #ebe7fb; --recruit: #48436a; --recruit-soft: #ebe8f4; --tag-bg: #efedf8; --tag-fg: #423c66; --mark: #ffdcc7;
+  --pop: #ffc2a0; --pop-ink: #6e2f0d; --mast-bg: #5b4fb5; --mast-muted: #e6e1fb; --mast-accent: #ffcfb2; --mast-accent-ink: #6e2f0d;
+  --mast-field: #ffffff; --mast-field-ink: #2b2650; --mast-placeholder: #6c6791; --brand-tile: #463c96; --focus: #6355c4;
+  --shadow: 0 6px 20px rgba(43, 38, 80, .07); --pivot: #2d649e; --pivot-soft: #e2edf8; --backdrop: rgba(30, 24, 60, .5);
+}
+:root[data-palette="ocean"] {
+  --bg: #f4f8fc; --surface: #ffffff; --sunk: #e9f1f8; --ink: #1e3348; --muted: #536a80; --line: #dde7f1; --line-strong: #b5c9dc; --accent: #2a6aab;
+  --accent-ink: #245f9c; --accent-soft: #e0ecf8; --recruit: #3f4f60; --recruit-soft: #e3eaf1; --tag-bg: #ebf1f7; --tag-fg: #34495e; --mark: #c4efda;
+  --pop: #8fe3c0; --pop-ink: #0b4a35; --mast-bg: #2a5f8f; --mast-muted: #d6e5f3; --mast-accent: #a6efd0; --mast-accent-ink: #0b4a35;
+  --mast-field: #ffffff; --mast-field-ink: #1e3348; --mast-placeholder: #647a90; --brand-tile: #1f4a71; --focus: #2a6aab;
+  --shadow: 0 6px 20px rgba(30, 51, 72, .07); --pivot: #7a4fa8; --pivot-soft: #f1e9f9; --backdrop: rgba(15, 30, 50, .5);
+}
+:root[data-palette="terracotta"] {
+  --bg: #faf6f2; --surface: #ffffff; --sunk: #f3ece5; --ink: #3b2a22; --muted: #715d4d; --line: #ece2d8; --line-strong: #d6c4b3; --accent: #ad4f36;
+  --accent-ink: #9d4730; --accent-soft: #f8e6de; --recruit: #574a42; --recruit-soft: #efe8e2; --tag-bg: #f3ede6; --tag-fg: #4e4038; --mark: #f8dfa6;
+  --pop: #f2d49b; --pop-ink: #5c3d06; --mast-bg: #9c4a33; --mast-muted: #f8e1d7; --mast-accent: #ffe2a8; --mast-accent-ink: #5c3d06;
+  --mast-field: #ffffff; --mast-field-ink: #3b2a22; --mast-placeholder: #836e5e; --brand-tile: #7c3a27; --focus: #ad4f36;
+  --shadow: 0 6px 20px rgba(59, 42, 34, .07); --pivot: #2d649e; --pivot-soft: #e2edf8; --backdrop: rgba(50, 25, 15, .5);
+}
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f1e1b; --surface: #162926; --sunk: #122420; --ink: #e9f5f1; --muted: #a2bcb4; --line: #24403a; --line-strong: #37584f;
-    --accent: #23806b; --accent-ink: #5ed3b2; --accent-soft: #143a31; --on-accent: #ffffff;
-    --signal: #ff8a7a; --signal-soft: #3a1714; --warn: #f6c445; --warn-soft: #382d0c;
-    --recruit: #c2d4ce; --recruit-soft: #22362f; --tag-bg: #1c332d; --tag-fg: #c2d4ce; --mark: #5b4b00;
-    --mast-bg: #143f36; --mast-muted: #b4d3c9; --mast-field: #0f2420; --mast-field-ink: #e9f5f1; --mast-field-line: rgba(255,255,255,.22); --mast-placeholder: #7f9a92;
-    --focus: #5ed3b2; --shadow: 0 6px 20px rgba(0,0,0,.35); --pivot: #93b8e8; --pivot-soft: #1c2b40; --backdrop: rgba(3, 12, 10, .6); color-scheme: dark;
+    --signal: #ff8a7a; --signal-soft: #3a1714; --warn: #f6c445; --warn-soft: #382d0c; --mast-field-line: rgba(255,255,255,.22); --bg: #0f1e1b;
+    --surface: #162926; --sunk: #122420; --ink: #e9f5f1; --muted: #a2bcb4; --line: #24403a; --line-strong: #37584f; --accent-ink: #5ed3b2;
+    --accent-soft: #143a31; --recruit: #c2d4ce; --recruit-soft: #22362f; --tag-bg: #1c332d; --tag-fg: #c2d4ce; --mark: #5b4b00; --mast-bg: #143f36;
+    --mast-muted: #b4d3c9; --mast-field: #0f2420; --mast-field-ink: #e9f5f1; --mast-placeholder: #7f9a92; --brand-tile: #0f2e27; --focus: #5ed3b2;
+    --shadow: 0 6px 20px rgba(0,0,0,.35); --pivot: #93b8e8; --pivot-soft: #1c2b40; --backdrop: rgba(3, 12, 10, .6); color-scheme: dark;
+  }
+  :root[data-palette="lavender"]:not([data-theme="light"]) {
+    --bg: #16142a; --surface: #1e1b36; --sunk: #191730; --ink: #eeecfb; --muted: #b0aad0; --line: #2e2a4d; --line-strong: #463f6e; --accent-ink: #b6adff;
+    --accent-soft: #2c2654; --recruit: #cdc8e6; --recruit-soft: #2a2645; --tag-bg: #262243; --tag-fg: #cdc8e6; --mark: #6a3518; --mast-bg: #2f2866;
+    --mast-muted: #c9c3ee; --mast-field: #1a1734; --mast-field-ink: #eeecfb; --mast-placeholder: #8c86b0; --brand-tile: #231e52; --focus: #b6adff;
+    --shadow: 0 6px 20px rgba(0,0,0,.35); --pivot: #93b8e8; --pivot-soft: #1c2b40; --backdrop: rgba(8, 6, 20, .6);
+  }
+  :root[data-palette="ocean"]:not([data-theme="light"]) {
+    --bg: #0f1824; --surface: #16222f; --sunk: #121d29; --ink: #e8f0f8; --muted: #a3b6c9; --line: #233446; --line-strong: #384c62; --accent-ink: #86bbf0;
+    --accent-soft: #16304a; --recruit: #c4d2e0; --recruit-soft: #213041; --tag-bg: #1c2a39; --tag-fg: #c4d2e0; --mark: #1f5a43; --mast-bg: #173a5a;
+    --mast-muted: #b3c9de; --mast-field: #0f1d2c; --mast-field-ink: #e8f0f8; --mast-placeholder: #8095aa; --brand-tile: #102b44; --focus: #86bbf0;
+    --shadow: 0 6px 20px rgba(0,0,0,.35); --pivot: #c9a8ec; --pivot-soft: #2e2240; --backdrop: rgba(4, 10, 18, .6);
+  }
+  :root[data-palette="terracotta"]:not([data-theme="light"]) {
+    --bg: #1e1612; --surface: #2a1f1a; --sunk: #241b16; --ink: #f6ece5; --muted: #c7b2a3; --line: #3d2e26; --line-strong: #5a453a; --accent-ink: #f2a88c;
+    --accent-soft: #4a2a1f; --recruit: #dccbc0; --recruit-soft: #33271f; --tag-bg: #302520; --tag-fg: #dccbc0; --mark: #5b4300; --mast-bg: #5e2e20;
+    --mast-muted: #e6cbbf; --mast-field: #231a15; --mast-field-ink: #f6ece5; --mast-placeholder: #9d8879; --brand-tile: #47210f; --focus: #f2a88c;
+    --shadow: 0 6px 20px rgba(0,0,0,.35); --pivot: #93b8e8; --pivot-soft: #1c2b40; --backdrop: rgba(16, 8, 4, .6);
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0f1e1b; --surface: #162926; --sunk: #122420; --ink: #e9f5f1; --muted: #a2bcb4; --line: #24403a; --line-strong: #37584f;
-  --accent: #23806b; --accent-ink: #5ed3b2; --accent-soft: #143a31; --on-accent: #ffffff;
-  --signal: #ff8a7a; --signal-soft: #3a1714; --warn: #f6c445; --warn-soft: #382d0c;
-  --recruit: #c2d4ce; --recruit-soft: #22362f; --tag-bg: #1c332d; --tag-fg: #c2d4ce; --mark: #5b4b00;
-  --mast-bg: #143f36; --mast-muted: #b4d3c9; --mast-field: #0f2420; --mast-field-ink: #e9f5f1; --mast-field-line: rgba(255,255,255,.22); --mast-placeholder: #7f9a92;
-  --focus: #5ed3b2; --shadow: 0 6px 20px rgba(0,0,0,.35); --pivot: #93b8e8; --pivot-soft: #1c2b40; --backdrop: rgba(3, 12, 10, .6); color-scheme: dark;
+  --signal: #ff8a7a; --signal-soft: #3a1714; --warn: #f6c445; --warn-soft: #382d0c; --mast-field-line: rgba(255,255,255,.22); --bg: #0f1e1b;
+  --surface: #162926; --sunk: #122420; --ink: #e9f5f1; --muted: #a2bcb4; --line: #24403a; --line-strong: #37584f; --accent-ink: #5ed3b2;
+  --accent-soft: #143a31; --recruit: #c2d4ce; --recruit-soft: #22362f; --tag-bg: #1c332d; --tag-fg: #c2d4ce; --mark: #5b4b00; --mast-bg: #143f36;
+  --mast-muted: #b4d3c9; --mast-field: #0f2420; --mast-field-ink: #e9f5f1; --mast-placeholder: #7f9a92; --brand-tile: #0f2e27; --focus: #5ed3b2;
+  --shadow: 0 6px 20px rgba(0,0,0,.35); --pivot: #93b8e8; --pivot-soft: #1c2b40; --backdrop: rgba(3, 12, 10, .6); color-scheme: dark;
+}
+:root[data-theme="dark"][data-palette="lavender"] {
+  --bg: #16142a; --surface: #1e1b36; --sunk: #191730; --ink: #eeecfb; --muted: #b0aad0; --line: #2e2a4d; --line-strong: #463f6e; --accent-ink: #b6adff;
+  --accent-soft: #2c2654; --recruit: #cdc8e6; --recruit-soft: #2a2645; --tag-bg: #262243; --tag-fg: #cdc8e6; --mark: #6a3518; --mast-bg: #2f2866;
+  --mast-muted: #c9c3ee; --mast-field: #1a1734; --mast-field-ink: #eeecfb; --mast-placeholder: #8c86b0; --brand-tile: #231e52; --focus: #b6adff;
+  --shadow: 0 6px 20px rgba(0,0,0,.35); --pivot: #93b8e8; --pivot-soft: #1c2b40; --backdrop: rgba(8, 6, 20, .6);
+}
+:root[data-theme="dark"][data-palette="ocean"] {
+  --bg: #0f1824; --surface: #16222f; --sunk: #121d29; --ink: #e8f0f8; --muted: #a3b6c9; --line: #233446; --line-strong: #384c62; --accent-ink: #86bbf0;
+  --accent-soft: #16304a; --recruit: #c4d2e0; --recruit-soft: #213041; --tag-bg: #1c2a39; --tag-fg: #c4d2e0; --mark: #1f5a43; --mast-bg: #173a5a;
+  --mast-muted: #b3c9de; --mast-field: #0f1d2c; --mast-field-ink: #e8f0f8; --mast-placeholder: #8095aa; --brand-tile: #102b44; --focus: #86bbf0;
+  --shadow: 0 6px 20px rgba(0,0,0,.35); --pivot: #c9a8ec; --pivot-soft: #2e2240; --backdrop: rgba(4, 10, 18, .6);
+}
+:root[data-theme="dark"][data-palette="terracotta"] {
+  --bg: #1e1612; --surface: #2a1f1a; --sunk: #241b16; --ink: #f6ece5; --muted: #c7b2a3; --line: #3d2e26; --line-strong: #5a453a; --accent-ink: #f2a88c;
+  --accent-soft: #4a2a1f; --recruit: #dccbc0; --recruit-soft: #33271f; --tag-bg: #302520; --tag-fg: #dccbc0; --mark: #5b4300; --mast-bg: #5e2e20;
+  --mast-muted: #e6cbbf; --mast-field: #231a15; --mast-field-ink: #f6ece5; --mast-placeholder: #9d8879; --brand-tile: #47210f; --focus: #f2a88c;
+  --shadow: 0 6px 20px rgba(0,0,0,.35); --pivot: #93b8e8; --pivot-soft: #1c2b40; --backdrop: rgba(16, 8, 4, .6);
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -62,6 +119,15 @@ mark { background: var(--mark); color: inherit; border-radius: 2px; padding: 0 1
 .mast-inner { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 26px 24px; }
 .mast.compact .mast-inner { padding-block: 22px 26px; }
 .mast.compact h1 { font-size: clamp(28px, 4.6vw, 42px); }
+/* The four colour circles: each is split corner to corner into the theme's main colour and its second colour */
+.mast-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.palette { display: inline-flex; align-items: center; gap: 10px; }
+.pal-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--mast-muted); }
+.pal { position: relative; width: 30px; height: 30px; border-radius: 50%; flex: none; cursor: pointer; background: linear-gradient(135deg, var(--a) 50%, var(--b) 50%); box-shadow: inset 0 0 0 2px rgba(255,255,255,.9); transition: transform .12s ease; }
+.pal:hover { transform: scale(1.08); }
+.pal input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
+.pal:has(input:checked) { box-shadow: inset 0 0 0 2px rgba(255,255,255,.9), 0 0 0 3px var(--mast-bg), 0 0 0 5px var(--mast-ink); }
+.pal:has(input:focus-visible) { outline: 2px solid var(--mast-accent); outline-offset: 7px; }
 .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--mast-accent); }
 h1 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: clamp(34px, 6vw, 54px); line-height: 1; letter-spacing: -.01em; margin: 10px 0; }
 .lede { max-width: 70ch; color: var(--muted); margin: 0; }
@@ -115,6 +181,7 @@ input[aria-invalid="true"] { border-color: var(--signal); }
 .topbar-inner { max-width: 1180px; margin: 0 auto; padding-inline: 16px; display: flex; flex-wrap: wrap; align-items: stretch; gap: 0 24px; }
 .brand { display: flex; align-items: center; gap: 9px; font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: 17px; letter-spacing: -.01em; padding-block: 12px; white-space: nowrap; }
 .brand svg { width: 26px; height: 26px; flex: none; }
+.brand .b-tile { fill: var(--brand-tile); } .brand .b-lens { stroke: var(--mast-accent); }
 .tabs { display: flex; gap: 2px; flex: 1 1 auto; min-width: 0; }
 .tab { font: inherit; font-size: 14px; font-weight: 600; color: var(--mast-muted); background: none; border: 0; border-bottom: 3px solid transparent; padding: 12px 12px 11px; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap; }
 .tab:hover { color: var(--mast-ink); }
@@ -158,7 +225,7 @@ input[aria-invalid="true"] { border-color: var(--signal); }
 .chip.cat { background: var(--tag-bg); color: var(--tag-fg); font-weight: 500; }
 .chip.kw { background: var(--accent-soft); color: var(--accent-ink); font-weight: 600; padding: 2px 8px; }
 .chip.loose { background: transparent; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line-strong); font-weight: 500; }
-.chip.applied { background: var(--sun); color: var(--sun-ink); }
+.chip.applied { background: var(--pop); color: var(--pop-ink); }
 .chip.soon { background: var(--signal-soft); color: var(--signal); }
 .chip.src { background: transparent; color: var(--accent-ink); box-shadow: inset 0 0 0 1px var(--accent-ink); font-weight: 500; }
 
@@ -435,7 +502,7 @@ body:has(.tailor[open]) { overflow: hidden; }
 <body>
 <header class="topbar">
   <div class="topbar-inner">
-    <div class="brand"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#134f42"/><circle cx="28" cy="28" r="14" fill="none" stroke="#ffd86a" stroke-width="6"/><path d="M38 38l12 12" stroke="#ffd86a" stroke-width="7" stroke-linecap="round"/></svg><span>Job Finder</span></div>
+    <div class="brand"><svg viewBox="0 0 64 64" aria-hidden="true"><rect class="b-tile" width="64" height="64" rx="14"/><circle class="b-lens" cx="28" cy="28" r="14" fill="none" stroke-width="6"/><path class="b-lens" d="M38 38l12 12" stroke-width="7" stroke-linecap="round"/></svg><span>Job Finder</span></div>
     <nav class="tabs" role="tablist" data-ta="tabs.label" aria-label="Views">
       <button class="tab" role="tab" id="tab-res" aria-selected="true" aria-controls="view-res" type="button"><span data-t="tab.res">Find jobs</span><span class="n" id="n-res"></span></button>
       <button class="tab" role="tab" id="tab-app" aria-selected="false" aria-controls="view-app" type="button" tabindex="-1"><span data-t="tab.app">My applications</span><span class="n" id="n-app"></span></button>
@@ -453,7 +520,15 @@ body:has(.tailor[open]) { overflow: hidden; }
 <section id="view-res" role="tabpanel" aria-labelledby="tab-res">
   <div class="mast">
     <div class="mast-inner">
-    <div class="eyebrow" data-t="eyebrow">Live job ads</div>
+    <div class="mast-top">
+      <div class="eyebrow" data-t="eyebrow">Live job ads</div>
+      <div class="palette" id="palette" role="radiogroup" aria-labelledby="pal-label"><span class="pal-label" id="pal-label" data-t="pal">Colours</span>
+        <label class="pal" data-p="seafoam" style="--a: #1c6b5a; --b: #ffd86a"><input type="radio" name="palette" value="seafoam" checked data-ta="pal.seafoam" aria-label="Seafoam and sunshine"></label>
+        <label class="pal" data-p="lavender" style="--a: #5b4fb5; --b: #ffc9a8"><input type="radio" name="palette" value="lavender" data-ta="pal.lavender" aria-label="Lavender and peach"></label>
+        <label class="pal" data-p="ocean" style="--a: #2a5f8f; --b: #a6efd0"><input type="radio" name="palette" value="ocean" data-ta="pal.ocean" aria-label="Ocean and mint"></label>
+        <label class="pal" data-p="terracotta" style="--a: #9c4a33; --b: #ffe2a8"><input type="radio" name="palette" value="terracotta" data-ta="pal.terracotta" aria-label="Terracotta and sand"></label>
+      </div>
+    </div>
     <h1 data-t="h1">Find who's hiring</h1>
     <p class="lede" data-t="lede">Pick a place and add the words that describe the work you want, like a job title, a skill or a method. The app searches Platsbanken and other job sites, groups the ads by employer and keeps track of where you've applied.</p>
     <form class="search" id="search" novalidate>

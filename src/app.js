@@ -6,6 +6,8 @@ const MUNIS = /*__MUNIS__*/;   // [municipality, county] for every Swedish munic
 /* ---------- Words in both languages ---------- */
 const I18N = {
   "eyebrow": ["Live job ads", "Lediga jobb just nu"],
+  "pal": ["Colours", "Färger"], "pal.seafoam": ["Seafoam and sunshine", "Havsgrönt och solsken"], "pal.lavender": ["Lavender and peach", "Lavendel och persika"],
+  "pal.ocean": ["Ocean and mint", "Havsblått och mint"], "pal.terracotta": ["Terracotta and sand", "Terrakotta och sand"],
   "h1": ["Find who's hiring", "Hitta vem som anställer"],
   "lede": ["Pick a place and add the words that describe the work you want, like a job title, a skill or a method. The app searches Platsbanken and other job sites, groups the ads by employer and keeps track of where you've applied.",
     "Välj en ort och skriv orden som beskriver jobbet du vill ha, till exempel en yrkestitel, en kunskap eller en metod. Appen söker i Platsbanken och på andra jobbsajter, grupperar annonserna per arbetsgivare och håller koll på var du har sökt."],
@@ -350,6 +352,7 @@ function applyLang() {
   document.querySelectorAll("[data-tp]").forEach(el => { el.placeholder = t(el.dataset.tp); });
   document.querySelectorAll("[data-ta]").forEach(el => { el.setAttribute("aria-label", t(el.dataset.ta)); });
   document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+  document.querySelectorAll("#palette .pal").forEach(l => { l.title = t("pal." + l.dataset.p); });
   const cur = $("country").value || "SE";
   $("country").innerHTML = Object.entries(COUNTRIES).map(([k, c]) => `<option value="${k}">${esc(t(c.label))}</option>`).join("");
   $("country").value = cur;
@@ -366,6 +369,21 @@ document.querySelector(".lang").addEventListener("click", e => {
   const b = e.target.closest("button[data-lang]"); if (!b || b.dataset.lang === lang) return;
   lang = b.dataset.lang; store.set("jf-lang", lang); $("msg").textContent = ""; applyLang(); render(); renderWelcome(); if (ABOUT.tailor) { mt.error = ""; mt.cvMsg = ""; renderMentor(); } if (tl) drawTailor();
 });
+
+/* ---------- Colour theme: one choice recolours every view, step 2 and the Mentor, and is kept for the next visit ---------- */
+const PALETTES = ["seafoam", "lavender", "ocean", "terracotta"];
+let palette = PALETTES.includes(store.get("jf-palette")) ? store.get("jf-palette") : "seafoam";
+function applyPalette() {
+  const root = document.documentElement;
+  if (palette === "seafoam") delete root.dataset.palette; else root.dataset.palette = palette;
+  document.querySelectorAll("#palette input").forEach(i => { i.checked = i.value === palette; });
+  document.querySelector('meta[name="theme-color"]').content = getComputedStyle(root).getPropertyValue("--mast-bg").trim();
+  const dot = getComputedStyle(document.querySelector(`#palette .pal[data-p="${palette}"]`)), a = dot.getPropertyValue("--a").trim(), b = dot.getPropertyValue("--b").trim();
+  const icon = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='${a}'/><circle cx='28' cy='28' r='14' fill='none' stroke='${b}' stroke-width='6'/><path d='M38 38l12 12' stroke='${b}' stroke-width='7' stroke-linecap='round'/></svg>`;
+  document.querySelector('link[rel="icon"]').href = "data:image/svg+xml," + encodeURIComponent(icon);
+}
+$("palette").addEventListener("change", e => { if (!PALETTES.includes(e.target.value)) return; palette = e.target.value; store.set("jf-palette", palette); applyPalette(); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", applyPalette);
 
 /* ---------- Search form ---------- */
 $("places").innerHTML = [...Object.values(COUNTY_FULL).sort((a, b) => a.localeCompare(b, "sv")).map(c => `<option value="${esc(c)}">`), ...MUNIS.map(([m, c]) => `<option value="${esc(m)}" label="${esc(COUNTY_FULL[c] || c)}">`)].join("");
@@ -1304,6 +1322,7 @@ $("tab-mentor").hidden = !ABOUT.tailor;
 initTailor();
 initMentor();
 applyLang();
+applyPalette();
 loadPrefs();
 fillForm(store.get("jf-search", null) || { country: "SE", place: "", radius: 25, terms: [], excludes: [], links: true });
 render();

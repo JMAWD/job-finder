@@ -202,6 +202,43 @@ async def main():
         check('remind me in a week', 'Jag påminner dig om en vecka.' in await wbx.inner_text() and await pg.evaluate("JSON.parse(localStorage.getItem('jf-apps'))['105'].nudgeAfter") == (TODAY + timedelta(days=7)).isoformat())
         await wbx.locator('[data-wb=close]').click()
         check('welcome card closes', await wbx.is_hidden())
+
+        # Colour themes: four split circles in the Find jobs masthead, one choice for every view, kept after a reload
+        await pg.set_viewport_size({'width': 1280, 'height': 1000}); await pg.click('#tab-res')
+        pal = pg.locator('#palette')
+        check('four colour circles, seafoam chosen', await pal.locator('input').count() == 4 and await pal.locator('input:checked').get_attribute('value') == 'seafoam'
+              and await pg.evaluate('document.documentElement.dataset.palette') is None)
+        check('colour names in Swedish', await pg.locator('#pal-label').text_content() == 'Färger' and await pal.locator('input[value=lavender]').get_attribute('aria-label') == 'Lavendel och persika'
+              and await pal.locator('.pal[data-p=ocean]').get_attribute('title') == 'Havsblått och mint')
+        bg = "getComputedStyle(document.querySelector('%s')).backgroundColor"
+        await pal.locator('.pal[data-p=lavender]').click()
+        check('a circle recolours the page at once', await pg.evaluate(bg % '.topbar') == 'rgb(91, 79, 181)' and await pg.evaluate(bg % '#view-res .mast') == 'rgb(91, 79, 181)'
+              and await pg.locator('meta[name=theme-color]').get_attribute('content') == '#5b4fb5' and '5b4fb5' in await pg.locator('link[rel=icon]').get_attribute('href'))
+        await pg.click('#tab-app'); check('the choice carries to My applications', await pg.evaluate(bg % '#view-app .mast') == 'rgb(91, 79, 181)')
+        await pg.reload()
+        check('the choice is kept after a reload', await pg.evaluate('document.documentElement.dataset.palette') == 'lavender' and await pg.evaluate(bg % '#view-app .mast') == 'rgb(91, 79, 181)')
+        await pg.click('#tab-res'); await pg.focus('#palette input:checked'); await pg.keyboard.press('ArrowRight')
+        check('arrow keys move between colours', await pg.evaluate('document.documentElement.dataset.palette') == 'ocean' and await pg.evaluate('localStorage.getItem("jf-palette")') == '"ocean"')
+
+        def lum(h):
+            c = [int(h.lstrip('#')[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+            c = [x / 12.92 if x <= 0.03928 else ((x + .055) / 1.055) ** 2.4 for x in c]
+            return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]
+        ratio = lambda a, b: (max(lum(a), lum(b)) + .05) / (min(lum(a), lum(b)) + .05)
+        pairs = [('ink', 'bg'), ('ink', 'surface'), ('muted', 'bg'), ('muted', 'surface'), ('muted', 'sunk'), ('on-accent', 'accent'), ('accent-ink', 'surface'), ('accent-ink', 'accent-soft'),
+                 ('tag-fg', 'tag-bg'), ('recruit', 'recruit-soft'), ('warn', 'warn-soft'), ('pivot', 'pivot-soft'), ('signal', 'signal-soft'), ('pop-ink', 'pop'), ('ink', 'mark'), ('bg', 'ink'),
+                 ('mast-ink', 'mast-bg'), ('mast-muted', 'mast-bg'), ('mast-accent', 'mast-bg'), ('mast-accent-ink', 'mast-accent'), ('mast-field-ink', 'mast-field'), ('mast-err', 'mast-bg')]
+        names = sorted({n for p in pairs for n in p})
+        low = []
+        for scheme in ('light', 'dark'):
+            await pg.emulate_media(color_scheme=scheme)
+            for k in ('seafoam', 'lavender', 'ocean', 'terracotta'):
+                await pal.locator(f'.pal[data-p={k}]').click()
+                v = await pg.evaluate('n => { const s = getComputedStyle(document.documentElement); return Object.fromEntries(n.map(x => [x, s.getPropertyValue("--" + x).trim()])); }', names)
+                low += [f'{k} {scheme} {a}/{b} {ratio(v[a], v[b]):.2f}' for a, b in pairs if ratio(v[a], v[b]) < 4.5]
+        check('every theme keeps text at 4.5:1 or better, light and dark', not low, low)
+        await pg.emulate_media(color_scheme='light'); await pal.locator('.pal[data-p=seafoam]').click()
+        check('back to seafoam clears the theme', await pg.evaluate('document.documentElement.dataset.palette') is None and await pg.evaluate(bg % '.topbar') == 'rgb(28, 107, 90)')
         check('no script errors', not errors, errors)
         await browser.close()
     print(f'{len(passed)} checks passed')
