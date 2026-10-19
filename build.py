@@ -10,11 +10,16 @@ import json, pathlib, html
 here = pathlib.Path(__file__).parent
 cfg = json.loads((here / 'config.json').read_text(encoding='utf-8'))
 munis = [l.split('|') for l in (here / 'src' / 'munis.txt').read_text(encoding='utf-8').strip().splitlines()]
+# English job titles -> the Swedish words Swedish ads use, as [[english, ...], [swedish, ...]]
+titles = [[[w.strip() for w in side.split(',') if w.strip()] for side in l.split('|')]
+          for l in (here / 'src' / 'titles.txt').read_text(encoding='utf-8').splitlines() if l.strip() and not l.lstrip().startswith('#')]
+assert all(len(x) == 2 and x[0] and x[1] for x in titles), 'every line in titles.txt needs English titles | Swedish words'
 about = {k: cfg.get(k, '') for k in ('author', 'linkedin', 'github', 'repo', 'version')}
 about['tailor'] = cfg.get('tailor_url', '').strip()
 
 js = (here / 'src' / 'app.js').read_text(encoding='utf-8')
 js = js.replace('/*__MUNIS__*/', json.dumps(munis, ensure_ascii=False, separators=(',', ':')), 1)
+js = js.replace('/*__TITLES__*/', json.dumps(titles, ensure_ascii=False, separators=(',', ':')), 1)
 js = js.replace('/*__ABOUT__*/', json.dumps(about, ensure_ascii=False), 1)
 js = js.replace('/*__TAILOR__*/', (here / 'src' / 'tailor.js').read_text(encoding='utf-8'), 1)
 js = js.replace('/*__MENTOR__*/', (here / 'src' / 'mentor.js').read_text(encoding='utf-8'), 1)

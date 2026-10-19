@@ -2,6 +2,7 @@
 /* ---------- Settings filled in by the build ---------- */
 const ABOUT = /*__ABOUT__*/;   // { author, linkedin, github, repo, version, tailor }  (tailor = the tailoring server address, empty turns step 2 off)
 const MUNIS = /*__MUNIS__*/;   // [municipality, county] for every Swedish municipality
+const TITLES = /*__TITLES__*/;   // [[english titles], [swedish words]] for common jobs, from src/titles.txt
 
 /* ---------- Words in both languages ---------- */
 const I18N = {
@@ -15,7 +16,15 @@ const I18N = {
   "place.ph": ["e.g. Göteborg or Skåne län, empty for the whole country", "t.ex. Göteborg eller Skåne län, tomt för hela landet"],
   "distance": ["Distance", "Avstånd"], "r0": ["Only this municipality", "Bara den här kommunen"], "r10": ["Within 10 km", "Inom 10 km"], "r25": ["Within 25 km", "Inom 25 km"], "r50": ["Within 50 km", "Inom 50 km"], "r100": ["Within 100 km", "Inom 100 km"],
   "published": ["Published", "Publicerad"], "anytime": ["Any time", "När som helst"], "d1": ["Last 24 hours", "Senaste dygnet"], "d7": ["Last 7 days", "Senaste 7 dagarna"], "d30": ["Last 30 days", "Senaste 30 dagarna"],
-  "keywords": ["Keywords", "Sökord"], "kw.ph": ["Type a word and press Enter, e.g. software engineer, FMEA, undersköterska", "Skriv ett ord och tryck Enter, t.ex. undersköterska, Python, FMEA"],
+  "keywords": ["Keywords", "Sökord"], "kw.ph": ["Press Enter or type a comma after each one, e.g. project manager, Python, FMEA", "Tryck Enter eller skriv komma efter varje, t.ex. projektledare, Python, FMEA"],
+  "kw.typing": ["This is searched as one exact phrase. To search for different things, press Enter or type a comma between them.", "Det här söks som en exakt fras. Vill du söka på olika saker, tryck Enter eller skriv komma mellan dem."],
+  "split.text0": ["No ads in Sweden use the exact phrase \"{phrase}\". Search for {parts} as separate keywords instead?", "Inga annonser i Sverige har den exakta frasen \"{phrase}\". Vill du söka på {parts} som separata sökord i stället?"],
+  "split.text1": ["Only 1 ad in Sweden uses the exact phrase \"{phrase}\". Search for {parts} as separate keywords instead?", "Bara 1 annons i Sverige har den exakta frasen \"{phrase}\". Vill du söka på {parts} som separata sökord i stället?"],
+  "split.textN": ["Only {n} ads in Sweden use the exact phrase \"{phrase}\". Search for {parts} as separate keywords instead?", "Bara {n} annonser i Sverige har den exakta frasen \"{phrase}\". Vill du söka på {parts} som separata sökord i stället?"],
+  "split.yes": ["Search them separately", "Sök på dem var för sig"], "split.no": ["Keep the phrase", "Behåll frasen"],
+  "split.done": ["Now searching {parts} separately and showing ads that mention all of them. Untick Ads with every keyword to see ads with any of them.", "Söker nu på {parts} var för sig och visar annonser som nämner alla. Bocka ur Annonser med alla sökord för att se annonser med något av dem."],
+  "alt.title": ["Swedish ads use this word for {term}, so it's searched too", "Svenska annonser använder det här ordet för {term}, så det söks också"],
+  "alt.remove": ["Don't search {t}", "Sök inte på {t}"],
   "exclude": ["Leave out ads with", "Uteslut annonser med"], "ex.ph": ["e.g. senior, säljare", "t.ex. senior, säljare"],
   "o.links": ["Include other job sites", "Ta med andra jobbsajter"], "o.remote": ["Remote work possible", "Distansarbete möjligt"], "o.noexp": ["No experience needed", "Ingen erfarenhet krävs"],
   "search": ["Search", "Sök"],
@@ -31,8 +40,8 @@ const I18N = {
   "how": ["How this works", "Så fungerar det"],
   "foot.sources": ["<b>Sources.</b> Sweden: live ads on Platsbanken (Arbetsförmedlingen) and other Swedish job sites collected by JobTech, such as The Hub and Ledigajobb. Each search goes straight from your browser to those open services. More countries can be added later.",
     "<b>Källor.</b> Sverige: aktuella annonser i Platsbanken (Arbetsförmedlingen) och från andra svenska jobbsajter som JobTech samlar in, till exempel The Hub och Ledigajobb. Varje sökning går direkt från din webbläsare till de öppna tjänsterna. Fler länder kan läggas till senare."],
-  "foot.keywords": ["<b>Keywords.</b> Each keyword is searched on its own and the results are combined, so an ad shows up if it matches any of them. Write a phrase like software engineer as it is and it's searched as a phrase. The green tags on a role show which of your keywords appear in the ad. A grey tag means Platsbanken matched the ad on a related word instead, for example a synonym or the occupation. Turn on Ads with every keyword to keep only ads that mention all of them.",
-    "<b>Sökord.</b> Varje sökord söks för sig och resultaten slås ihop, så en annons visas om den matchar något av dem. Skriv en fras som undersköterska natt som den är, så söks den som en fras. De gröna etiketterna på ett jobb visar vilka av dina sökord som finns i annonsen. En grå etikett betyder att Platsbanken matchade annonsen på ett närliggande ord, till exempel en synonym eller yrket. Slå på Annonser med alla sökord för att bara behålla annonser som nämner alla."],
+  "foot.keywords": ["<b>Keywords.</b> Each keyword is searched on its own and the results are combined, so an ad shows up if it matches any of them. Write a phrase like software engineer as it is and it's searched as a phrase. The green tags on a role show which of your keywords appear in the ad. A grey tag means Platsbanken matched the ad on a related word instead, for example a synonym or the occupation. Turn on Ads with every keyword to keep only ads that mention all of them. Most ads on Platsbanken are in Swedish, so when you write a common job title in English, like project manager, the word Swedish ads use, like projektledare, is searched too. It shows next to your keyword, and its × removes it.",
+    "<b>Sökord.</b> Varje sökord söks för sig och resultaten slås ihop, så en annons visas om den matchar något av dem. Skriv en fras som undersköterska natt som den är, så söks den som en fras. De gröna etiketterna på ett jobb visar vilka av dina sökord som finns i annonsen. En grå etikett betyder att Platsbanken matchade annonsen på ett närliggande ord, till exempel en synonym eller yrket. Slå på Annonser med alla sökord för att bara behålla annonser som nämner alla. Skriver du en vanlig yrkestitel på engelska, som project manager, söks också ordet som svenska annonser använder, som projektledare. Det syns bredvid ditt sökord och tas bort med sitt ×."],
   "foot.place": ["<b>Place.</b> Pick a municipality and a distance, or a whole county. Distance is measured from the centre of the place you pick, so neighbouring municipalities are included.",
     "<b>Ort.</b> Välj en kommun och ett avstånd, eller ett helt län. Avståndet räknas från mitten av orten du väljer, så närliggande kommuner kommer med."],
   "foot.history": ["<b>Hiring history.</b> When you open an employer, the app checks Platsbanken's archive for the past two years. It shows how often they've advertised similar roles, which tells you whether this kind of job comes up there regularly.",
@@ -314,6 +323,17 @@ const today = () => localDay(new Date());
 const daysTo = d => d ? Math.round((new Date(d + "T12:00:00") - new Date(today() + "T12:00:00")) / 864e5) : null;
 const fold = s => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+// The Swedish words Swedish ads use for a common English job title, from src/titles.txt. "senior" and "junior" don't change the role.
+const SV_FOR = new Map(TITLES.flatMap(([en, sv]) => en.map(e => [fold(e), sv])));
+function swedishFor(term) {
+  const k = fold(term).trim().replace(/\s+/g, " ");
+  return (SV_FOR.get(k) || SV_FOR.get(k.replace(/^(senior|junior)\s+/, "")) || []).filter(w => fold(w) !== k);
+}
+// Every word a keyword is searched with: the keyword itself and any Swedish words added for it
+const variants = (p, x) => [x, ...((p.alts || {})[x] || [])];
+const allWords = p => [...new Set(p.terms.flatMap(x => variants(p, x)))];
+// A keyword as messages show it: "project leader" (+ projektledare)
+const termText = (p, x) => `"${x}"` + ((p.alts || {})[x]?.length ? ` (+ ${p.alts[x].join(", ")})` : "");
 const termRe = t => new RegExp("(^|[^a-z0-9])" + fold(t).trim().split(/\s+/).map(escRe).join("[\\s\\-/]+") + "($|[^a-z0-9])");
 const cleanTitle = s => (s || "").replace(/\s+/g, " ").trim();
 const shortName = n => (n || "").replace(/\s+(i Sverige AB|Sverige AB|Sweden AB|AB \(publ\)|Aktiebolag|\(publ\)|AB|HB|KB)$/i, "").trim();
@@ -343,6 +363,7 @@ const hist = new Map(Object.entries(store.get("jf-hist", {})));
 const histLoading = new Set();
 const addingFor = new Set(), editingLi = new Set(), noteTimers = new Map();
 let terms = [], excludes = [], searching = false, companies = [], backupMsg = null;
+const alts = {};   // keyword -> the Swedish words searched with it, see swedishFor
 
 /* ---------- Static text in the chosen language ---------- */
 function applyLang() {
@@ -363,7 +384,7 @@ function applyLang() {
   if (out.length) parts.push(out.join(" · "));
   if (ABOUT.version) parts.push(esc(t("version", { v: ABOUT.version })));
   $("credit").innerHTML = parts.join(" · ");
-  kwBox.draw(); exBox.draw();
+  kwBox.draw(); exBox.draw(); showHint(kwHint);
 }
 document.querySelector(".lang").addEventListener("click", e => {
   const b = e.target.closest("button[data-lang]"); if (!b || b.dataset.lang === lang) return;
@@ -387,24 +408,128 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", applyPal
 
 /* ---------- Search form ---------- */
 $("places").innerHTML = [...Object.values(COUNTY_FULL).sort((a, b) => a.localeCompare(b, "sv")).map(c => `<option value="${esc(c)}">`), ...MUNIS.map(([m, c]) => `<option value="${esc(m)}" label="${esc(COUNTY_FULL[c] || c)}">`)].join("");
-function chipInput(boxId, inputId, list, cls) {
+// A box of word tags. opts can draw extra tags after each one (extra), and hear about words added or removed and about typing.
+function chipInput(boxId, inputId, list, cls, opts = {}) {
   const box = $(boxId), input = $(inputId);
   const draw = () => {
-    box.querySelectorAll(".tok").forEach(n => n.remove());
-    list.forEach((x, i) => input.insertAdjacentHTML("beforebegin", `<span class="tok ${cls}">${esc(x)}<button type="button" data-i="${i}" aria-label="${esc(t("remove.aria", { t: x }))}">×</button></span>`));
+    box.querySelectorAll(".tok-group").forEach(n => n.remove());
+    // A tag and the extra tags that belong to it wrap onto a new line together
+    list.forEach((x, i) => input.insertAdjacentHTML("beforebegin", `<span class="tok-group"><span class="tok ${cls}">${esc(x)}<button type="button" data-i="${i}" aria-label="${esc(t("remove.aria", { t: x }))}">×</button></span>${opts.extra ? opts.extra(x, i) : ""}</span>`));
   };
-  const add = v => { for (const part of v.split(/[,;\n]/)) { const x = part.trim().replace(/^"|"$/g, ""); if (x && !list.some(y => fold(y) === fold(x))) list.push(x); } input.value = ""; draw(); };
+  const remove = i => { const [x] = list.splice(i, 1); opts.onRemove?.(x); draw(); };
+  const add = v => {
+    const added = [];
+    for (const part of v.split(/[,;\n]/)) { const x = part.trim().replace(/^"|"$/g, ""); if (x && !list.some(y => fold(y) === fold(x))) { list.push(x); added.push(x); } }
+    input.value = ""; opts.onAdd?.(added); draw(); opts.onInput?.("");
+  };
   input.addEventListener("keydown", e => {
     if ((e.key === "Enter" || e.key === ",") && input.value.trim()) { e.preventDefault(); add(input.value); }
-    else if (e.key === "Backspace" && !input.value && list.length) { list.pop(); draw(); }
+    else if (e.key === "Backspace" && !input.value && list.length) remove(list.length - 1);
   });
+  input.addEventListener("input", () => opts.onInput?.(input.value));
   input.addEventListener("blur", () => { if (input.value.trim()) add(input.value); });
   input.addEventListener("paste", e => { const x = e.clipboardData?.getData("text") || ""; if (/[,;\n]/.test(x)) { e.preventDefault(); add(x); } });
-  box.addEventListener("click", e => { const b = e.target.closest("button[data-i]"); if (b) { list.splice(+b.dataset.i, 1); draw(); input.focus(); } else if (e.target === box) input.focus(); });
+  box.addEventListener("click", e => {
+    const b = e.target.closest("button[data-i]"), a = e.target.closest("button[data-alt]");
+    if (b) { remove(+b.dataset.i); input.focus(); }
+    else if (a) { opts.onAltRemove?.(list[+a.dataset.alt], +a.dataset.j); draw(); input.focus(); }
+    else if (e.target === box) input.focus();
+  });
   return { draw, flush: () => { if (input.value.trim()) add(input.value); } };
 }
-const kwBox = chipInput("kw-box", "kw-input", terms, "");
+const kwBox = chipInput("kw-box", "kw-input", terms, "", {
+  extra: (x, i) => (alts[x] || []).map((w, j) => `<span class="tok-alt" title="${esc(t("alt.title", { term: x }))}">+ ${esc(w)}<button type="button" data-alt="${i}" data-j="${j}" aria-label="${esc(t("alt.remove", { t: w }))}">×</button></span>`).join(""),
+  onAdd: added => { for (const x of added) { const sv = swedishFor(x); if (sv.length) alts[x] = sv; } checkPhrases(added); },
+  onRemove: x => { delete alts[x]; if (kwHint.term === x) showHint({ kind: "" }); },
+  onAltRemove: (x, j) => { if (alts[x]) alts[x].splice(j, 1); },   // an empty list is kept, so the word stays removed when the search is restored
+  onInput: v => typingHint(v),
+});
 const exBox = chipInput("ex-box", "ex-input", excludes, "ex");
+// Fills in the Swedish words for the keywords in the box. A saved search brings its own; one saved before this feature gets them now.
+function setAlts(saved) {
+  for (const k of Object.keys(alts)) delete alts[k];
+  for (const x of terms) { const v = saved ? saved[x] : swedishFor(x); if (v) alts[x] = v.slice(); }
+}
+
+/* ---------- Keywords that should be separate: "project leader engineering" -> "project leader" + "engineering" ---------- */
+// A keyword of several words is searched as one exact phrase. When almost no ads in Sweden use the phrase but its parts find plenty,
+// it was most likely meant as separate keywords, so the box offers to split it. Counting ads is one quick Platsbanken request per part.
+const MIN_PART = 5;
+const STOP = new Set(["and", "or", "of", "in", "for", "at", "with", "the", "a", "an", "to", "och", "eller", "i", "inom", "för", "på", "med", "till", "av", "som"]);
+const adCounts = new Map(), kept = new Set(), checked = new Set();
+let kwHint = { kind: "" };   // what the line under the keyword box says: "" (nothing), "typing", "split" (a suggestion) or "done"
+async function countAds(q) {
+  const k = fold(q);
+  if (!adCounts.has(k)) adCounts.set(k, (await getJSON(`${JS_API}/search?${qPart(q)}limit=0`, 2)).total.value);
+  return adCounts.get(k);
+}
+// Every way to cut a list of words into two or more runs of neighbouring words, fewest runs first
+function splitsOf(words) {
+  const out = [];
+  const walk = (start, acc) => {
+    if (start === words.length) { if (acc.length > 1) out.push(acc); return; }
+    for (let end = start + 1; end <= words.length; end++) walk(end, [...acc, words.slice(start, end).join(" ")]);
+  };
+  walk(0, []);
+  return out.sort((a, b) => a.length - b.length);
+}
+// The best way to split a phrase, or null if it's fine as it is. Fewer parts win, so real phrases like "project leader" stay together.
+async function splitFor(term) {
+  const all = term.trim().split(/\s+/), words = all.filter(w => !STOP.has(fold(w)));
+  if (all.length < 2 || words.length < 2 || words.length > 5) return null;
+  const n = await countAds(term);
+  if (n > (all.length >= 3 ? 3 : 0)) return null;
+  const options = splitsOf(words), counts = new Map();
+  await pool([...new Set(options.flat())], 3, async x => { counts.set(x, await countAds(x)); });
+  let best = null;
+  for (const o of options) {
+    if (best && o.length > best.parts.length) break;
+    const low = Math.min(...o.map(x => counts.get(x)));
+    if (low >= MIN_PART && low > n && (!best || low > best.low)) best = { parts: o, low };
+  }
+  return best ? { n, parts: best.parts } : null;
+}
+async function checkPhrases(list) {
+  for (const x of list) {
+    if (x.trim().split(/\s+/).length < 2 || kept.has(fold(x)) || checked.has(fold(x))) continue;
+    checked.add(fold(x));
+    let s = null;
+    try { s = await splitFor(x); } catch (e) { console.warn("Could not count ads for", x, e); }   // then the phrase is just searched as it is
+    if (s && terms.includes(x) && kwHint.kind !== "split") { showHint({ kind: "split", term: x, ...s }); return; }
+  }
+}
+const quoteList = a => joinList(a.map(x => `"${x}"`));
+function showHint(h) {
+  kwHint = h;
+  const el = $("kw-hint");
+  if (h.kind === "typing") el.innerHTML = `<p>${esc(t("kw.typing"))}</p>`;
+  else if (h.kind === "done") el.innerHTML = `<p>${esc(t("split.done", { parts: quoteList(h.parts) }))}</p>`;
+  else if (h.kind === "split") el.innerHTML = `<p>${esc(t(h.n === 0 ? "split.text0" : h.n === 1 ? "split.text1" : "split.textN", { n: h.n, phrase: h.term, parts: quoteList(h.parts) }))}</p>
+    <div class="row"><button class="btn sm" type="button" data-kwh="split">${esc(t("split.yes"))}</button><button class="btn ghost sm" type="button" data-kwh="keep">${esc(t("split.no"))}</button></div>`;
+  else el.innerHTML = "";
+}
+// While someone types three or more words without a comma, say that they'll be searched as one phrase
+function typingHint(v) {
+  if (kwHint.kind === "split") return;   // a suggestion stays until it's answered
+  const words = v.trim() ? v.trim().split(/\s+/).length : 0;
+  if (words >= 3 && !/[,;]/.test(v)) { if (kwHint.kind !== "typing") showHint({ kind: "typing" }); }
+  else if (kwHint.kind === "typing" || (words && kwHint.kind === "done")) showHint({ kind: "" });
+}
+function splitTerm(term, parts) {
+  const i = terms.indexOf(term);
+  if (i < 0) { showHint({ kind: "" }); return; }
+  const fresh = parts.filter(x => !terms.some(y => fold(y) === fold(x)));
+  terms.splice(i, 1, ...fresh); delete alts[term];
+  for (const x of fresh) { const sv = swedishFor(x); if (sv.length) alts[x] = sv; }
+  $("f-all").checked = true; savePrefs();
+  kwBox.draw(); showHint({ kind: "done", parts });
+  if (results?.params.terms.includes(term)) runSearch(); else $("kw-input").focus();
+}
+$("kw-hint").addEventListener("click", e => {
+  const b = e.target.closest("[data-kwh]"); if (!b || kwHint.kind !== "split") return;
+  if (b.dataset.kwh === "split") splitTerm(kwHint.term, kwHint.parts);
+  else { kept.add(fold(kwHint.term)); showHint({ kind: "" }); $("kw-input").focus(); }
+});
 function placeKind(raw) {
   const k = fold(raw.trim().replace(/\s+/g, " "));
   if (!k || /^(hela )?(sverige|sweden)$/.test(k)) return { kind: "all" };
@@ -419,16 +544,19 @@ $("place").addEventListener("input", syncRadius);
 function readParams() {
   kwBox.flush(); exBox.flush();
   return { country: $("country").value, place: $("place").value.trim(), radius: +$("radius").value, since: $("since").value,
-    terms: terms.slice(), excludes: excludes.slice(), links: $("o-links").checked, remote: $("o-remote").checked, noexp: $("o-noexp").checked };
+    terms: terms.slice(), alts: Object.fromEntries(terms.filter(x => alts[x]).map(x => [x, alts[x].slice()])),
+    excludes: excludes.slice(), links: $("o-links").checked, remote: $("o-remote").checked, noexp: $("o-noexp").checked };
 }
 function fillForm(p) {
   if (!p) return;
   $("country").value = p.country || "SE"; $("place").value = p.place || ""; $("radius").value = String(p.radius ?? 25); $("since").value = p.since || "";
-  terms.splice(0, terms.length, ...(p.terms || [])); excludes.splice(0, excludes.length, ...(p.excludes || [])); kwBox.draw(); exBox.draw();
+  terms.splice(0, terms.length, ...(p.terms || [])); setAlts(p.alts); excludes.splice(0, excludes.length, ...(p.excludes || [])); kwBox.draw(); exBox.draw();
   $("o-links").checked = p.links !== false; $("o-remote").checked = !!p.remote; $("o-noexp").checked = !!p.noexp; syncRadius();
 }
 const sigOf = p => JSON.stringify([p.country, fold(p.place), placeKind(p.place).kind === "county" || placeKind(p.place).kind === "all" ? 0 : p.radius, p.since,
-  p.terms.map(fold).sort(), p.excludes.map(fold).sort(), p.links, p.remote, p.noexp]);
+  p.terms.map(fold).sort(), p.excludes.map(fold).sort(), p.links, p.remote, p.noexp, ...altSig(p)]);
+// Only searches with Swedish words get the extra part, so searches saved before them keep their "new since last time"
+const altSig = p => { const s = Object.entries(p.alts || {}).filter(([, v]) => v.length).map(([k, v]) => fold(k) + ":" + v.map(fold).sort().join("|")).sort(); return s.length ? [s] : []; };
 
 /* ---------- Network ---------- */
 class FetchError extends Error { constructor(kind, status, url) { super(kind === "http" ? `HTTP ${status}` : "connection failed"); this.kind = kind; this.status = status; this.url = url; } }
@@ -566,7 +694,9 @@ async function runSearch() {
     const loc = locationParam(geo, p.radius);
     const extra = (p.since ? `&published-after=${p.since}` : "") + (p.remote ? "&remote=true" : "") + (p.noexp ? "&experience=false" : "");
     const exRes = p.excludes.map(termRe);
-    const queries = p.terms.length ? p.terms : [""];
+    // Each keyword and each Swedish word added for it is its own search. An ad found by a Swedish word counts for its keyword.
+    const queries = p.terms.length ? allWords(p) : [""];
+    const parentOf = new Map(p.terms.flatMap(x => variants(p, x).map(v => [v, x])));
     const ads = new Map(), capped = [];
     progress(t("p.pb"));
     await pool(queries, 3, async q0 => {
@@ -577,7 +707,7 @@ async function runSearch() {
         total = j.total.value; off += 100;
         for (const h of j.hits) {
           const a = ads.get(String(h.id)) || fromPB(h);
-          (a._by || (a._by = new Set())).add(q0);
+          (a._by || (a._by = new Set())).add(parentOf.get(q0) ?? q0);
           ads.set(a.id, a);
         }
         progress(t("p.pbn", { n: ads.size }));
@@ -612,7 +742,7 @@ async function runSearch() {
               if ((h.source_links || []).some(l => /arbetsformedlingen/.test(l.url || "")) || !keep(h)) continue;
               if (sinceDay && (h.publication_date || "").slice(0, 10) < sinceDay) continue;
               const a = ads.get("L:" + h.id) || fromLinks(h);
-              (a._by || (a._by = new Set())).add(q0);
+              (a._by || (a._by = new Set())).add(parentOf.get(q0) ?? q0);
               ads.set(a.id, a);
             }
             progress(t("p.linksn", { n: [...ads.values()].filter(a => a.src === "links").length }));
@@ -627,8 +757,10 @@ async function runSearch() {
     for (const a of ads.values()) {
       if (exRes.some(re => re.test(a._text))) continue;
       if (a.src === "links" && pbKeys.has(normName(a.employer) + "|" + fold(a.title))) continue;
-      a.terms = p.terms.filter(x => termRe(x).test(a._text));
-      a.loose = p.terms.filter(x => a._by.has(x) && !a.terms.includes(x));
+      // keys: the keywords the ad mentions, in any of their words. terms: the word it actually uses for each, for the tags.
+      a.keys = p.terms.filter(x => variants(p, x).some(v => termRe(v).test(a._text)));
+      a.terms = a.keys.map(x => variants(p, x).find(v => termRe(v).test(a._text)));
+      a.loose = p.terms.filter(x => a._by.has(x) && !a.keys.includes(x));
       delete a._text; delete a._by;
       list.push(a);
       if (a.src === "links") linksCount++;
@@ -651,6 +783,7 @@ async function runSearch() {
       + (saved ? "" : t("nosave"));
     openIds = new Set([...openIds].filter(k => list.some(a => companyKey(a) === k)));
     render();
+    checkPhrases(p.terms);   // catches phrases that came from a saved search or the Mentor rather than the box
   } catch (e) {
     console.error(e);
     $("msg").textContent = searchError(e) + (results ? t("unchanged") : ""); $("msg").className = "msg err";
@@ -746,7 +879,7 @@ function loadPrefs() {
 function savePrefs() { const p = { sort: $("sort").value, emp: $("emp").value }; for (const k of FILTERS) p[k] = $("f-" + k).checked; store.set("jf-prefs", p); }
 const isPerm = a => a.duration === "Tills vidare";
 function adVisible(a) {
-  if ($("f-all").checked && results && a.terms.length < results.params.terms.length) return false;
+  if ($("f-all").checked && results && (a.keys || a.terms).length < results.params.terms.length) return false;
   if ($("f-new").checked && !a.isNew) return false;
   if ($("f-direct").checked && (a.agency || a.client)) return false;
   const emp = $("emp").value;
@@ -869,7 +1002,7 @@ function noteHtml(id, title, note) {
   return `<textarea data-role="note" data-ad="${esc(id)}" aria-label="${esc(t("note.aria", { title }))}" placeholder="${esc(t("note.ph"))}">${esc(note || "")}</textarea><span class="saved" data-saved="${esc(id)}"></span>`;
 }
 function roleHtml(c, a) {
-  const ts = results?.params.terms || [];
+  const ts = results ? allWords(results.params) : [];
   const matches = a.terms.map(x => `<span class="chip kw">${esc(x)}</span>`).concat(a.loose.map(x => `<span class="chip loose" title="${esc(t("loose.title"))}">${esc(x)}?</span>`));
   const n = similarCount(a);
   const histLine = a.src === "links" || n === null ? "" : `<div class="hist">${esc(n > 0 ? tn(n, "hist.n1", "hist.nN") : t("hist.first"))}</div>`;
@@ -949,7 +1082,7 @@ function render() {
     const total = companies.filter(c => $("f-hidden").checked || !hidden.has(c.key)).length;
     $("count").textContent = vis.length === total ? tn(vis.length, "count.all", "count.allN") : t("count.some", { v: vis.length, n: total });
     const p = results.params, g = results.geo;
-    $("note-bar").textContent = t("note", { terms: p.terms.length ? p.terms.map(x => `"${x}"`).join(", ") : t("note.all"), place: placeLabel(g),
+    $("note-bar").textContent = t("note", { terms: p.terms.length ? p.terms.map(x => termText(p, x)).join(", ") : t("note.all"), place: placeLabel(g),
       radius: hasRadius(g, p) ? ` + ${p.radius} km` : "", ex: p.excludes.length ? t("note.ex", { ex: p.excludes.join(", ") }) : "" });
   }
   $("expand-all").textContent = t(vis.length && vis.every(c => openIds.has(c.key)) ? "collapse" : "expand");
@@ -1239,7 +1372,7 @@ async function newAdsSinceSearch() {
   const loc = locationParam(r.geo, p.radius), exRes = (p.excludes || []).map(termRe);
   const known = new Set(store.get("jf-seen", {})[r.sig] || r.ads.map(a => a.id)), fresh = new Set();
   let more = false;
-  await pool(p.terms.length ? p.terms : [""], 3, async q0 => {
+  await pool(p.terms.length ? allWords(p) : [""], 3, async q0 => {
     const j = await getJSON(`${JS_API}/search?${qPart(q0)}${loc}${extra}&limit=100`, 2);
     if (j.total.value > j.hits.length) more = true;
     for (const h of j.hits) { const a = fromPB(h); if (!known.has(a.id) && !exRes.some(re => re.test(a._text))) fresh.add(a.id); }
