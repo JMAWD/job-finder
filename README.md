@@ -13,6 +13,8 @@
 - Searches Platsbanken (Arbetsförmedlingen) and other job sites collected by JobTech, such as The Hub and Ledigajobb.
 - Place: any of Sweden's 290 municipalities with a distance of 10 to 100 km, a whole county, or the whole country.
 - Keywords: each one is searched on its own and the results are combined. Tags show which of your keywords each ad actually mentions, and you can keep only ads that mention all of them. A second field leaves out ads with words you don't want.
+- A keyword of several words is searched as one exact phrase. If almost no ads in Sweden use that phrase but its parts find plenty, the app offers to split it, so "project leader engineering" becomes "project leader" and "engineering". Real phrases like "project leader" stay together.
+- Common job titles written in English also search the word Swedish ads use, so "project manager" brings in ads for "projektledare". The Swedish word shows next to the keyword and can be removed. The list of titles is in `src/titles.txt`.
 - Groups the ads by employer, shows the contact people named in the ads, and links to a LinkedIn search for people at the employer.
 - Hiring history: when you open an employer it checks the past two years of Platsbanken ads, so you can see whether that kind of role comes up there regularly.
 - Tracks applications as Saved, Applied, Interview, Offer, Rejected or Not interested, with notes. They stay in My applications when you search for something else.
@@ -46,7 +48,7 @@ python3 build.py        # writes index.html and "Job Finder.html"
 
 Open `index.html` in a browser, or publish the repo with GitHub Pages (Settings → Pages → deploy from the main branch). Fill in `config.json` with your name, links and the site address first; the site address turns on the link preview image for LinkedIn and other sites. `tailor_url` is the address of the tailoring server.
 
-Source files are in `src/`: `shell.html` (layout and styles), `app.js` (everything else, including both languages), `tailor.js` (step 2), `mentor.js` (the Mentor) and `munis.txt` (Sweden's municipalities and counties).
+Source files are in `src/`: `shell.html` (layout and styles), `app.js` (everything else, including both languages), `tailor.js` (step 2), `mentor.js` (the Mentor), `munis.txt` (Sweden's municipalities and counties) and `titles.txt` (English job titles and the Swedish words ads use for them).
 
 ## Tests
 
@@ -60,7 +62,7 @@ cd server && node --test              # the server on its own
 
 The demo video is made the same way, with made-up ads and a stand-in AI: `python3 demo/record.py && python3 demo/compose.py` writes `demo/out/job-finder-demo.mp4`, and `python3 demo/record.py sv && python3 demo/compose.py sv` makes the Swedish version.
 
-The tests run the real page in Chromium with JobTech's services replaced by fixed example data, so they work offline. They cover the search requests, keyword tags, filters, application tracking, the welcome-back card and follow-up reminders, the colour themes and their contrast, backup and restore, error messages, Swedish and English, and phone width. The step 2 and Mentor tests run the server locally with a stand-in for the AI service and check the full ad, Word files in and out, access codes, errors, the Mentor's answers re-ranking roles and courses, the jump from a role to Find jobs and the backup. The companies and people in the screenshots are made up.
+The tests run the real page in Chromium with JobTech's services replaced by fixed example data, so they work offline. They cover the search requests, keyword tags, splitting phrases, Swedish words for English titles, filters, application tracking, the welcome-back card and follow-up reminders, the colour themes and their contrast, backup and restore, error messages, Swedish and English, and phone width. The step 2 and Mentor tests run the server locally with a stand-in for the AI service and check the full ad, Word files in and out, access codes, errors, the Mentor's answers re-ranking roles and courses, the jump from a role to Find jobs and the backup. The companies and people in the screenshots are made up.
 
 ## About
 

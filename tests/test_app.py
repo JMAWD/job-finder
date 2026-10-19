@@ -43,6 +43,13 @@ LINKS = [{"id": "l1", "headline": "Fullstack Software Engineer", "brief": "Join 
          {"id": "l2", "headline": "Software engineer", "brief": "Borås office.", "occupation_group": {"concept_id": "g_sw", "label": "x"}, "occupation_field": {"concept_id": "f", "label": "Data/IT"},
           "employer": {"name": "Far Away AB"}, "workplace_addresses": [{"municipality": "Borås", "municipality_concept_id": "mBOR", "region_concept_id": "rVG", "country": "Sverige"}],
           "publication_date": day(-1) + "T00:00:00", "source_links": [{"label": "ledigajobb.se", "url": "https://ledigajobb.se/l2"}]}]
+# Ads for the keyword tests: one Swedish, one English, and one that only mentions engineering
+PL = [ad('201', 'Projektledare, el', 'Nordbygg AB', '5560000011', GBG, 'Vi söker en projektledare till vår engineering-avdelning.', field='Teknik'),
+      ad('202', 'Project Leader, Engineering', 'Tyre Works AB', '5560000012', GBG, 'As project leader you will run our engineering projects.', field='Teknik'),
+      ad('203', 'Engineering Manager', 'Volt Labs AB', '5560000013', GBG, 'Lead the engineering team.', field='Teknik')]
+# How many ads in all of Sweden use each word or phrase, for the check that offers to split a phrase
+COUNTS = {'project leader engineering': 0, 'project leader': 11, 'engineering': 1507, 'project': 5000, 'leader': 300, 'leader engineering': 0,
+          'quality engineer medtech': 0, 'quality engineer': 40, 'medtech': 20, 'quality': 900, 'engineer medtech': 0}
 CALLS, STATE = [], {'offline': False}
 
 def ok(body): return dict(status=200, content_type='application/json', headers={'access-control-allow-origin': '*'}, body=json.dumps(body))
@@ -53,7 +60,9 @@ async def jobsearch(route):
     if q.get('qfields') == ['location']:
         hits = {'göteborg': [GBG] * 5 + [MOL], 'skåne': [MAL] * 3}.get(term, [])
         return await route.fulfill(**ok({"total": {"value": len(hits)}, "hits": [{"id": f"g{i}", "workplace_address": w} for i, w in enumerate(hits)]}))
+    if q.get('limit') == ['0'] and term in COUNTS: return await route.fulfill(**ok({"total": {"value": COUNTS[term]}, "hits": []}))
     hits = SW + ([NEW] if STATE.get('fresh') else []) if 'software' in term else FMEA if 'fmea' in term else []
+    if term in ('project leader', 'projektledare', 'engineering'): hits = [h for h in PL if term in (h['headline'] + ' ' + h['description']['text']).lower()]
     after = q.get('published-after', [''])[0]
     if after.isdigit(): hits = [h for h in hits if datetime.fromisoformat(h['publication_date']) >= datetime.now() - timedelta(minutes=int(after))]
     await route.fulfill(**ok({"total": {"value": len(hits)}, "hits": hits}))
@@ -239,6 +248,49 @@ async def main():
         check('every theme keeps text at 4.5:1 or better, light and dark', not low, low)
         await pg.emulate_media(color_scheme='light'); await pal.locator('.pal[data-p=seafoam]').click()
         check('back to seafoam clears the theme', await pg.evaluate('document.documentElement.dataset.palette') is None and await pg.evaluate(bg % '.topbar') == 'rgb(28, 107, 90)')
+        # Keywords: a phrase no ad uses is offered as separate keywords, and English job titles bring the Swedish word along
+        await pg.click('.lang button[data-lang=en]'); await pg.fill('#place', 'Göteborg')
+        while await pg.locator('#kw-box .tok').count(): await pg.click('#kw-box .tok button')
+        toks = "[...document.querySelectorAll('#kw-box .tok')].map(t => t.firstChild.textContent)"
+        alts = "[...document.querySelectorAll('#kw-box .tok-alt')].map(t => t.firstChild.textContent)"
+        await pg.fill('#kw-input', 'project leader engineering'); await pg.dispatch_event('#kw-input', 'input')
+        check('typing several words says they are one phrase', 'searched as one exact phrase' in await pg.locator('#kw-hint').inner_text())
+        await pg.press('#kw-input', 'Enter')
+        await pg.wait_for_selector('#kw-hint [data-kwh=split]', timeout=10000)
+        hint = await pg.locator('#kw-hint').inner_text()
+        check('a phrase no ad uses is offered as separate keywords, keeping the real phrase together',
+              'No ads in Sweden use the exact phrase "project leader engineering"' in hint and '"project leader" and "engineering"' in hint, hint)
+        await pg.click('#kw-hint [data-kwh=split]')
+        check('split into two keywords, with the Swedish word for project leader', await pg.evaluate(toks) == ['project leader', 'engineering'] and await pg.evaluate(alts) == ['+ projektledare'],
+              [await pg.evaluate(toks), await pg.evaluate(alts)])
+        check('splitting turns on ads with every keyword and says so', await pg.locator('#f-all').is_checked() and 'Now searching "project leader" and "engineering" separately' in await pg.locator('#kw-hint').inner_text())
+        CALLS.clear(); await search(pg)
+        sent = [parse_qs(urlparse(u).query).get('q', [''])[0] for u in CALLS if 'qfields' not in u and 'limit=0' not in u]
+        check('the Swedish word is searched as well', {'"project leader"', 'projektledare', 'engineering'} <= set(sent), sent)
+        names = [x.split('\n')[0] for x in await pg.locator('article.co h2').all_inner_texts()]
+        check('Swedish and English ads that mention both are kept', sorted(names) == ['Nordbygg', 'Tyre Works'], names)
+        nb = pg.locator('article.co', has_text='Nordbygg'); await nb.locator('button.exp').click()
+        check('the tag shows the word the ad uses', await nb.locator('.matches .chip').all_inner_texts() == ['projektledare', 'engineering'])
+        check('the note names the Swedish word', '"project leader" (+ projektledare), "engineering"' in await pg.locator('#note-bar').inner_text())
+        await pg.click('#kw-box .tok-alt button')
+        check('the Swedish word can be removed', await pg.evaluate(alts) == [] and await pg.evaluate(toks) == ['project leader', 'engineering'])
+        CALLS.clear(); await search(pg)
+        sent = [parse_qs(urlparse(u).query).get('q', [''])[0] for u in CALLS if 'qfields' not in u and 'limit=0' not in u]
+        names = [x.split('\n')[0] for x in await pg.locator('article.co h2').all_inner_texts()]
+        check('and then it is not searched', 'projektledare' not in sent and names == ['Tyre Works'], [sent, names])
+        await pg.reload()
+        check('a removed Swedish word stays removed after a reload', await pg.evaluate(alts) == [] and await pg.evaluate(toks) == ['project leader', 'engineering'])
+        await pg.fill('#kw-input', 'senior nurse'); await pg.press('#kw-input', 'Enter')
+        check('senior doesn\'t stop the Swedish word', await pg.evaluate(alts) == ['+ sjuksköterska'], await pg.evaluate(alts))
+        await pg.fill('#kw-input', 'quality engineer medtech'); await pg.press('#kw-input', 'Enter')
+        await pg.wait_for_selector('#kw-hint [data-kwh=keep]', timeout=10000)
+        await pg.click('#kw-hint [data-kwh=keep]')
+        check('a phrase can be kept as it is', await pg.locator('#kw-hint').inner_text() == '' and 'quality engineer medtech' in await pg.evaluate(toks))
+        await pg.click('.lang button[data-lang=sv]'); await pg.fill('#kw-input', 'projektledare inom bygg'); await pg.dispatch_event('#kw-input', 'input')
+        check('the phrase hint in Swedish', 'söks som en exakt fras' in await pg.locator('#kw-hint').inner_text())
+        await pg.fill('#kw-input', ''); await pg.dispatch_event('#kw-input', 'input')
+        check('the hint goes away when the box is cleared', await pg.locator('#kw-hint').inner_text() == '')
+
         check('no script errors', not errors, errors)
         await browser.close()
     print(f'{len(passed)} checks passed')

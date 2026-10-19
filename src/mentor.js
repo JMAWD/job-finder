@@ -332,7 +332,7 @@ async function getAdvice() {
 function mtSearch(q, all) {
   selectTab("res");
   if (all) { $("place").value = ""; syncRadius(); }
-  terms.splice(0, terms.length, q); kwBox.draw();
+  terms.splice(0, terms.length, q); setAlts(); kwBox.draw(); showHint({ kind: "" });
   window.scrollTo(0, 0);
   runSearch();
 }
