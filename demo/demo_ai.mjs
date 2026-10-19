@@ -1,4 +1,4 @@
-// A stand-in for the AI service with the demo's fictional answers (Sam Ekström, a test engineer in Göteborg).
+// A stand-in for the AI service with the demo's fictional answers (Sam Ekström, a test engineer in Göteborg), in English or Swedish.
 //   node demo/demo_ai.mjs 8798
 // Used only by demo/record.py. Answers come back after a short pause so the "Writing…" state shows in the video.
 import http from "node:http";
@@ -37,18 +37,54 @@ const ANSWERS = {
   cv: "## Profile\nSenior test engineer with ten years of embedded and connected-product testing.\n\n## Key skills\n- Test strategy\n- Python test automation",
   interview: "## Likely questions\n1. How do you decide what to test first in a release?\n2. Tell us about the regression suite you built.",
 };
+
+// The same answers in Swedish, for the Swedish demo
+const MENTOR_SV = {
+  ...MENTOR, stage_reason: "Tio år inom test, de senaste fyra med ansvar för releasetesterna för en hel produkt.",
+  history: [{ title: "Senior testingenjör", org: "Göta Telematics", years: "2019–nu" }, { title: "Testingenjör", org: "Brännö Software", years: "2016–2019" }],
+  education: "Högskoleingenjör i datateknik", domains: "Fordon, uppkopplade produkter", skills: ["Teststrategi", "Python", "CI", "Hardware-in-the-loop", "Riskbaserad testning"],
+  opener: "Tio år av test på uppkopplade produkter, med automatisering du byggt själv, gör att du ligger före de flesta testingenjörer. Teamen i Göteborg flyttar in testarbetet i CI-flöden, och det är ont om folk som kan leda den förändringen.",
+  direction_notes: {
+    deeper: "Fördjupa dig i testarkitektur: ISTQB:s avancerade spår för testautomatisering och hardware-in-the-loop i CI.",
+    lead: "Du planerar redan testerna inför varje release. Ett erkänt certifikat i testledning och en första ledarskapsutbildning gör testledare eller QA-ledare till ett naturligt nästa steg.",
+    change: "Produktägare är det närmaste bytet, eftersom du redan avgör vad som ska testas först och varför.",
+    advise: "Team som börjar med testautomatisering behöver någon som har gjort det. Coachning och föredrag bygger det namnet." },
+  roles: [
+    { title: "Testledare", tier: "direct", directions: ["lead", "deeper"], match: 88, why: "Du planerar releasetester i dag. Det här är samma arbete med titeln.", gaps: ["Ansvar för testbudgeten"], gap_months: 0, search: "testledare" },
+    { title: "Ingenjör inom testautomatisering", tier: "direct", directions: ["deeper"], match: 84, why: "Din Python-svit och ditt CI-arbete matchar de flesta av annonserna.", gaps: [], gap_months: 0, search: "testautomatisering" },
+    { title: "QA-ledare", tier: "stretch", directions: ["lead"], match: 70, why: "Sätter kvalitetsmål för flera team, inte bara en produkt.", gaps: ["Leda människor", "Kvalitetsstrategi"], gap_months: 9, search: "QA-ledare" },
+    { title: "Testarkitekt", tier: "stretch", directions: ["deeper", "advise"], match: 66, why: "Utformar hur ett helt företag testar, från enhetsnivå till riggen.", gaps: ["Testarkitektur"], gap_months: 12, search: "testarkitekt" },
+    { title: "Testchef", tier: "stretch", directions: ["lead"], match: 58, why: "Ett steg till: budget och personal för en hel testavdelning.", gaps: ["Budgetansvar", "Personalansvar"], gap_months: 24, search: "testchef" },
+    { title: "Produktägare", tier: "pivot", directions: ["change", "lead"], match: 44, why: "Testare känner en produkts gränsfall bättre än någon annan.", gaps: ["Backloggarbete", "Dialog med intressenter"], gap_months: 12, search: "produktägare" },
+    { title: "DevOps-ingenjör", tier: "pivot", directions: ["change", "deeper"], match: 41, why: "Du håller redan ett CI-flöde igång.", gaps: ["Molninfrastruktur"], gap_months: 12, search: "DevOps" },
+  ],
+  courses: [
+    course("ISTQB Advanced Test Management", "Självstudier, prov hos ackrediterad utbildare", "self", { hours: 60, cost_sek: 7500, ramp_months: 0 }, ["lead", "advise"], { lead: 10, advise: 7 }, "ISTQB", "Testledare", "Standardcertifikatet för testledare, som bygger vidare på din Foundation-nivå."),
+    course("UGL", "Internatkurs, 5 dagar", "class", { hours: 43, days: 5, cost_sek: 26000, ramp_months: 3 }, ["lead"], { lead: 9 }, "ledarskap", "QA-ledare", "Den vanliga första ledarskapsutbildningen i svensk industri."),
+    course("AI-verktyg för testare", "Onlinekurs i egen takt", "self", { hours: 6, cost_sek: 0, ramp_months: 0 }, ["deeper", "lead", "change", "advise"], 6, "Copilot", "Testledare", "Några timmar räcker för att börja använda AI i testdesign och rapporter."),
+    course("Professional Scrum Product Owner", "Självstudier, prov online", "self", { hours: 20, cost_sek: 2200, ramp_months: 1 }, ["change", "lead"], { change: 10, lead: 5 }, "Scrum", "Produktägare", "En erkänd start om du vill gå över till produktarbete."),
+    course("ISTQB Advanced Test Automation Engineering", "Självstudier, prov hos ackrediterad utbildare", "self", { hours: 50, cost_sek: 7500, ramp_months: 0 }, ["deeper"], { deeper: 10 }, "Robot Framework", "Ingenjör inom testautomatisering", "Sätter ett namn på automatiseringen du redan gör."),
+    course("Kubernetes för utvecklare", "Onlinekurs i egen takt", "self", { hours: 30, cost_sek: 3000, ramp_months: 2 }, ["change", "deeper"], { change: 8, deeper: 4 }, "Kubernetes", "DevOps-ingenjör", "Det är där CI-flödena körs i dag."),
+  ],
+};
+const ANSWERS_SV = {
+  letter: "## Personligt brev\nHej Sara Lindqvist,\n\nJag söker tjänsten som testledare på **Nordvik Automotive** eftersom den förenar de två saker jag har arbetat med i tio år: att planera verifieringen av inbyggda system och att bygga automatiseringen som håller den snabb.\n\nPå Göta Telematics planerar och genomför jag releasetester för en telematikenhet till fordon. Jag byggde också teamets automatiserade regressionssvit i Python, som kortade en manuell testcykel från två veckor till två dagar.\n\n- Teststrategi och riskbaserad planering för releaser av inbyggda system\n- Testautomatisering i Python som körs i CI\n- Certifierad enligt ISTQB Foundation\n\nJag berättar gärna hur jag skulle ta mig an er verifieringsplan.\n\nVänliga hälsningar,\nSam Ekström",
+  match: "## Det som matchar\n- **Teststrategi** för releaser av inbyggda system, fyra år\n- Testautomatisering i **Python** i CI\n- ISTQB Foundation\n\n## Det som saknas\n1. Att leda ett team på fem står inte i ditt CV\n\n## Samlad bedömning\nEn stark match.",
+  cv: "## Profil\nSenior testingenjör med tio års erfarenhet av test av inbyggda och uppkopplade produkter.\n\n## Nyckelkompetenser\n- Teststrategi\n- Testautomatisering i Python",
+  interview: "## Troliga frågor\n1. Hur bestämmer du vad som ska testas först i en release?\n2. Berätta om regressionssviten du byggde.",
+};
 http.createServer(async (req, res) => {
   let body = ""; for await (const c of req) body += c;
   const send = (status, data) => { res.writeHead(status, { "Content-Type": "application/json" }); res.end(JSON.stringify(data)); };
   if (req.method === "GET" && req.url === "/last") return send(200, { ok: true });
   if (req.method !== "POST" || req.url !== "/v1/chat/completions") return send(404, {});
-  const msg = JSON.parse(body).messages;
+  const msg = JSON.parse(body).messages, sv = /^Du /.test(msg[0].content);
   if (/career mentor|karriärmentor/.test(msg[0].content)) {
     await new Promise(r => setTimeout(r, 2600));
-    return send(200, { choices: [{ message: { content: "```json\n" + JSON.stringify(MENTOR) + "\n```" } }], usage: { prompt_tokens: 1500, completion_tokens: 1800 } });
+    return send(200, { choices: [{ message: { content: "```json\n" + JSON.stringify(sv ? MENTOR_SV : MENTOR) + "\n```" } }], usage: { prompt_tokens: 1500, completion_tokens: 1800 } });
   }
   const ask = msg[1].content;
   const task = /cover letter|personligt brev/i.test(ask) ? "letter" : /Tailor the CV|Anpassa CV/i.test(ask) ? "cv" : /interview|intervju/i.test(ask) ? "interview" : "match";
   await new Promise(r => setTimeout(r, 2400));
-  send(200, { choices: [{ message: { content: ANSWERS[task] } }], usage: { prompt_tokens: 1200, completion_tokens: 300 } });
+  send(200, { choices: [{ message: { content: (sv ? ANSWERS_SV : ANSWERS)[task] } }], usage: { prompt_tokens: 1200, completion_tokens: 300 } });
 }).listen(+process.argv[2] || 8798, "127.0.0.1");

@@ -1,15 +1,19 @@
 """Turns the recording from record.py into the finished demo video and its cover image.
 
-    python3 demo/compose.py
+    python3 demo/compose.py        # English, from demo/out/raw/
+    python3 demo/compose.py sv     # Swedish, from demo/out/raw-sv/
 
 Adds a title card, the captions (highlighted words in **double stars**), a pointer with click rings and an end card,
-in the seafoam and sunshine colours. Writes demo/out/job-finder-demo.mp4 (1080 x 1080, 30 fps) and job-finder-demo-cover.png."""
-import asyncio, bisect, json, pathlib, re, subprocess
+in the seafoam and sunshine colours. Writes demo/out/job-finder-demo.mp4 (job-finder-demo-sv.mp4 in Swedish, 1080 x 1080, 30 fps)
+and a cover image."""
+import asyncio, bisect, json, pathlib, re, subprocess, sys
 from PIL import Image, ImageDraw, ImageFont
 from playwright.async_api import async_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-OUT = ROOT / 'demo' / 'out'; RAW = OUT / 'raw'
+LANG = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] in ('en', 'sv') else 'en'
+SUF = '' if LANG == 'en' else '-sv'
+OUT = ROOT / 'demo' / 'out'; RAW = OUT / ('raw' if LANG == 'en' else 'raw-sv')
 S, FPS = 1080, 30
 GREEN, DEEP, SUN, MIST = '#1c6b5a', '#0f2e27', '#ffd86a', '#cde8de'
 TITLE_S, END_S, FADE = 3.6, 4.8, 0.4
@@ -17,7 +21,7 @@ FONT = '/usr/share/fonts/opentype/inter/Inter-Bold.otf'
 
 LOGO = f"""<svg viewBox="0 0 64 64" width="64" height="64"><rect width="64" height="64" rx="14" fill="#134f42"/><circle cx="28" cy="28" r="14" fill="none" stroke="{SUN}" stroke-width="6"/>
 <path d="M38 38l12 12" stroke="{SUN}" stroke-width="7" stroke-linecap="round"/></svg>"""
-CARD = """<!doctype html><html><head><meta charset="utf-8"><style>
+CARD = """<!doctype html><html lang="{lang}"><head><meta charset="utf-8"><style>
 * {{ box-sizing: border-box; margin: 0; }}
 body {{ width: 1080px; height: 1080px; background: {green}; color: #fff; font-family: Inter, system-ui, sans-serif; display: grid; align-content: center; padding: 0 96px; }}
 .brand {{ display: flex; align-items: center; gap: 22px; margin-bottom: 44px; }}
@@ -27,16 +31,19 @@ p {{ margin-top: 34px; font-size: 34px; line-height: 1.4; color: {mist}; max-wid
 .url {{ display: inline-block; margin-top: 34px; font-family: "DejaVu Sans Mono", monospace; font-size: 34px; color: {sun}; background: #134f42; border: 2px solid rgba(255,255,255,.22); border-radius: 12px; padding: 10px 20px; }}
 .small {{ font-size: 24px; color: #a9d6c6; margin-top: 30px; }}
 </style></head><body><div class="brand">{logo}<span>JOB FINDER</span></div>{body}</body></html>"""
-TITLE = "<h1>Find who's hiring.<br>Tailor your application.<br>Plan your next step.</h1><p>A free job search for Sweden, built on Platsbanken's open data.</p>"
-END = ("<h1>Free. No account.<br>Swedish and English.</h1><div class=\"url\">jmawd.github.io/job-finder</div>"
-       "<p>Advice based on your experience and plans, never your age.</p><p class=\"small\">Demo with fictional companies, people and ads.</p>")
+TITLE = {'en': "<h1>Find who's hiring.<br>Tailor your application.<br>Plan your next step.</h1><p>A free job search for Sweden, built on Platsbanken's open data.</p>",
+         'sv': "<h1>Hitta vem som anställer.<br>Anpassa din ansökan.<br>Planera nästa steg.</h1><p>En gratis jobbsökare för Sverige, byggd på Platsbankens öppna data.</p>"}[LANG]
+END = {'en': ("<h1>Free. No account.<br>Swedish and English.</h1><div class=\"url\">jmawd.github.io/job-finder</div>"
+              "<p>Advice based on your experience and plans, never your age.</p><p class=\"small\">Demo with fictional companies, people and ads.</p>"),
+       'sv': ("<h1>Gratis. Inget konto.<br>Svenska och engelska.</h1><div class=\"url\">jmawd.github.io/job-finder</div>"
+              "<p>Råd utifrån din erfarenhet och dina planer, aldrig din ålder.</p><p class=\"small\">Demo med påhittade företag, personer och annonser.</p>")}[LANG]
 
 async def cards():
     async with async_playwright() as p:
         b = await p.chromium.launch(); pg = await b.new_page(viewport={'width': S, 'height': S})
         for name, body in (('title', TITLE), ('end', END)):
-            await pg.set_content(CARD.format(green=GREEN, sun=SUN, mist=MIST, logo=LOGO, body=body)); await pg.wait_for_timeout(200)
-            await pg.screenshot(path=str(OUT / f'{name}.png'))
+            await pg.set_content(CARD.format(lang=LANG, green=GREEN, sun=SUN, mist=MIST, logo=LOGO, body=body)); await pg.wait_for_timeout(200)
+            await pg.screenshot(path=str(OUT / f'{name}{SUF}.png'))
         await b.close()
 
 def caption_sprite(text):
@@ -76,8 +83,8 @@ def main():
     path = ev['path']; pts = [p[0] for p in path]
     caps = [(a - start, (b or end) - start, caption_sprite(t)) for a, b, t in ev['caps']]
     clicks = [(t - start, x * scale, y * scale) for t, x, y in ev['clicks']]
-    title, endcard = Image.open(OUT / 'title.png').convert('RGB'), Image.open(OUT / 'end.png').convert('RGB')
-    title.save(OUT / 'job-finder-demo-cover.png')
+    title, endcard = Image.open(OUT / f'title{SUF}.png').convert('RGB'), Image.open(OUT / f'end{SUF}.png').convert('RGB')
+    title.save(OUT / f'job-finder-demo{SUF}-cover.png')
     arrow = cursor_sprite(); app_len = end - start
     cache = {}
     def raw_at(t):
@@ -104,7 +111,7 @@ def main():
         return im.convert('RGB')
     total = TITLE_S + app_len + END_S
     ff = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{S}x{S}', '-r', str(FPS), '-i', '-',
-                           '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', str(OUT / 'job-finder-demo.mp4')], stdin=subprocess.PIPE)
+                           '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', str(OUT / f'job-finder-demo{SUF}.mp4')], stdin=subprocess.PIPE)
     n = int(total * FPS)
     for i in range(n):
         t = i / FPS
@@ -115,7 +122,7 @@ def main():
         else: im = endcard
         ff.stdin.write(im.tobytes())
     ff.stdin.close(); ff.wait()
-    print(f'job-finder-demo.mp4: {total:.1f} s, {n} frames')
+    print(f'job-finder-demo{SUF}.mp4: {total:.1f} s, {n} frames')
 
 if __name__ == '__main__':
     main()

@@ -1,16 +1,18 @@
 """Records the Job Finder demo: the real page in Chromium, fictional job ads, the real server code and a stand-in AI.
 
-    python3 build.py && python3 demo/record.py && python3 demo/compose.py
+    python3 build.py && python3 demo/record.py && python3 demo/compose.py          # English
+    python3 demo/record.py sv && python3 demo/compose.py sv                        # Swedish: Swedish ads, CV, AI answers and captions
 
-Writes demo/out/raw/: one JPEG per screen update (1080 x 1080) and events.json with the cursor path, clicks and captions.
-compose.py turns that into demo/out/job-finder-demo.mp4 and a cover image. Companies, people and ads are made up."""
+Writes demo/out/raw/ (raw-sv/ for Swedish): one JPEG per screen update (1080 x 1080) and events.json with the cursor path,
+clicks and captions. compose.py turns that into the finished video and a cover image. Companies, people and ads are made up."""
 import asyncio, base64, hashlib, json, os, pathlib, re, shutil, subprocess, sys, tempfile, time, urllib.request
 from datetime import date, timedelta
 from urllib.parse import urlparse, parse_qs
 from playwright.async_api import async_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-RAW = ROOT / 'demo' / 'out' / 'raw'
+LANG = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] in ('en', 'sv') else 'en'
+RAW = ROOT / 'demo' / 'out' / ('raw' if LANG == 'en' else 'raw-sv')
 SERVER, AI = 'http://127.0.0.1:8787', 'http://127.0.0.1:8798'
 CODE = 'BETA-DEMO1'
 W, SCALE = 800, 1.35            # the page is 800 x 800 CSS pixels, captured at 1080 x 1080
@@ -71,6 +73,59 @@ ISTQB Foundation
 
 Skills
 Test strategy, risk-based testing, Python, pytest, Jenkins, hardware-in-the-loop, Jira"""
+
+if LANG == 'sv':   # The same people and companies, with the ads, keywords and CV in Swedish
+    SARA = {**SARA, "description": "Testchef"}
+    ADS = [
+        ad('301', 'Testledare, inbyggda system', 'Nordvik Automotive AB', '5560100001', GBG,
+           "Vi söker en testledare som planerar och driver verifieringen av våra styrenheter för tunga fordon. Du äger teststrategin för varje release, "
+           "leder ett team på fem testingenjörer och arbetar nära vårt team för testautomatisering. Erfarenhet av ISTQB, Python och hardware-in-the-loop är meriterande.", contacts=[SARA]),
+        ad('302', 'Ingenjör inom testautomatisering', 'Nordvik Automotive AB', '5560100001', GBG,
+           "Bli en del av vårt team för testautomatisering och bygg flödena som testar varje mjukvarurelease av våra styrenheter, i Python och CI.", pub=-3),
+        ad('303', 'QA-ingenjör, testautomatisering', 'Kvarnby Games AB', '5560100002', GBG, "Kvarnby Games växer och behöver en QA-ingenjör som älskar testautomatisering för våra mobilspel.", deadline=40),
+        ad('304', 'Utvecklare inom testautomatisering, Python', 'Älvsborg Systems AB', '5560100003', MOL, "Vi bygger mjukvara för hamnar och logistik. Hos oss utvecklar du vårt ramverk för testautomatisering i Python."),
+        ad('305', 'Testledare till vår kund', 'Västra Konsult AB', '5560100004', GBG, "För vår kunds räkning söker vi en testledare med erfarenhet av testautomatisering.", pub=-3),
+        ad('306', 'Testledare, medicinteknik', 'Hisingen MedTech AB', '5560100005', GBG, "Som testledare leder du verifieringen av mjukvaran i våra infusionspumpar, från testplan till release.", pub=-4),
+        ad('307', 'Testledare, plattform', 'Lindholmen Software AB', '5560100006', GBG, "Testledare till vårt plattformsteam. Du sätter teststrategin och coachar teamet i testautomatisering.", pub=-5),
+        ad('308', 'Testare med fokus på testautomatisering', 'Gamlestaden Logistics AB', '5560100007', GBG, "Vi söker en testare som vill bygga testautomatisering för våra lagersystem.", pub=-6),
+        ad('309', 'Testledare', 'Mölndal Energi AB', '5560100008', MOL, "Mölndal Energi söker en testledare till vårt nya kundsystem.", pub=-3),
+        ad('311', 'QA-ledare, plattform', 'Lindholmen Software AB', '5560100006', GBG, "Som QA-ledare sätter du kvalitetsmålen för tre plattformsteam.", pub=-3),
+        ad('312', 'Ledande QA-ingenjör', 'Älvsborg Systems AB', '5560100003', MOL, "Vi behöver en QA-ledare som kan bygga upp ett litet kvalitetsteam.", pub=-5),
+        ad('313', 'QA-ledare', 'Gamlestaden Logistics AB', '5560100007', GBG, "QA-ledare för våra lagersystem, tillsammans med fyra produktteam.", pub=-6),
+    ]
+    LINKS = [{**LINKS[0], "headline": "QA-ingenjör, testautomatisering", "brief": "Hjälp oss testa apparna bakom våra elsparkcyklar, med testautomatisering från dag ett."}]
+    COUNTS = {'testledare': (14, 'ISTQB', 5), 'testautomatisering': (22, 'Robot Framework', 6), 'qa-ledare': (3, None, 0), 'testarkitekt': (2, None, 0),
+              'testchef': (0, None, 0), 'produktägare': (12, 'Scrum', 7), 'devops': (9, 'Kubernetes', 4)}
+    CV = """Sam Ekström
+Senior testingenjör, Göteborg
+
+Erfarenhet
+2019–nu Senior testingenjör, Göta Telematics AB. Planerar och genomför releasetester för en telematikenhet till fordon. Byggde teamets automatiserade regressionssvit i Python och kör den i CI.
+2016–2019 Testingenjör, Brännö Software AB. System- och integrationstest av IoT-gateways.
+
+Utbildning
+Högskoleingenjör i datateknik, 2016
+
+Certifikat
+ISTQB Foundation
+
+Kunskaper
+Teststrategi, riskbaserad testning, Python, pytest, Jenkins, hardware-in-the-loop, Jira"""
+
+# What gets typed and clicked, and the captions (**words** are highlighted)
+TX = {
+    'en': dict(locale='en-US', kw=('test lead', 'test automation'), note='Called Sara on Monday. Apply before Friday', letter='Cover letter', lead='Lead people or projects', qa='QA Lead',
+               caps=['Search **live job ads** by place and keywords', 'Ads grouped **by employer**, with contacts and hiring history', "**Track** where you've applied, with your own notes",
+                     'An AI **tailors your cover letter** to the ad, using only your CV', 'The Mentor **reads your CV** and suggests what to do next', 'Pick a **direction** and the advice changes instantly',
+                     'Roles to apply for **now**, **within reach**, or as a **change of track**', 'What to learn next, fitted to your **time, budget and plans**',
+                     'One click from a suggested role to **its job ads**', 'New: pick **your colours**, and every page follows']),
+    'sv': dict(locale='sv-SE', kw=('testledare', 'testautomatisering'), note='Ringde Sara i måndags. Sök före fredag', letter='Personligt brev', lead='Leda människor eller projekt', qa='QA-ledare',
+               caps=['Sök bland **lediga jobb** på ort och egna sökord', 'Annonserna samlas **per arbetsgivare**, med kontakter och tidigare rekryteringar',
+                     '**Håll koll** på var du har sökt, med egna anteckningar', 'En AI **anpassar ditt personliga brev** till annonsen, bara utifrån ditt CV',
+                     'Mentorn **läser ditt CV** och föreslår vad du kan göra härnäst', 'Välj en **riktning** så ändras råden direkt',
+                     'Jobb att söka **nu**, **inom räckhåll** eller som **ett byte av bana**', 'Vad du kan lära dig härnäst, efter din **tid, budget och dina planer**',
+                     'Ett klick från ett föreslaget jobb till **annonserna**', 'Nytt: välj **dina färger**, så följer alla sidor med']),
+}[LANG]
 
 def ok(body): return dict(status=200, content_type='application/json', headers={'access-control-allow-origin': '*'}, body=json.dumps(body))
 def has(a, term): return term.lower() in (a['headline'] + ' ' + a['description']['text']).lower()
@@ -145,64 +200,64 @@ class Rec:
 async def scenes(r, pg):
     hold = asyncio.sleep
     # 1. Search
-    r.cap('Search **live job ads** by place and keywords')
+    r.cap(TX['caps'][0])
     await hold(0.6)
     await r.click(pg.locator('#place'), dx=0.3); await r.type('Göteborg'); await hold(0.2)
-    await r.click(pg.locator('#kw-input'), dx=0.25); await r.type('test lead'); await r.key('Enter'); await hold(0.25)
-    await r.type('test automation'); await r.key('Enter'); await hold(0.5)
+    await r.click(pg.locator('#kw-input'), dx=0.25); await r.type(TX['kw'][0]); await r.key('Enter'); await hold(0.25)
+    await r.type(TX['kw'][1]); await r.key('Enter'); await hold(0.5)
     await r.click(pg.locator('#go'))
     await pg.wait_for_function("document.getElementById('msg').textContent.length > 0", timeout=20000); await hold(1.2)
     await r.scroll(pg.locator('#stats'), top=40, wait=1.4)
     await r.scroll(pg.locator('#list article.co').first, top=8, wait=1.2)
     # 2. Employers
-    r.cap('Ads grouped **by employer**, with contacts and hiring history')
+    r.cap(TX['caps'][1])
     nordvik = pg.locator('article.co', has_text='Nordvik Automotive')
     await r.click(nordvik.locator('button.exp')); await hold(0.9)
     await r.scroll(nordvik.locator('article.role').first, top=12, wait=1.3)
     await r.point(nordvik.locator('.hist').first, dx=0.3, dur=0.6); await hold(0.9)
     await r.scroll(nordvik.locator('.side'), top=12, wait=1.2); await hold(0.8)
     # 3. Tracking
-    r.cap('**Track** where you\'ve applied, with your own notes')
+    r.cap(TX['caps'][2])
     role = nordvik.locator('article.role').first
     await r.scroll(role.locator('.track'), top=150, wait=1.0)
     sel = role.locator('select[data-role=status]')
     await r.click(sel); await hold(0.3); await sel.select_option('Applied'); await pg.keyboard.press('Escape'); await hold(0.6)
     note = nordvik.locator('article.role').first.locator('textarea[data-role=note]')
-    await r.click(note, dx=0.2); await r.type('Called Sara on Monday. Apply before Friday', delay=0.05); await hold(1.0)
+    await r.click(note, dx=0.2); await r.type(TX['note'], delay=0.05); await hold(1.0)
     # 4. Tailoring
-    r.cap('An AI **tailors your cover letter** to the ad, using only your CV')
+    r.cap(TX['caps'][3])
     await r.click(nordvik.locator('article.role').first.locator('[data-tailor]')); await hold(1.6)
     dlg = pg.locator('#tailor')
-    await r.click(dlg.locator('.tl-task', has_text='Cover letter')); await hold(0.7)
+    await r.click(dlg.locator('.tl-task', has_text=TX['letter'])); await hold(0.7)
     await r.click(dlg.locator('[data-tl=go]')); await hold(1.0)
     await pg.wait_for_selector('#tailor .tl-out', timeout=20000); await hold(0.5)
     await r.scroll(dlg.locator('.tl-out'), top=24, wait=1.4)
     r.cap_off(); await hold(2.8)
     await r.click(dlg.locator('.tl-close')); await hold(0.6)
     # 5. Mentor
-    r.cap('The Mentor **reads your CV** and suggests what to do next')
+    r.cap(TX['caps'][4])
     await r.scroll_top(1.1)
     await r.click(pg.locator('#tab-mentor')); await hold(1.0)
     await r.click(pg.locator('#mentor [data-mt=go]')); await hold(0.6)
     await pg.wait_for_selector('#mentor .mt-note', timeout=20000); await hold(0.4)
     await r.scroll(pg.locator('#mentor .mt-note'), top=16, wait=1.0); await hold(2.4)
-    r.cap('Pick a **direction** and the advice changes instantly')
-    lead = pg.locator('#mentor label.mt-opt', has_text='Lead people or projects')
+    r.cap(TX['caps'][5])
+    lead = pg.locator('#mentor label.mt-opt', has_text=TX['lead'])
     await r.click(lead); await hold(1.6)
     await r.scroll(pg.locator('#mentor .mt-note'), top=16, wait=0.9); await hold(1.6)
-    r.cap('Roles to apply for **now**, **within reach**, or as a **change of track**')
+    r.cap(TX['caps'][6])
     await r.scroll(pg.locator('#mentor .mt-block-head').first, top=16, wait=1.2); await hold(1.2)
     await r.scroll(pg.locator('#mentor .mt-tier').nth(1), top=16, wait=1.2); await hold(1.4)
-    r.cap('What to learn next, fitted to your **time, budget and plans**')
+    r.cap(TX['caps'][7])
     await r.scroll(pg.locator('#mentor .mt-block-head').nth(1), top=16, wait=1.2); await hold(2.4)
-    r.cap('One click from a suggested role to **its job ads**')
-    qa = pg.locator('#mentor .mt-role', has_text='QA Lead')
+    r.cap(TX['caps'][8])
+    qa = pg.locator('#mentor .mt-role', has_text=TX['qa'])
     await r.scroll(qa, top=200, wait=1.1)
     await r.click(qa.locator('[data-mt=search]')); await hold(0.6)
-    await pg.wait_for_function("document.getElementById('msg').textContent.includes('3 matching')", timeout=20000); await hold(0.6)
+    await pg.wait_for_function("document.querySelectorAll('#list article.co').length === 3", timeout=20000); await hold(0.6)
     await r.scroll(pg.locator('#stats'), top=150, wait=1.0); await hold(1.4)
     # 6. Colours
-    r.cap('New: pick **your colours**, and every page follows')
+    r.cap(TX['caps'][9])
     await r.scroll_top(1.0)
     for k, wait in (('lavender', 1.1), ('ocean', 1.0), ('terracotta', 1.0), ('seafoam', 1.5)):
         await r.click(pg.locator(f'#palette .pal[data-p={k}]'), dur=0.45, pause=0.1); await hold(wait)
@@ -225,9 +280,9 @@ async def main():
             except Exception: time.sleep(0.1)
         async with async_playwright() as p:
             browser = await p.chromium.launch()
-            ctx = await browser.new_context(locale='en-US', viewport={'width': W, 'height': W}, device_scale_factor=SCALE, color_scheme='light')
+            ctx = await browser.new_context(locale=TX['locale'], viewport={'width': W, 'height': W}, device_scale_factor=SCALE, color_scheme='light')
             await ctx.add_init_script(f"""if (!localStorage.getItem('jf-cv')) {{ localStorage.setItem('jf-cv', {json.dumps(json.dumps(CV))});
-                localStorage.setItem('jf-code', '"{CODE}"'); localStorage.setItem('jf-lang', '"en"'); localStorage.setItem('jf-palette', '"seafoam"'); }}""")
+                localStorage.setItem('jf-code', '"{CODE}"'); localStorage.setItem('jf-lang', '"{LANG}"'); localStorage.setItem('jf-palette', '"seafoam"'); }}""")
             await ctx.route('https://jobsearch.api.jobtechdev.se/**', jobsearch)
             await ctx.route('https://links.api.jobtechdev.se/**', joblinks)
             await ctx.route('https://historical.api.jobtechdev.se/**', history)
