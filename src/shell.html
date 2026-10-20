@@ -10,10 +10,11 @@
 <script>try { const p = JSON.parse(localStorage.getItem("jf-palette")); if (["lavender", "ocean", "terracotta"].includes(p)) document.documentElement.dataset.palette = p; } catch {}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c6b5a'/%3E%3Ccircle cx='28' cy='28' r='14' fill='none' stroke='%23ffd86a' stroke-width='6'/%3E%3Cpath d='M38 38l12 12' stroke='%23ffd86a' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
-/* Layout: a seafoam top bar with the suite's three parts (Find jobs, My applications, Mentor) and the language switch.
+/* Layout: a seafoam top bar with the suite's four parts (Find jobs, My applications, Market, Mentor) and the language switch.
    Find jobs has the masthead with the search form, a sticky filter bar and one ruled row per employer that opens into
-   its matching roles, contacts and your notes. My applications lists every role you have marked. The Mentor reads the
-   CV on the left and shows roles and courses on the right, re-ranked as the four answers change. */
+   its matching roles, contacts and your notes. My applications lists every role you have marked. The Market shows the
+   verdict for your field, then the figures for Sweden. The Mentor reads the CV on the left and shows roles and courses on
+   the right, re-ranked as the four answers change. */
 /* Colours: four themes the person picks with the circles in the Find jobs masthead (data-palette on <html>, saved in
    the browser). Seafoam and sunshine is the default; lavender and peach, ocean and mint, terracotta and sand only set
    what differs. Each has a light and a dark version, and every text colour keeps at least 4.5:1 contrast on its
@@ -301,7 +302,8 @@ footer p { margin: 0; }
   .controls { position: static; }
   .topbar-inner { gap: 0 12px; }
   .tabs { order: 3; flex-basis: 100%; overflow-x: auto; margin-inline: -16px; padding-inline: 6px; scrollbar-width: none; }
-  .tab { padding: 10px 10px 11px; }
+  .tab { padding: 10px 7px 11px; font-size: 13.5px; }
+  .tab .n { margin-left: 3px; }
   .f-country, .f-radius, .f-since { flex: 1 1 140px; }
   .roles-preview { white-space: normal; }
   .stat { flex-basis: 45%; }
@@ -505,6 +507,111 @@ body:has(.tailor[open]) { overflow: hidden; }
   .mentor.has-advice .mt-main > .mt-note { order: 1; }
 }
 @media (prefers-reduced-motion: reduce) { .mt-note.flash { animation: none; } }
+/* Market tab: the field and place on top, the verdict for that field, then the figures for Sweden and how they're made.
+   Charts use one emphasis colour (--accent-ink) against a quiet grey (--mk-ctx), so they follow every theme in light and dark. */
+.market { padding-top: 16px; --mk-ctx: color-mix(in srgb, var(--muted) 50%, var(--surface)); }
+.mk-controls { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.mk-controls .field { flex: 0 1 280px; min-width: 0; }
+.mk-controls select { width: 100%; }
+.mk-controls select:disabled { opacity: .6; }
+.mk-hint { margin: 0; flex: 1 1 240px; font-size: 13px; color: var(--muted); align-self: center; }
+.mk-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+.mk { display: grid; gap: 28px; padding-top: 20px; }
+.mk-verdict { background: var(--accent-soft); border-radius: 12px; padding: 18px 22px 20px; display: grid; gap: 10px; }
+.mk-mood { justify-self: start; font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; padding: 2px 9px; border-radius: 999px; background: var(--surface); color: var(--ink); }
+.mk-mood.m-tough, .mk-mood.m-slow { background: var(--warn-soft); color: var(--warn); }
+.mk-mood.m-busy { background: var(--accent); color: var(--on-accent); }
+.mk-verdict h2 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: clamp(24px, 3.6vw, 32px); line-height: 1.15; margin: 0; }
+.mk-verdict p { margin: 0; font-size: 15.5px; line-height: 1.6; max-width: 72ch; }
+.mk-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 6px; }
+.mk-tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 2px; align-content: start; min-width: 0; }
+.mk-tile b { font-family: var(--font-display); font-stretch: 112%; font-weight: 700; font-size: 28px; line-height: 1.15; }
+.mk-sub { font-size: 12.5px; color: var(--muted); margin: 0; font-weight: 400; }
+section > .mk-tiles { margin: 0 0 14px; }
+.mk-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px 16px; display: grid; gap: 10px; min-width: 0; align-content: start; }
+.mk-card h3 { margin: 0; font-size: 15.5px; }
+.mk-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); margin-bottom: 14px; }
+/* Bars from one baseline: a fall goes left, a rise goes right, with the value at the end */
+.mk-bars { display: grid; gap: 10px; margin-top: 4px; }
+.mk-bar { display: grid; grid-template-columns: minmax(0, 38%) minmax(0, 1fr); gap: 2px 14px; align-items: center; }
+.mk-bar-label { font-size: 13.5px; overflow-wrap: anywhere; }
+.mk-bar.main .mk-bar-label { font-weight: 700; }
+.mk-track { display: grid; align-items: center; min-height: 24px; }
+.mk-half { display: flex; align-items: center; gap: 6px; min-width: 0; height: 24px; }
+.mk-half.neg { justify-content: flex-end; }
+.mk-half.pos { border-left: 1px solid var(--line-strong); }
+.mk-fill { display: block; height: 14px; background: var(--mk-ctx); flex: none; min-width: 2px; }
+.mk-half.neg .mk-fill { border-radius: 4px 0 0 4px; }
+.mk-half.pos .mk-fill { border-radius: 0 4px 4px 0; }
+.mk-bar.main .mk-fill { background: var(--accent-ink); }
+.mk-val { font-size: 12.5px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mk-bar .mk-sub { white-space: nowrap; }
+/* Column and line charts */
+.mk-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12.5px; color: var(--muted); }
+.mk-key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--accent-ink); margin-right: 6px; vertical-align: -1px; }
+.mk-key.fc { background: color-mix(in srgb, var(--accent-ink) 40%, var(--surface)); }
+.mk-key.ctx { background: var(--mk-ctx); }
+.mk-key.line { width: 16px; height: 2px; border-radius: 1px; vertical-align: 3px; }
+.mk-chart { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 8px; padding-top: 16px; border-radius: 6px; }
+.mk-chart:focus-visible { outline-offset: 4px; }
+.mk-yaxis { display: flex; flex-direction: column; justify-content: space-between; height: 164px; margin: -7px 0; line-height: 14px; font-size: 11px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.mk-plot { position: relative; height: 150px; border-bottom: 1px solid var(--line-strong); }
+.mk-gl { position: absolute; left: 0; right: 0; height: 0; border-top: 1px solid var(--line); }
+.mk-colrow { position: absolute; inset: 0; display: flex; align-items: flex-end; }
+.mk-hit { flex: 1 1 0; height: 100%; min-width: 0; display: flex; align-items: flex-end; justify-content: center; }
+.mk-col { position: relative; display: block; font-style: normal; width: min(24px, 72%); background: var(--accent-ink); border-radius: 4px 4px 0 0; }
+.mk-col.fc { background: color-mix(in srgb, var(--accent-ink) 40%, var(--surface)); }
+.mk-hit.on .mk-col { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--ink); }
+.mk-cap { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); padding-bottom: 3px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.mk-xaxis { grid-column: 2; display: flex; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.mk-xaxis span { flex: 1 1 0; min-width: 0; text-align: center; }
+.mk-xaxis.spread { justify-content: space-between; }
+.mk-xaxis.spread span { flex: none; }
+.mk-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.mk-raw rect { fill: var(--mk-ctx); }
+.mk-line { fill: none; stroke: var(--accent-ink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.mk-dot { position: absolute; width: 10px; height: 10px; margin: 0 0 -5px -5px; border-radius: 50%; background: var(--accent-ink); box-shadow: 0 0 0 2px var(--surface); }
+.mk-endlabel { position: absolute; transform: translateY(50%); font-size: 11.5px; font-weight: 600; background: var(--surface); padding: 0 4px; border-radius: 3px; white-space: nowrap; }
+.mk-cross { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px solid var(--muted); pointer-events: none; }
+.mk-hits { z-index: 1; }
+.mk-hits .mk-hit.on { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.mk-tip { position: fixed; z-index: 30; pointer-events: none; background: var(--ink); color: var(--bg); border-radius: 6px; padding: 6px 10px; font-size: 12.5px; display: grid; gap: 1px; box-shadow: var(--shadow); max-width: 260px; }
+.mk-tip b { font-size: 14.5px; }
+.mk-table summary { cursor: pointer; font-size: 12.5px; color: var(--accent-ink); width: max-content; }
+.mk-table table { border-collapse: collapse; font-size: 13px; margin-top: 8px; width: 100%; font-variant-numeric: tabular-nums; }
+.mk-table th, .mk-table td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); font-weight: 400; }
+.mk-table thead th { font-family: var(--font-mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.mk-notes { margin: 0; padding-left: 18px; display: grid; gap: 8px; font-size: 14px; max-width: 78ch; }
+.mk-do { background: var(--sunk); border-radius: 12px; padding: 16px 20px 18px; display: grid; gap: 10px; }
+.mk-do h2 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: 20px; margin: 0; }
+.mk-do > p { margin: 0; font-size: 14.5px; max-width: 72ch; }
+.mk-do ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.mk-do li { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.mk-do li span { flex: 1 1 300px; font-size: 14px; max-width: 72ch; }
+.mk-src-h { font-size: 13.5px; margin: 18px 0 6px; }
+.mk-src { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--muted); display: grid; gap: 3px; }
+@media (max-width: 560px) {
+  .mk-verdict { padding: 16px; }
+  .mk-bar { grid-template-columns: minmax(0, 1fr); }
+  .mk-tile b { font-size: 24px; }
+}
+/* The pop-up after a few rejections */
+.nudge { width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); border: 0; border-radius: 14px; padding: 0; background: var(--surface); color: var(--ink); box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+.nudge[open] { animation: ng-in .18s ease-out; }
+.nudge::backdrop { background: var(--backdrop); }
+@keyframes ng-in { from { transform: translateY(12px); opacity: 0; } }
+.ng { padding: 18px 22px 18px; display: grid; gap: 12px; }
+.ng-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ng-x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line-strong); background: transparent; color: var(--ink); font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
+.ng-x:hover { border-color: var(--ink); }
+.ng h2 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: clamp(21px, 4vw, 25px); line-height: 1.2; margin: 0; }
+.ng p { margin: 0; font-size: 15px; line-height: 1.55; }
+.ng-data { background: var(--sunk); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 10px 14px; display: grid; gap: 6px; }
+.ng-data.tough { border-left-color: var(--warn); }
+.ng-data p { font-size: 14.5px; }
+.ng .row { gap: 8px; margin-top: 2px; }
+.ng .tl-hint { font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { .nudge[open] { animation: none; } }
 </style>
 </head>
 <body>
@@ -514,6 +621,7 @@ body:has(.tailor[open]) { overflow: hidden; }
     <nav class="tabs" role="tablist" data-ta="tabs.label" aria-label="Views">
       <button class="tab" role="tab" id="tab-res" aria-selected="true" aria-controls="view-res" type="button"><span data-t="tab.res">Find jobs</span><span class="n" id="n-res"></span></button>
       <button class="tab" role="tab" id="tab-app" aria-selected="false" aria-controls="view-app" type="button" tabindex="-1"><span data-t="tab.app">My applications</span><span class="n" id="n-app"></span></button>
+      <button class="tab" role="tab" id="tab-market" aria-selected="false" aria-controls="view-market" type="button" tabindex="-1"><span data-t="tab.market">Market</span></button>
       <button class="tab" role="tab" id="tab-mentor" aria-selected="false" aria-controls="view-mentor" type="button" tabindex="-1" hidden><span data-t="tab.mentor">Mentor</span></button>
     </nav>
     <div class="lang" role="group" aria-label="Language / Språk">
@@ -613,6 +721,19 @@ body:has(.tailor[open]) { overflow: hidden; }
   </div>
 </section>
 
+<section id="view-market" role="tabpanel" aria-labelledby="tab-market" hidden>
+  <div class="mast compact">
+    <div class="mast-inner">
+      <div class="eyebrow" data-t="mk.eyebrow">Market analysis · open data</div>
+      <h1 data-t="mk.h1">How's the job market?</h1>
+      <p class="lede" data-t="mk.lede">See how many employers are advertising in your field compared with a year ago.</p>
+    </div>
+  </div>
+  <div class="wrap view-body">
+    <div class="market" id="market"></div>
+  </div>
+</section>
+
 <section id="view-mentor" role="tabpanel" aria-labelledby="tab-mentor" hidden>
   <div class="mast compact">
     <div class="mast-inner">
@@ -633,6 +754,7 @@ body:has(.tailor[open]) { overflow: hidden; }
     <p data-th="foot.keywords"></p>
     <p data-th="foot.place"></p>
     <p data-th="foot.history"></p>
+    <p data-th="foot.market"></p>
     <p data-th="foot.data"></p>
     <p><button class="linkbtn" type="button" id="goto-backup" data-t="foot.backup">Back up or restore your saved data</button></p>
     <div class="about">
@@ -644,6 +766,7 @@ body:has(.tailor[open]) { overflow: hidden; }
   </footer>
 </div>
 <dialog id="tailor" class="tailor" aria-labelledby="tl-title"></dialog>
+<dialog id="nudge" class="nudge" aria-labelledby="ng-title"></dialog>
 <script>
 /*__APP__*/
 </script>

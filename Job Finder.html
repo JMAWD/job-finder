@@ -17,10 +17,11 @@
 <script>try { const p = JSON.parse(localStorage.getItem("jf-palette")); if (["lavender", "ocean", "terracotta"].includes(p)) document.documentElement.dataset.palette = p; } catch {}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c6b5a'/%3E%3Ccircle cx='28' cy='28' r='14' fill='none' stroke='%23ffd86a' stroke-width='6'/%3E%3Cpath d='M38 38l12 12' stroke='%23ffd86a' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
-/* Layout: a seafoam top bar with the suite's three parts (Find jobs, My applications, Mentor) and the language switch.
+/* Layout: a seafoam top bar with the suite's four parts (Find jobs, My applications, Market, Mentor) and the language switch.
    Find jobs has the masthead with the search form, a sticky filter bar and one ruled row per employer that opens into
-   its matching roles, contacts and your notes. My applications lists every role you have marked. The Mentor reads the
-   CV on the left and shows roles and courses on the right, re-ranked as the four answers change. */
+   its matching roles, contacts and your notes. My applications lists every role you have marked. The Market shows the
+   verdict for your field, then the figures for Sweden. The Mentor reads the CV on the left and shows roles and courses on
+   the right, re-ranked as the four answers change. */
 /* Colours: four themes the person picks with the circles in the Find jobs masthead (data-palette on <html>, saved in
    the browser). Seafoam and sunshine is the default; lavender and peach, ocean and mint, terracotta and sand only set
    what differs. Each has a light and a dark version, and every text colour keeps at least 4.5:1 contrast on its
@@ -308,7 +309,8 @@ footer p { margin: 0; }
   .controls { position: static; }
   .topbar-inner { gap: 0 12px; }
   .tabs { order: 3; flex-basis: 100%; overflow-x: auto; margin-inline: -16px; padding-inline: 6px; scrollbar-width: none; }
-  .tab { padding: 10px 10px 11px; }
+  .tab { padding: 10px 7px 11px; font-size: 13.5px; }
+  .tab .n { margin-left: 3px; }
   .f-country, .f-radius, .f-since { flex: 1 1 140px; }
   .roles-preview { white-space: normal; }
   .stat { flex-basis: 45%; }
@@ -512,6 +514,111 @@ body:has(.tailor[open]) { overflow: hidden; }
   .mentor.has-advice .mt-main > .mt-note { order: 1; }
 }
 @media (prefers-reduced-motion: reduce) { .mt-note.flash { animation: none; } }
+/* Market tab: the field and place on top, the verdict for that field, then the figures for Sweden and how they're made.
+   Charts use one emphasis colour (--accent-ink) against a quiet grey (--mk-ctx), so they follow every theme in light and dark. */
+.market { padding-top: 16px; --mk-ctx: color-mix(in srgb, var(--muted) 50%, var(--surface)); }
+.mk-controls { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.mk-controls .field { flex: 0 1 280px; min-width: 0; }
+.mk-controls select { width: 100%; }
+.mk-controls select:disabled { opacity: .6; }
+.mk-hint { margin: 0; flex: 1 1 240px; font-size: 13px; color: var(--muted); align-self: center; }
+.mk-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+.mk { display: grid; gap: 28px; padding-top: 20px; }
+.mk-verdict { background: var(--accent-soft); border-radius: 12px; padding: 18px 22px 20px; display: grid; gap: 10px; }
+.mk-mood { justify-self: start; font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; padding: 2px 9px; border-radius: 999px; background: var(--surface); color: var(--ink); }
+.mk-mood.m-tough, .mk-mood.m-slow { background: var(--warn-soft); color: var(--warn); }
+.mk-mood.m-busy { background: var(--accent); color: var(--on-accent); }
+.mk-verdict h2 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: clamp(24px, 3.6vw, 32px); line-height: 1.15; margin: 0; }
+.mk-verdict p { margin: 0; font-size: 15.5px; line-height: 1.6; max-width: 72ch; }
+.mk-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 10px; margin-top: 6px; }
+.mk-tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 2px; align-content: start; min-width: 0; }
+.mk-tile b { font-family: var(--font-display); font-stretch: 112%; font-weight: 700; font-size: 28px; line-height: 1.15; }
+.mk-sub { font-size: 12.5px; color: var(--muted); margin: 0; font-weight: 400; }
+section > .mk-tiles { margin: 0 0 14px; }
+.mk-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px 16px; display: grid; gap: 10px; min-width: 0; align-content: start; }
+.mk-card h3 { margin: 0; font-size: 15.5px; }
+.mk-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); margin-bottom: 14px; }
+/* Bars from one baseline: a fall goes left, a rise goes right, with the value at the end */
+.mk-bars { display: grid; gap: 10px; margin-top: 4px; }
+.mk-bar { display: grid; grid-template-columns: minmax(0, 38%) minmax(0, 1fr); gap: 2px 14px; align-items: center; }
+.mk-bar-label { font-size: 13.5px; overflow-wrap: anywhere; }
+.mk-bar.main .mk-bar-label { font-weight: 700; }
+.mk-track { display: grid; align-items: center; min-height: 24px; }
+.mk-half { display: flex; align-items: center; gap: 6px; min-width: 0; height: 24px; }
+.mk-half.neg { justify-content: flex-end; }
+.mk-half.pos { border-left: 1px solid var(--line-strong); }
+.mk-fill { display: block; height: 14px; background: var(--mk-ctx); flex: none; min-width: 2px; }
+.mk-half.neg .mk-fill { border-radius: 4px 0 0 4px; }
+.mk-half.pos .mk-fill { border-radius: 0 4px 4px 0; }
+.mk-bar.main .mk-fill { background: var(--accent-ink); }
+.mk-val { font-size: 12.5px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mk-bar .mk-sub { white-space: nowrap; }
+/* Column and line charts */
+.mk-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12.5px; color: var(--muted); }
+.mk-key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--accent-ink); margin-right: 6px; vertical-align: -1px; }
+.mk-key.fc { background: color-mix(in srgb, var(--accent-ink) 40%, var(--surface)); }
+.mk-key.ctx { background: var(--mk-ctx); }
+.mk-key.line { width: 16px; height: 2px; border-radius: 1px; vertical-align: 3px; }
+.mk-chart { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 8px; padding-top: 16px; border-radius: 6px; }
+.mk-chart:focus-visible { outline-offset: 4px; }
+.mk-yaxis { display: flex; flex-direction: column; justify-content: space-between; height: 164px; margin: -7px 0; line-height: 14px; font-size: 11px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.mk-plot { position: relative; height: 150px; border-bottom: 1px solid var(--line-strong); }
+.mk-gl { position: absolute; left: 0; right: 0; height: 0; border-top: 1px solid var(--line); }
+.mk-colrow { position: absolute; inset: 0; display: flex; align-items: flex-end; }
+.mk-hit { flex: 1 1 0; height: 100%; min-width: 0; display: flex; align-items: flex-end; justify-content: center; }
+.mk-col { position: relative; display: block; font-style: normal; width: min(24px, 72%); background: var(--accent-ink); border-radius: 4px 4px 0 0; }
+.mk-col.fc { background: color-mix(in srgb, var(--accent-ink) 40%, var(--surface)); }
+.mk-hit.on .mk-col { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--ink); }
+.mk-cap { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); padding-bottom: 3px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.mk-xaxis { grid-column: 2; display: flex; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.mk-xaxis span { flex: 1 1 0; min-width: 0; text-align: center; }
+.mk-xaxis.spread { justify-content: space-between; }
+.mk-xaxis.spread span { flex: none; }
+.mk-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.mk-raw rect { fill: var(--mk-ctx); }
+.mk-line { fill: none; stroke: var(--accent-ink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.mk-dot { position: absolute; width: 10px; height: 10px; margin: 0 0 -5px -5px; border-radius: 50%; background: var(--accent-ink); box-shadow: 0 0 0 2px var(--surface); }
+.mk-endlabel { position: absolute; transform: translateY(50%); font-size: 11.5px; font-weight: 600; background: var(--surface); padding: 0 4px; border-radius: 3px; white-space: nowrap; }
+.mk-cross { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px solid var(--muted); pointer-events: none; }
+.mk-hits { z-index: 1; }
+.mk-hits .mk-hit.on { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.mk-tip { position: fixed; z-index: 30; pointer-events: none; background: var(--ink); color: var(--bg); border-radius: 6px; padding: 6px 10px; font-size: 12.5px; display: grid; gap: 1px; box-shadow: var(--shadow); max-width: 260px; }
+.mk-tip b { font-size: 14.5px; }
+.mk-table summary { cursor: pointer; font-size: 12.5px; color: var(--accent-ink); width: max-content; }
+.mk-table table { border-collapse: collapse; font-size: 13px; margin-top: 8px; width: 100%; font-variant-numeric: tabular-nums; }
+.mk-table th, .mk-table td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); font-weight: 400; }
+.mk-table thead th { font-family: var(--font-mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.mk-notes { margin: 0; padding-left: 18px; display: grid; gap: 8px; font-size: 14px; max-width: 78ch; }
+.mk-do { background: var(--sunk); border-radius: 12px; padding: 16px 20px 18px; display: grid; gap: 10px; }
+.mk-do h2 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: 20px; margin: 0; }
+.mk-do > p { margin: 0; font-size: 14.5px; max-width: 72ch; }
+.mk-do ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.mk-do li { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.mk-do li span { flex: 1 1 300px; font-size: 14px; max-width: 72ch; }
+.mk-src-h { font-size: 13.5px; margin: 18px 0 6px; }
+.mk-src { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--muted); display: grid; gap: 3px; }
+@media (max-width: 560px) {
+  .mk-verdict { padding: 16px; }
+  .mk-bar { grid-template-columns: minmax(0, 1fr); }
+  .mk-tile b { font-size: 24px; }
+}
+/* The pop-up after a few rejections */
+.nudge { width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); border: 0; border-radius: 14px; padding: 0; background: var(--surface); color: var(--ink); box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+.nudge[open] { animation: ng-in .18s ease-out; }
+.nudge::backdrop { background: var(--backdrop); }
+@keyframes ng-in { from { transform: translateY(12px); opacity: 0; } }
+.ng { padding: 18px 22px 18px; display: grid; gap: 12px; }
+.ng-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ng-x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line-strong); background: transparent; color: var(--ink); font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
+.ng-x:hover { border-color: var(--ink); }
+.ng h2 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: clamp(21px, 4vw, 25px); line-height: 1.2; margin: 0; }
+.ng p { margin: 0; font-size: 15px; line-height: 1.55; }
+.ng-data { background: var(--sunk); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 10px 14px; display: grid; gap: 6px; }
+.ng-data.tough { border-left-color: var(--warn); }
+.ng-data p { font-size: 14.5px; }
+.ng .row { gap: 8px; margin-top: 2px; }
+.ng .tl-hint { font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { .nudge[open] { animation: none; } }
 </style>
 </head>
 <body>
@@ -521,6 +628,7 @@ body:has(.tailor[open]) { overflow: hidden; }
     <nav class="tabs" role="tablist" data-ta="tabs.label" aria-label="Views">
       <button class="tab" role="tab" id="tab-res" aria-selected="true" aria-controls="view-res" type="button"><span data-t="tab.res">Find jobs</span><span class="n" id="n-res"></span></button>
       <button class="tab" role="tab" id="tab-app" aria-selected="false" aria-controls="view-app" type="button" tabindex="-1"><span data-t="tab.app">My applications</span><span class="n" id="n-app"></span></button>
+      <button class="tab" role="tab" id="tab-market" aria-selected="false" aria-controls="view-market" type="button" tabindex="-1"><span data-t="tab.market">Market</span></button>
       <button class="tab" role="tab" id="tab-mentor" aria-selected="false" aria-controls="view-mentor" type="button" tabindex="-1" hidden><span data-t="tab.mentor">Mentor</span></button>
     </nav>
     <div class="lang" role="group" aria-label="Language / Språk">
@@ -620,6 +728,19 @@ body:has(.tailor[open]) { overflow: hidden; }
   </div>
 </section>
 
+<section id="view-market" role="tabpanel" aria-labelledby="tab-market" hidden>
+  <div class="mast compact">
+    <div class="mast-inner">
+      <div class="eyebrow" data-t="mk.eyebrow">Market analysis · open data</div>
+      <h1 data-t="mk.h1">How's the job market?</h1>
+      <p class="lede" data-t="mk.lede">See how many employers are advertising in your field compared with a year ago.</p>
+    </div>
+  </div>
+  <div class="wrap view-body">
+    <div class="market" id="market"></div>
+  </div>
+</section>
+
 <section id="view-mentor" role="tabpanel" aria-labelledby="tab-mentor" hidden>
   <div class="mast compact">
     <div class="mast-inner">
@@ -640,6 +761,7 @@ body:has(.tailor[open]) { overflow: hidden; }
     <p data-th="foot.keywords"></p>
     <p data-th="foot.place"></p>
     <p data-th="foot.history"></p>
+    <p data-th="foot.market"></p>
     <p data-th="foot.data"></p>
     <p><button class="linkbtn" type="button" id="goto-backup" data-t="foot.backup">Back up or restore your saved data</button></p>
     <div class="about">
@@ -651,6 +773,7 @@ body:has(.tailor[open]) { overflow: hidden; }
   </footer>
 </div>
 <dialog id="tailor" class="tailor" aria-labelledby="tl-title"></dialog>
+<dialog id="nudge" class="nudge" aria-labelledby="ng-title"></dialog>
 <script>
 "use strict";
 /* ---------- Settings filled in by the build ---------- */
@@ -1043,6 +1166,7 @@ function applyLang() {
 document.querySelector(".lang").addEventListener("click", e => {
   const b = e.target.closest("button[data-lang]"); if (!b || b.dataset.lang === lang) return;
   lang = b.dataset.lang; store.set("jf-lang", lang); $("msg").textContent = ""; applyLang(); render(); renderWelcome(); if (ABOUT.tailor) { mt.error = ""; mt.cvMsg = ""; renderMentor(); } if (tl) drawTailor();
+  marketLang();
 });
 
 /* ---------- Colour theme: one choice recolours every view, step 2 and the Mentor, and is kept for the next visit ---------- */
@@ -1322,7 +1446,7 @@ function fromPB(h) {
     muni: wa.municipality || "", muniId: wa.municipality_concept_id || "", region: wa.region || "", regionId: wa.region_concept_id || "",
     pub: (h.publication_date || "").slice(0, 10), deadline: (h.application_deadline || "").slice(0, 10), url: h.webpage_url || adUrl(h.id),
     apply: h.application_details?.url || "", applyEmail: h.application_details?.email || "",
-    occ: h.occupation?.label || "", group: h.occupation_group?.label || "", groupId: h.occupation_group?.concept_id || "", field: h.occupation_field?.label || "",
+    occ: h.occupation?.label || "", group: h.occupation_group?.label || "", groupId: h.occupation_group?.concept_id || "", field: h.occupation_field?.label || "", fieldId: h.occupation_field?.concept_id || "",
     duration: h.duration?.label || "", hours: h.working_hours_type?.label || "", vacancies: h.number_of_vacancies || 1, exp: h.experience_required,
     agency, client: !agency && CLIENT_TEXT.test(desc), contacts: adContacts(h, agency), snippet: desc.slice(0, 500), _text: fold(`${h.headline} ${desc} ${emp.name || ""}`) };
 }
@@ -1331,7 +1455,7 @@ function fromLinks(h) {
   return { id: "L:" + h.id, src: "links", title: cleanTitle(h.headline), employer: emp, workplace: "", org: "", site: "", logo: "",
     muni: wa.municipality || "", muniId: wa.municipality_concept_id || "", region: wa.region || "", regionId: wa.region_concept_id || "",
     pub: (h.publication_date || "").slice(0, 10), deadline: "", url: link.url || "", source: siteLabel(link), apply: "", applyEmail: "",
-    occ: "", group: h.occupation_group?.label || "", groupId: h.occupation_group?.concept_id || "", field: h.occupation_field?.label || "",
+    occ: "", group: h.occupation_group?.label || "", groupId: h.occupation_group?.concept_id || "", field: h.occupation_field?.label || "", fieldId: h.occupation_field?.concept_id || "",
     duration: "", hours: "", vacancies: 1, exp: null, agency: STAFFING.test(emp), client: CLIENT_TEXT.test(brief), contacts: [], snippet: brief.slice(0, 500), _text: fold(`${h.headline} ${brief} ${emp}`) };
 }
 
@@ -1777,7 +1901,7 @@ function setOpen(key, open) {
 function snapOf(a) {
   const c = companies.find(x => x.ads.includes(a));
   return { title: a.title, company: c ? coName(c) : shortName(a.employer), companyKey: c ? c.key : companyKey(a), url: a.url || adUrl(a.id), apply: a.apply || (a.applyEmail ? `mailto:${a.applyEmail}` : ""),
-    deadline: a.deadline, muni: a.muni, pub: a.pub, contacts: (a.contacts || []).filter(p => p.kind !== "inbox").slice(0, 3) };
+    deadline: a.deadline, muni: a.muni, pub: a.pub, field: a.field || "", fieldId: a.fieldId || "", contacts: (a.contacts || []).filter(p => p.kind !== "inbox").slice(0, 3) };
 }
 function backupHtml() {
   const at = store.get("jf-backup-at", null);
@@ -1920,10 +2044,12 @@ $("list").addEventListener("submit", e => {
 });
 function onStatus(e) {
   const el = e.target; if (el.dataset.role !== "status") return;
+  const was = apps[el.dataset.ad]?.status || "";
   setStatus(el.dataset.ad, el.value);
   const art = el.closest("article.co");
   if (art) rerenderCompany(art.dataset.id, el.value ? `textarea[data-ad="${CSS.escape(el.dataset.ad)}"]` : `select[data-ad="${CSS.escape(el.dataset.ad)}"]`);
   renderStats(); renderApps(); renderWelcome();
+  if (el.value === "Rejected" && was !== "Rejected") maybeNudge();   // after a few rejections, a word on the market (src/market.js)
 }
 function flushNote(el) {
   const id = el.dataset.ad;
@@ -1949,23 +2075,25 @@ $("expand-all").addEventListener("click", () => {
   for (const c of vis) if (all) openIds.delete(c.key); else openIds.add(c.key);
   store.set("jf-open", [...openIds]); render();
 });
-// The three parts of the suite: Find jobs, My applications and the Mentor (only when there is an AI server)
-const VIEWS = () => ABOUT.tailor ? ["res", "app", "mentor"] : ["res", "app"];
+// The parts of the suite: Find jobs, My applications, the Market and the Mentor (only when there is an AI server)
+const ALL_VIEWS = ["res", "app", "market", "mentor"];
+const VIEWS = () => ABOUT.tailor ? ALL_VIEWS : ALL_VIEWS.filter(v => v !== "mentor");
 let currentView = "res";
 function selectTab(name, focus) {
   if (!VIEWS().includes(name)) name = "res";
   const was = currentView; currentView = name;
-  for (const v of ["res", "app", "mentor"]) {
+  for (const v of ALL_VIEWS) {
     const on = v === name, b = $("tab-" + v);
     b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1; $("view-" + v).hidden = !on;
   }
   store.set("jf-tab", name);
   if (name === "app") renderApps();
+  if (name === "market") showMarket();
   if (name === "mentor") { renderMentor(); mtCount(); }
   if (name !== was) window.scrollTo(0, 0);
   if (focus) $("tab-" + name).focus();
 }
-for (const v of ["res", "app", "mentor"]) $("tab-" + v).addEventListener("click", () => selectTab(v));
+for (const v of ALL_VIEWS) $("tab-" + v).addEventListener("click", () => selectTab(v));
 document.querySelector(".tabs").addEventListener("keydown", e => {
   if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
   e.preventDefault();
@@ -2800,17 +2928,564 @@ function initMentor() {
 }
 
 
+/* ---------- Market: how the job market looks for your field ----------
+   Everything here comes from data/market.json, which market.py fills on the 1st of every month and build.py puts in the
+   page, so the tab makes no requests of its own. The figures for Sweden come from the sweden-labour-data package (SCB,
+   Arbetsförmedlingen, Konjunkturinstitutet, ManpowerGroup, Sveriges Ingenjörer, Cinode), each with the date it was compiled.
+   The figures for each field and county are Platsbanken ad counts: ads published in the three full months before the 1st,
+   against the same months a year earlier. Platsbanken's archive covers some years much more fully than others, so raw
+   counts can't be compared across years. Instead a field's change is divided by the change for all ads, which cancels out
+   the archive's coverage, and applied to Arbetsförmedlingen's official change in new job postings. No AI.
+   After a few rejections, a pop-up says what the figures mean for the person and points to the Mentor. */
+const MK = {"national_now":{"as_of":"2026-10-19","stale":false,"rows":[{"metric":"Unemployment, seasonally adjusted","period":"Sep 2026","value":8.6,"year_ago":null,"unit":"percent","note":"SCB survey; 8.1% before seasonal adjustment"},{"metric":"Registered unemployed","period":"Sep 2026","value":6.4,"year_ago":6.9,"unit":"percent","note":"Arbetsförmedlingen, share of the labour force"},{"metric":"New job postings","period":"Sep 2026","value":65000,"year_ago":78000,"unit":"count","note":"Arbetsförmedlingen"},{"metric":"Redundancy notices","period":"Sep 2026","value":5487,"year_ago":5057,"unit":"count","note":"Arbetsförmedlingen"}]},"national_yearly":{"as_of":"2026-10-19","stale":false,"rows":[{"year":2019,"value":6.9,"kind":"actual"},{"year":2020,"value":8.5,"kind":"actual"},{"year":2021,"value":8.9,"kind":"actual"},{"year":2022,"value":7.5,"kind":"actual"},{"year":2023,"value":7.7,"kind":"actual"},{"year":2024,"value":8.4,"kind":"actual"},{"year":2025,"value":8.8,"kind":"actual"},{"year":2026,"value":8.6,"kind":"forecast"},{"year":2027,"value":7.9,"kind":"forecast"},{"year":2028,"value":7.2,"kind":"forecast"},{"year":2029,"value":7.1,"kind":"forecast"},{"year":2030,"value":7.1,"kind":"forecast"}]},"hiring_outlook":{"as_of":"2026-10-19","stale":false,"rows":[{"group":"IT and tech","kind":"industry","value":41,"previous":27},{"group":"Services and consulting","kind":"industry","value":44,"previous":null},{"group":"Manufacturing, automotive and defence","kind":"industry","value":31,"previous":null},{"group":"All employers","kind":"total","value":39,"previous":null},{"group":"Stockholm and Uppsala","kind":"region","value":45,"previous":null},{"group":"Västra Götaland","kind":"region","value":37,"previous":39},{"group":"Skåne and Blekinge","kind":"region","value":31,"previous":null}],"period":"2026 Q4"},"hiring_plans":{"as_of":"2026-10-19","stale":false,"rows":[{"month":"2025-09","sector":"All businesses","net_balance":2},{"month":"2025-10","sector":"All businesses","net_balance":3},{"month":"2025-11","sector":"All businesses","net_balance":6},{"month":"2025-12","sector":"All businesses","net_balance":6},{"month":"2026-01","sector":"All businesses","net_balance":6},{"month":"2026-02","sector":"All businesses","net_balance":4},{"month":"2026-03","sector":"All businesses","net_balance":4},{"month":"2026-04","sector":"All businesses","net_balance":3},{"month":"2026-05","sector":"All businesses","net_balance":1},{"month":"2026-06","sector":"All businesses","net_balance":1},{"month":"2026-07","sector":"All businesses","net_balance":4},{"month":"2026-08","sector":"All businesses","net_balance":6},{"month":"2026-09","sector":"All businesses","net_balance":7},{"month":"2025-09","sector":"Manufacturing","net_balance":-8},{"month":"2025-10","sector":"Manufacturing","net_balance":-4},{"month":"2025-11","sector":"Manufacturing","net_balance":-7},{"month":"2025-12","sector":"Manufacturing","net_balance":-11},{"month":"2026-01","sector":"Manufacturing","net_balance":1},{"month":"2026-02","sector":"Manufacturing","net_balance":-4},{"month":"2026-03","sector":"Manufacturing","net_balance":-3},{"month":"2026-04","sector":"Manufacturing","net_balance":-4},{"month":"2026-05","sector":"Manufacturing","net_balance":1},{"month":"2026-06","sector":"Manufacturing","net_balance":3},{"month":"2026-07","sector":"Manufacturing","net_balance":2},{"month":"2026-08","sector":"Manufacturing","net_balance":-1},{"month":"2026-09","sector":"Manufacturing","net_balance":5},{"month":"2025-09","sector":"Services","net_balance":5},{"month":"2025-10","sector":"Services","net_balance":7},{"month":"2025-11","sector":"Services","net_balance":8},{"month":"2025-12","sector":"Services","net_balance":11},{"month":"2026-01","sector":"Services","net_balance":9},{"month":"2026-02","sector":"Services","net_balance":8},{"month":"2026-03","sector":"Services","net_balance":4},{"month":"2026-04","sector":"Services","net_balance":4},{"month":"2026-05","sector":"Services","net_balance":-1},{"month":"2026-06","sector":"Services","net_balance":1},{"month":"2026-07","sector":"Services","net_balance":4},{"month":"2026-08","sector":"Services","net_balance":6},{"month":"2026-09","sector":"Services","net_balance":5}]},"redundancies":{"as_of":"2026-10-19","stale":false,"rows":[{"month":"2024-09","notices":7586,"notices_trend":6006},{"month":"2024-10","notices":5670,"notices_trend":5731},{"month":"2024-11","notices":5783,"notices_trend":5463},{"month":"2024-12","notices":4280,"notices_trend":5212},{"month":"2025-01","notices":5312,"notices_trend":5005},{"month":"2025-02","notices":4912,"notices_trend":4942},{"month":"2025-03","notices":5415,"notices_trend":4952},{"month":"2025-04","notices":5267,"notices_trend":4962},{"month":"2025-05","notices":10607,"notices_trend":4964},{"month":"2025-06","notices":4606,"notices_trend":4966},{"month":"2025-07","notices":4330,"notices_trend":4875},{"month":"2025-08","notices":2457,"notices_trend":4690},{"month":"2025-09","notices":5057,"notices_trend":4484},{"month":"2025-10","notices":6174,"notices_trend":4360},{"month":"2025-11","notices":4089,"notices_trend":4364},{"month":"2025-12","notices":2887,"notices_trend":4433},{"month":"2026-01","notices":6260,"notices_trend":4453},{"month":"2026-02","notices":4217,"notices_trend":4326},{"month":"2026-03","notices":5697,"notices_trend":4068},{"month":"2026-04","notices":3688,"notices_trend":3817},{"month":"2026-05","notices":3536,"notices_trend":3651},{"month":"2026-06","notices":2857,"notices_trend":3647},{"month":"2026-07","notices":2947,"notices_trend":3801},{"month":"2026-08","notices":2925,"notices_trend":4031},{"month":"2026-09","notices":5487,"notices_trend":4250}]},"engineers":{"as_of":"2026-10-20","stale":false,"rows":[{"measure":"unemployment","label":"Nov 2021","date":"2021-11-30","value":1.0,"note":"First of five months at 1.0%"},{"measure":"unemployment","label":"Apr 2022","date":"2022-04-30","value":0.9,"note":""},{"measure":"unemployment","label":"May 2023","date":"2023-05-31","value":0.8,"note":"Record low (0.83%)"},{"measure":"unemployment","label":"Nov 2023","date":"2023-11-30","value":1.0,"note":""},{"measure":"unemployment","label":"Aug 2024","date":"2024-08-31","value":1.33,"note":""},{"measure":"unemployment","label":"Nov 2024","date":"2024-11-30","value":1.25,"note":""},{"measure":"unemployment","label":"Apr 2025","date":"2025-04-30","value":1.35,"note":""},{"measure":"unemployment","label":"Sep 2025","date":"2025-09-30","value":1.8,"note":"Peak, highest in nearly 15 years"},{"measure":"unemployment","label":"Nov 2025","date":"2025-11-30","value":1.5,"note":""},{"measure":"unemployment","label":"Dec 2025","date":"2025-12-31","value":1.5,"note":""},{"measure":"unemployment","label":"May 2026","date":"2026-05-31","value":1.5,"note":"Latest"},{"measure":"reference","label":"Pandemic high","date":null,"value":1.7,"note":"Highest level from Jan 2020 to Apr 2023; month not published"},{"measure":"compare_may_2026","label":"Engineers","date":"2026-05-31","value":1.5,"note":"Sveriges Ingenjörer members"},{"measure":"compare_may_2026","label":"All graduates","date":"2026-05-31","value":2.1,"note":"Academics, a-kassa measure"},{"measure":"compare_may_2026","label":"Everyone","date":"2026-05-31","value":6.4,"note":"Arbetsförmedlingen measure"},{"measure":"better_paid_job","label":"Feb 2022","date":"2022-02-28","value":66,"note":""},{"measure":"better_paid_job","label":"Nov 2022","date":"2022-11-30","value":65,"note":""},{"measure":"better_paid_job","label":"Nov 2023","date":"2023-11-30","value":59,"note":"Press release words it as the chance of changing employer"},{"measure":"better_paid_job","label":"Nov 2025","date":"2025-11-30","value":37,"note":"First time more were negative than positive"},{"measure":"better_paid_job","label":"Jun 2026","date":"2026-06-30","value":44,"note":"First rise after seven surveys in a row of decline"},{"measure":"expect_more_engineers","label":"Nov 2022","date":"2022-11-30","value":54,"note":""},{"measure":"expect_more_engineers","label":"Nov 2023","date":"2023-11-30","value":47,"note":""},{"measure":"expect_more_engineers","label":"Jun 2026","date":"2026-06-30","value":40,"note":"Report says just over 40%"},{"measure":"expect_fewer_engineers","label":"Nov 2022","date":"2022-11-30","value":9,"note":""},{"measure":"expect_fewer_engineers","label":"Nov 2023","date":"2023-11-30","value":12,"note":""},{"measure":"expect_fewer_engineers","label":"Jun 2026","date":"2026-06-30","value":16,"note":""}]},"consulting":{"as_of":"2026-10-19","stale":false,"rows":[{"quarter":"Q3 2025","median_growth":0.9,"avg_growth":-1.6,"firms_adding_staff":null,"adding_staff_text":"More than half","headcount_change":null,"headcount_change_excl_divestments":null},{"quarter":"Q4 2025","median_growth":-0.8,"avg_growth":-1.6,"firms_adding_staff":null,"adding_staff_text":"More than half","headcount_change":null,"headcount_change_excl_divestments":null},{"quarter":"Q1 2026","median_growth":-1.1,"avg_growth":-0.4,"firms_adding_staff":7,"adding_staff_text":"7 of 25","headcount_change":null,"headcount_change_excl_divestments":null},{"quarter":"Q2 2026","median_growth":-0.7,"avg_growth":0.8,"firms_adding_staff":5,"adding_staff_text":"5 of 25","headcount_change":-1126,"headcount_change_excl_divestments":-740}]},"tech_employment":{"as_of":"2026-10-20","stale":false,"rows":[{"quarter":"2025 Q2","date":"2025-06-30","sector":"All jobs","thousands":5443.7},{"quarter":"2025 Q3","date":"2025-09-30","sector":"All jobs","thousands":5446},{"quarter":"2025 Q4","date":"2025-12-31","sector":"All jobs","thousands":5453.3},{"quarter":"2026 Q1","date":"2026-03-31","sector":"All jobs","thousands":5460.1},{"quarter":"2026 Q2","date":"2026-06-30","sector":"All jobs","thousands":5467.3},{"quarter":"2025 Q2","date":"2025-06-30","sector":"Information and communication","thousands":243.3},{"quarter":"2025 Q3","date":"2025-09-30","sector":"Information and communication","thousands":242.8},{"quarter":"2025 Q4","date":"2025-12-31","sector":"Information and communication","thousands":242},{"quarter":"2026 Q1","date":"2026-03-31","sector":"Information and communication","thousands":241.2},{"quarter":"2026 Q2","date":"2026-06-30","sector":"Information and communication","thousands":240.6},{"quarter":"2025 Q2","date":"2025-06-30","sector":"Manufacturing","thousands":567.7},{"quarter":"2025 Q3","date":"2025-09-30","sector":"Manufacturing","thousands":563.1},{"quarter":"2025 Q4","date":"2025-12-31","sector":"Manufacturing","thousands":562.3},{"quarter":"2026 Q1","date":"2026-03-31","sector":"Manufacturing","thousands":561.8},{"quarter":"2026 Q2","date":"2026-06-30","sector":"Manufacturing","thousands":560.6},{"quarter":"2025 Q2","date":"2025-06-30","sector":"Professional and technical services","thousands":646.3},{"quarter":"2025 Q3","date":"2025-09-30","sector":"Professional and technical services","thousands":649.4},{"quarter":"2025 Q4","date":"2025-12-31","sector":"Professional and technical services","thousands":651.8},{"quarter":"2026 Q1","date":"2026-03-31","sector":"Professional and technical services","thousands":650.8},{"quarter":"2026 Q2","date":"2026-06-30","sector":"Professional and technical services","thousands":652}]},"job_openings":{"as_of":"2026-10-20","stale":false,"rows":[{"quarter":"2025 Q2","date":"2025-06-30","openings_sa":129100},{"quarter":"2025 Q3","date":"2025-09-30","openings_sa":129500},{"quarter":"2025 Q4","date":"2025-12-31","openings_sa":130800},{"quarter":"2026 Q1","date":"2026-03-31","openings_sa":127200},{"quarter":"2026 Q2","date":"2026-06-30","openings_sa":139600}]},"counts":{"on":"2026-10-20","window":{"from":"2026-07-01","to":"2026-09-30","from_prev":"2025-07-01","to_prev":"2025-09-30"},"n":{"|":[114236,13915,233853,42163],"|DQZd_uYs_oKb":[1399,215,2808,584],"|oDpK_oZ2_WYt":[2888,425,5646,1178],"|K8iD_VQv_2BA":[683,69,1269,222],"|zupA_8Nt_xcD":[2364,265,4938,829],"|wjee_qH2_yb6":[2966,326,5762,1083],"|65Ms_7r1_RTG":[1565,256,3335,663],"|MtbE_xWT_eMi":[4445,606,8702,1732],"|9QUH_2bb_6Np":[2128,266,3927,776],"|tF3y_MF9_h5G":[2407,232,4983,856],"|9hXe_F4g_eTG":[4095,511,8529,1494],"|CaRE_1nn_cSU":[12944,1480,27378,4576],"|CifL_Rzy_Mku":[29646,3589,59641,10941],"|s93u_BEb_sx2":[2562,368,5084,1035],"|zBon_eET_fFU":[4091,531,8265,1556],"|EVVp_h6U_GSZ":[2488,297,4702,943],"|g5Tt_CAV_zBd":[3176,324,6022,1094],"|NvUF_SP1_1zo":[2723,281,5493,912],"|G6DV_fKE_Viz":[2817,335,5366,1081],"|zdoY_6u5_Krt":[17842,2158,35548,6708],"|xTCk_nT5_Zjm":[3027,344,6683,1120],"|oLT3_Q9p_3nn":[6010,769,11638,2300],"X82t_awd_Qyc|":[12828,804,25823,3693],"X82t_awd_Qyc|DQZd_uYs_oKb":[153,7,253,51],"X82t_awd_Qyc|oDpK_oZ2_WYt":[241,16,417,74],"X82t_awd_Qyc|K8iD_VQv_2BA":[45,4,107,12],"X82t_awd_Qyc|zupA_8Nt_xcD":[213,19,469,66],"X82t_awd_Qyc|wjee_qH2_yb6":[234,11,506,65],"X82t_awd_Qyc|65Ms_7r1_RTG":[175,16,450,61],"X82t_awd_Qyc|MtbE_xWT_eMi":[326,14,740,108],"X82t_awd_Qyc|9QUH_2bb_6Np":[172,13,331,65],"X82t_awd_Qyc|tF3y_MF9_h5G":[170,7,385,49],"X82t_awd_Qyc|9hXe_F4g_eTG":[351,24,705,90],"X82t_awd_Qyc|CaRE_1nn_cSU":[1411,83,2953,390],"X82t_awd_Qyc|CifL_Rzy_Mku":[4395,281,8483,1222],"X82t_awd_Qyc|s93u_BEb_sx2":[230,17,408,75],"X82t_awd_Qyc|zBon_eET_fFU":[398,20,775,122],"X82t_awd_Qyc|EVVp_h6U_GSZ":[401,14,412,74],"X82t_awd_Qyc|g5Tt_CAV_zBd":[281,14,544,86],"X82t_awd_Qyc|NvUF_SP1_1zo":[282,14,538,60],"X82t_awd_Qyc|G6DV_fKE_Viz":[261,19,474,74],"X82t_awd_Qyc|zdoY_6u5_Krt":[1878,119,3698,549],"X82t_awd_Qyc|xTCk_nT5_Zjm":[293,18,608,85],"X82t_awd_Qyc|oLT3_Q9p_3nn":[674,54,1222,243],"j7Cq_ZJe_GkT|":[4653,819,9176,2072],"j7Cq_ZJe_GkT|DQZd_uYs_oKb":[32,7,94,17],"j7Cq_ZJe_GkT|oDpK_oZ2_WYt":[162,19,177,59],"j7Cq_ZJe_GkT|K8iD_VQv_2BA":[13,3,24,8],"j7Cq_ZJe_GkT|zupA_8Nt_xcD":[88,10,144,33],"j7Cq_ZJe_GkT|wjee_qH2_yb6":[107,21,206,49],"j7Cq_ZJe_GkT|65Ms_7r1_RTG":[33,11,59,19],"j7Cq_ZJe_GkT|MtbE_xWT_eMi":[131,28,252,54],"j7Cq_ZJe_GkT|9QUH_2bb_6Np":[53,11,148,30],"j7Cq_ZJe_GkT|tF3y_MF9_h5G":[81,9,139,23],"j7Cq_ZJe_GkT|9hXe_F4g_eTG":[309,49,573,114],"j7Cq_ZJe_GkT|CaRE_1nn_cSU":[439,71,906,181],"j7Cq_ZJe_GkT|CifL_Rzy_Mku":[1346,252,2776,667],"j7Cq_ZJe_GkT|s93u_BEb_sx2":[89,23,250,67],"j7Cq_ZJe_GkT|zBon_eET_fFU":[152,25,284,54],"j7Cq_ZJe_GkT|EVVp_h6U_GSZ":[50,8,154,27],"j7Cq_ZJe_GkT|g5Tt_CAV_zBd":[140,19,240,54],"j7Cq_ZJe_GkT|NvUF_SP1_1zo":[125,19,195,39],"j7Cq_ZJe_GkT|G6DV_fKE_Viz":[128,19,175,59],"j7Cq_ZJe_GkT|zdoY_6u5_Krt":[703,127,1383,339],"j7Cq_ZJe_GkT|xTCk_nT5_Zjm":[68,15,146,38],"j7Cq_ZJe_GkT|oLT3_Q9p_3nn":[170,29,263,66],"bh3H_Y3h_5eD|":[5902,566,11637,2186],"bh3H_Y3h_5eD|DQZd_uYs_oKb":[70,12,175,35],"bh3H_Y3h_5eD|oDpK_oZ2_WYt":[177,30,279,81],"bh3H_Y3h_5eD|K8iD_VQv_2BA":[52,5,44,22],"bh3H_Y3h_5eD|zupA_8Nt_xcD":[147,16,261,60],"bh3H_Y3h_5eD|wjee_qH2_yb6":[141,13,251,44],"bh3H_Y3h_5eD|65Ms_7r1_RTG":[91,11,203,33],"bh3H_Y3h_5eD|MtbE_xWT_eMi":[209,22,415,89],"bh3H_Y3h_5eD|9QUH_2bb_6Np":[133,15,231,49],"bh3H_Y3h_5eD|tF3y_MF9_h5G":[114,6,251,41],"bh3H_Y3h_5eD|9hXe_F4g_eTG":[242,20,460,72],"bh3H_Y3h_5eD|CaRE_1nn_cSU":[594,60,1267,209],"bh3H_Y3h_5eD|CifL_Rzy_Mku":[1423,130,2831,532],"bh3H_Y3h_5eD|s93u_BEb_sx2":[135,18,262,52],"bh3H_Y3h_5eD|zBon_eET_fFU":[228,21,419,76],"bh3H_Y3h_5eD|EVVp_h6U_GSZ":[141,11,263,49],"bh3H_Y3h_5eD|g5Tt_CAV_zBd":[166,16,340,69],"bh3H_Y3h_5eD|NvUF_SP1_1zo":[175,9,354,59],"bh3H_Y3h_5eD|G6DV_fKE_Viz":[165,12,282,57],"bh3H_Y3h_5eD|zdoY_6u5_Krt":[966,102,1861,369],"bh3H_Y3h_5eD|xTCk_nT5_Zjm":[170,14,347,70],"bh3H_Y3h_5eD|oLT3_Q9p_3nn":[319,38,589,143],"apaJ_2ja_LuF|":[6251,947,14495,2585],"apaJ_2ja_LuF|DQZd_uYs_oKb":[33,8,135,19],"apaJ_2ja_LuF|oDpK_oZ2_WYt":[57,12,141,28],"apaJ_2ja_LuF|K8iD_VQv_2BA":[9,1,30,3],"apaJ_2ja_LuF|zupA_8Nt_xcD":[62,9,120,24],"apaJ_2ja_LuF|wjee_qH2_yb6":[68,3,110,14],"apaJ_2ja_LuF|65Ms_7r1_RTG":[48,5,108,12],"apaJ_2ja_LuF|MtbE_xWT_eMi":[135,14,299,51],"apaJ_2ja_LuF|9QUH_2bb_6Np":[53,7,97,22],"apaJ_2ja_LuF|tF3y_MF9_h5G":[54,10,130,29],"apaJ_2ja_LuF|9hXe_F4g_eTG":[92,14,351,48],"apaJ_2ja_LuF|CaRE_1nn_cSU":[518,81,1520,224],"apaJ_2ja_LuF|CifL_Rzy_Mku":[2644,394,5518,1088],"apaJ_2ja_LuF|s93u_BEb_sx2":[52,7,132,16],"apaJ_2ja_LuF|zBon_eET_fFU":[124,14,263,63],"apaJ_2ja_LuF|EVVp_h6U_GSZ":[46,7,170,20],"apaJ_2ja_LuF|g5Tt_CAV_zBd":[67,5,164,18],"apaJ_2ja_LuF|NvUF_SP1_1zo":[137,10,242,32],"apaJ_2ja_LuF|G6DV_fKE_Viz":[110,15,279,64],"apaJ_2ja_LuF|zdoY_6u5_Krt":[1012,197,1800,481],"apaJ_2ja_LuF|xTCk_nT5_Zjm":[146,13,300,51],"apaJ_2ja_LuF|oLT3_Q9p_3nn":[567,88,1092,231],"RPTn_bxG_ExZ|":[12533,1244,27848,4197],"RPTn_bxG_ExZ|DQZd_uYs_oKb":[134,18,314,51],"RPTn_bxG_ExZ|oDpK_oZ2_WYt":[233,37,633,93],"RPTn_bxG_ExZ|K8iD_VQv_2BA":[16,1,75,7],"RPTn_bxG_ExZ|zupA_8Nt_xcD":[231,24,556,72],"RPTn_bxG_ExZ|wjee_qH2_yb6":[279,21,622,101],"RPTn_bxG_ExZ|65Ms_7r1_RTG":[114,13,195,61],"RPTn_bxG_ExZ|MtbE_xWT_eMi":[463,43,809,144],"RPTn_bxG_ExZ|9QUH_2bb_6Np":[199,20,360,65],"RPTn_bxG_ExZ|tF3y_MF9_h5G":[193,19,461,75],"RPTn_bxG_ExZ|9hXe_F4g_eTG":[321,34,789,99],"RPTn_bxG_ExZ|CaRE_1nn_cSU":[1509,111,3868,473],"RPTn_bxG_ExZ|CifL_Rzy_Mku":[3832,377,7776,1304],"RPTn_bxG_ExZ|s93u_BEb_sx2":[240,28,584,98],"RPTn_bxG_ExZ|zBon_eET_fFU":[429,34,938,107],"RPTn_bxG_ExZ|EVVp_h6U_GSZ":[282,31,549,106],"RPTn_bxG_ExZ|g5Tt_CAV_zBd":[280,27,624,84],"RPTn_bxG_ExZ|NvUF_SP1_1zo":[270,21,513,75],"RPTn_bxG_ExZ|G6DV_fKE_Viz":[302,39,724,114],"RPTn_bxG_ExZ|zdoY_6u5_Krt":[1884,187,3951,630],"RPTn_bxG_ExZ|xTCk_nT5_Zjm":[330,37,902,113],"RPTn_bxG_ExZ|oLT3_Q9p_3nn":[625,65,1273,218],"PaxQ_o1G_wWH|":[341,72,694,175],"PaxQ_o1G_wWH|DQZd_uYs_oKb":[1,0,0,0],"PaxQ_o1G_wWH|oDpK_oZ2_WYt":[8,2,15,3],"PaxQ_o1G_wWH|K8iD_VQv_2BA":[0,0,2,1],"PaxQ_o1G_wWH|zupA_8Nt_xcD":[3,1,12,1],"PaxQ_o1G_wWH|wjee_qH2_yb6":[10,2,21,3],"PaxQ_o1G_wWH|65Ms_7r1_RTG":[8,2,8,3],"PaxQ_o1G_wWH|MtbE_xWT_eMi":[19,3,27,7],"PaxQ_o1G_wWH|9QUH_2bb_6Np":[5,1,16,5],"PaxQ_o1G_wWH|tF3y_MF9_h5G":[5,0,14,2],"PaxQ_o1G_wWH|9hXe_F4g_eTG":[2,3,18,5],"PaxQ_o1G_wWH|CaRE_1nn_cSU":[43,12,91,27],"PaxQ_o1G_wWH|CifL_Rzy_Mku":[108,20,179,56],"PaxQ_o1G_wWH|s93u_BEb_sx2":[10,0,4,1],"PaxQ_o1G_wWH|zBon_eET_fFU":[8,1,19,6],"PaxQ_o1G_wWH|EVVp_h6U_GSZ":[5,0,5,1],"PaxQ_o1G_wWH|g5Tt_CAV_zBd":[6,0,17,1],"PaxQ_o1G_wWH|NvUF_SP1_1zo":[4,0,4,1],"PaxQ_o1G_wWH|G6DV_fKE_Viz":[3,2,8,3],"PaxQ_o1G_wWH|zdoY_6u5_Krt":[61,18,161,33],"PaxQ_o1G_wWH|xTCk_nT5_Zjm":[4,0,14,1],"PaxQ_o1G_wWH|oLT3_Q9p_3nn":[25,1,17,9],"ScKy_FHB_7wT|":[5704,1031,12168,2286],"ScKy_FHB_7wT|DQZd_uYs_oKb":[56,22,150,43],"ScKy_FHB_7wT|oDpK_oZ2_WYt":[189,57,379,97],"ScKy_FHB_7wT|K8iD_VQv_2BA":[21,8,61,9],"ScKy_FHB_7wT|zupA_8Nt_xcD":[139,21,222,51],"ScKy_FHB_7wT|wjee_qH2_yb6":[146,37,356,74],"ScKy_FHB_7wT|65Ms_7r1_RTG":[148,68,357,112],"ScKy_FHB_7wT|MtbE_xWT_eMi":[200,27,364,73],"ScKy_FHB_7wT|9QUH_2bb_6Np":[140,15,247,35],"ScKy_FHB_7wT|tF3y_MF9_h5G":[87,12,266,46],"ScKy_FHB_7wT|9hXe_F4g_eTG":[212,58,519,108],"ScKy_FHB_7wT|CaRE_1nn_cSU":[620,128,1475,263],"ScKy_FHB_7wT|CifL_Rzy_Mku":[1693,207,3118,554],"ScKy_FHB_7wT|s93u_BEb_sx2":[97,13,231,41],"ScKy_FHB_7wT|zBon_eET_fFU":[149,26,346,69],"ScKy_FHB_7wT|EVVp_h6U_GSZ":[138,28,281,61],"ScKy_FHB_7wT|g5Tt_CAV_zBd":[158,30,393,58],"ScKy_FHB_7wT|NvUF_SP1_1zo":[82,18,173,46],"ScKy_FHB_7wT|G6DV_fKE_Viz":[81,16,216,42],"ScKy_FHB_7wT|zdoY_6u5_Krt":[1015,163,2180,372],"ScKy_FHB_7wT|xTCk_nT5_Zjm":[100,22,258,40],"ScKy_FHB_7wT|oLT3_Q9p_3nn":[151,33,359,59],"NYW6_mP6_vwf|":[16802,1990,31697,6336],"NYW6_mP6_vwf|DQZd_uYs_oKb":[224,25,452,88],"NYW6_mP6_vwf|oDpK_oZ2_WYt":[594,57,1066,204],"NYW6_mP6_vwf|K8iD_VQv_2BA":[225,11,396,59],"NYW6_mP6_vwf|zupA_8Nt_xcD":[545,51,1058,183],"NYW6_mP6_vwf|wjee_qH2_yb6":[501,54,998,191],"NYW6_mP6_vwf|65Ms_7r1_RTG":[427,53,852,151],"NYW6_mP6_vwf|MtbE_xWT_eMi":[502,66,1009,204],"NYW6_mP6_vwf|9QUH_2bb_6Np":[400,60,694,145],"NYW6_mP6_vwf|tF3y_MF9_h5G":[335,49,652,135],"NYW6_mP6_vwf|9hXe_F4g_eTG":[831,79,1395,279],"NYW6_mP6_vwf|CaRE_1nn_cSU":[1998,228,3391,740],"NYW6_mP6_vwf|CifL_Rzy_Mku":[2653,455,5611,1265],"NYW6_mP6_vwf|s93u_BEb_sx2":[448,86,859,196],"NYW6_mP6_vwf|zBon_eET_fFU":[860,140,1634,396],"NYW6_mP6_vwf|EVVp_h6U_GSZ":[396,52,793,164],"NYW6_mP6_vwf|g5Tt_CAV_zBd":[738,55,1081,236],"NYW6_mP6_vwf|NvUF_SP1_1zo":[698,73,1314,242],"NYW6_mP6_vwf|G6DV_fKE_Viz":[446,38,800,154],"NYW6_mP6_vwf|zdoY_6u5_Krt":[2431,202,4316,851],"NYW6_mP6_vwf|xTCk_nT5_Zjm":[491,48,963,156],"NYW6_mP6_vwf|oLT3_Q9p_3nn":[900,109,1542,317],"wTEr_CBC_bqh|":[5791,914,11251,2421],"wTEr_CBC_bqh|DQZd_uYs_oKb":[88,18,202,35],"wTEr_CBC_bqh|oDpK_oZ2_WYt":[67,16,191,47],"wTEr_CBC_bqh|K8iD_VQv_2BA":[13,7,12,7],"wTEr_CBC_bqh|zupA_8Nt_xcD":[83,15,138,32],"wTEr_CBC_bqh|wjee_qH2_yb6":[246,40,404,107],"wTEr_CBC_bqh|65Ms_7r1_RTG":[26,6,58,12],"wTEr_CBC_bqh|MtbE_xWT_eMi":[651,122,1319,304],"wTEr_CBC_bqh|9QUH_2bb_6Np":[143,28,321,72],"wTEr_CBC_bqh|tF3y_MF9_h5G":[547,33,819,139],"wTEr_CBC_bqh|9hXe_F4g_eTG":[208,18,262,59],"wTEr_CBC_bqh|CaRE_1nn_cSU":[611,97,1456,246],"wTEr_CBC_bqh|CifL_Rzy_Mku":[815,138,1553,351],"wTEr_CBC_bqh|s93u_BEb_sx2":[156,24,255,65],"wTEr_CBC_bqh|zBon_eET_fFU":[92,15,254,50],"wTEr_CBC_bqh|EVVp_h6U_GSZ":[128,14,255,51],"wTEr_CBC_bqh|g5Tt_CAV_zBd":[121,18,169,32],"wTEr_CBC_bqh|NvUF_SP1_1zo":[101,13,245,39],"wTEr_CBC_bqh|G6DV_fKE_Viz":[145,34,260,79],"wTEr_CBC_bqh|zdoY_6u5_Krt":[1018,181,1940,488],"wTEr_CBC_bqh|xTCk_nT5_Zjm":[119,30,398,62],"wTEr_CBC_bqh|oLT3_Q9p_3nn":[263,40,537,121],"yhCP_AqT_tns|":[4481,779,10329,2203],"yhCP_AqT_tns|DQZd_uYs_oKb":[74,12,169,35],"yhCP_AqT_tns|oDpK_oZ2_WYt":[113,12,322,43],"yhCP_AqT_tns|K8iD_VQv_2BA":[16,2,58,3],"yhCP_AqT_tns|zupA_8Nt_xcD":[128,20,300,50],"yhCP_AqT_tns|wjee_qH2_yb6":[108,13,262,48],"yhCP_AqT_tns|65Ms_7r1_RTG":[46,9,109,26],"yhCP_AqT_tns|MtbE_xWT_eMi":[209,35,445,90],"yhCP_AqT_tns|9QUH_2bb_6Np":[87,16,207,45],"yhCP_AqT_tns|tF3y_MF9_h5G":[68,10,221,36],"yhCP_AqT_tns|9hXe_F4g_eTG":[258,50,499,128],"yhCP_AqT_tns|CaRE_1nn_cSU":[464,68,1192,229],"yhCP_AqT_tns|CifL_Rzy_Mku":[990,171,2323,538],"yhCP_AqT_tns|s93u_BEb_sx2":[128,27,273,68],"yhCP_AqT_tns|zBon_eET_fFU":[144,29,313,63],"yhCP_AqT_tns|EVVp_h6U_GSZ":[119,15,194,46],"yhCP_AqT_tns|g5Tt_CAV_zBd":[131,25,268,60],"yhCP_AqT_tns|NvUF_SP1_1zo":[86,15,215,41],"yhCP_AqT_tns|G6DV_fKE_Viz":[139,20,250,64],"yhCP_AqT_tns|zdoY_6u5_Krt":[762,137,1573,376],"yhCP_AqT_tns|xTCk_nT5_Zjm":[121,30,334,68],"yhCP_AqT_tns|oLT3_Q9p_3nn":[226,48,462,116],"Uuf1_GMh_Uvw|":[415,145,1017,269],"Uuf1_GMh_Uvw|DQZd_uYs_oKb":[2,0,12,1],"Uuf1_GMh_Uvw|oDpK_oZ2_WYt":[11,2,19,6],"Uuf1_GMh_Uvw|K8iD_VQv_2BA":[1,0,0,0],"Uuf1_GMh_Uvw|zupA_8Nt_xcD":[6,1,10,3],"Uuf1_GMh_Uvw|wjee_qH2_yb6":[10,4,20,8],"Uuf1_GMh_Uvw|65Ms_7r1_RTG":[1,4,3,5],"Uuf1_GMh_Uvw|MtbE_xWT_eMi":[27,5,22,7],"Uuf1_GMh_Uvw|9QUH_2bb_6Np":[5,2,4,3],"Uuf1_GMh_Uvw|tF3y_MF9_h5G":[2,1,10,1],"Uuf1_GMh_Uvw|9hXe_F4g_eTG":[10,2,28,5],"Uuf1_GMh_Uvw|CaRE_1nn_cSU":[45,17,143,39],"Uuf1_GMh_Uvw|CifL_Rzy_Mku":[173,61,450,105],"Uuf1_GMh_Uvw|s93u_BEb_sx2":[7,3,12,5],"Uuf1_GMh_Uvw|zBon_eET_fFU":[21,4,46,10],"Uuf1_GMh_Uvw|EVVp_h6U_GSZ":[4,0,24,1],"Uuf1_GMh_Uvw|g5Tt_CAV_zBd":[8,3,12,3],"Uuf1_GMh_Uvw|NvUF_SP1_1zo":[1,0,9,0],"Uuf1_GMh_Uvw|G6DV_fKE_Viz":[6,2,20,6],"Uuf1_GMh_Uvw|zdoY_6u5_Krt":[51,25,115,44],"Uuf1_GMh_Uvw|xTCk_nT5_Zjm":[7,5,12,8],"Uuf1_GMh_Uvw|oLT3_Q9p_3nn":[9,4,28,7],"9puE_nYg_crq|":[970,100,1877,339],"9puE_nYg_crq|DQZd_uYs_oKb":[9,0,16,5],"9puE_nYg_crq|oDpK_oZ2_WYt":[13,3,39,11],"9puE_nYg_crq|K8iD_VQv_2BA":[0,0,26,1],"9puE_nYg_crq|zupA_8Nt_xcD":[22,0,42,5],"9puE_nYg_crq|wjee_qH2_yb6":[16,3,36,10],"9puE_nYg_crq|65Ms_7r1_RTG":[8,0,20,0],"9puE_nYg_crq|MtbE_xWT_eMi":[30,4,49,13],"9puE_nYg_crq|9QUH_2bb_6Np":[9,2,37,5],"9puE_nYg_crq|tF3y_MF9_h5G":[22,2,40,6],"9puE_nYg_crq|9hXe_F4g_eTG":[19,2,55,5],"9puE_nYg_crq|CaRE_1nn_cSU":[106,11,183,32],"9puE_nYg_crq|CifL_Rzy_Mku":[340,37,641,122],"9puE_nYg_crq|s93u_BEb_sx2":[13,1,25,6],"9puE_nYg_crq|zBon_eET_fFU":[23,0,73,7],"9puE_nYg_crq|EVVp_h6U_GSZ":[12,0,27,4],"9puE_nYg_crq|g5Tt_CAV_zBd":[22,1,30,7],"9puE_nYg_crq|NvUF_SP1_1zo":[7,2,18,3],"9puE_nYg_crq|G6DV_fKE_Viz":[29,3,34,5],"9puE_nYg_crq|zdoY_6u5_Krt":[162,17,293,45],"9puE_nYg_crq|xTCk_nT5_Zjm":[23,7,30,11],"9puE_nYg_crq|oLT3_Q9p_3nn":[53,1,65,15],"bH5L_uXD_ZAX|":[170,50,482,112],"bH5L_uXD_ZAX|DQZd_uYs_oKb":[9,12,25,20],"bH5L_uXD_ZAX|oDpK_oZ2_WYt":[2,0,4,2],"bH5L_uXD_ZAX|K8iD_VQv_2BA":[1,0,2,1],"bH5L_uXD_ZAX|zupA_8Nt_xcD":[0,0,0,0],"bH5L_uXD_ZAX|wjee_qH2_yb6":[4,1,44,4],"bH5L_uXD_ZAX|65Ms_7r1_RTG":[5,2,0,4],"bH5L_uXD_ZAX|MtbE_xWT_eMi":[2,0,6,0],"bH5L_uXD_ZAX|9QUH_2bb_6Np":[0,0,0,0],"bH5L_uXD_ZAX|tF3y_MF9_h5G":[0,0,0,0],"bH5L_uXD_ZAX|9hXe_F4g_eTG":[28,3,52,11],"bH5L_uXD_ZAX|CaRE_1nn_cSU":[4,0,8,1],"bH5L_uXD_ZAX|CifL_Rzy_Mku":[24,5,81,18],"bH5L_uXD_ZAX|s93u_BEb_sx2":[0,0,0,0],"bH5L_uXD_ZAX|zBon_eET_fFU":[32,7,74,16],"bH5L_uXD_ZAX|EVVp_h6U_GSZ":[2,2,5,2],"bH5L_uXD_ZAX|g5Tt_CAV_zBd":[1,0,4,0],"bH5L_uXD_ZAX|NvUF_SP1_1zo":[7,0,2,1],"bH5L_uXD_ZAX|G6DV_fKE_Viz":[1,0,2,0],"bH5L_uXD_ZAX|zdoY_6u5_Krt":[27,6,131,15],"bH5L_uXD_ZAX|xTCk_nT5_Zjm":[4,0,36,2],"bH5L_uXD_ZAX|oLT3_Q9p_3nn":[17,12,6,14],"VuuL_7CH_adj|":[592,134,1310,278],"VuuL_7CH_adj|DQZd_uYs_oKb":[4,4,20,8],"VuuL_7CH_adj|oDpK_oZ2_WYt":[22,3,50,8],"VuuL_7CH_adj|K8iD_VQv_2BA":[8,0,6,1],"VuuL_7CH_adj|zupA_8Nt_xcD":[15,2,34,4],"VuuL_7CH_adj|wjee_qH2_yb6":[20,4,45,10],"VuuL_7CH_adj|65Ms_7r1_RTG":[12,2,22,5],"VuuL_7CH_adj|MtbE_xWT_eMi":[15,4,30,4],"VuuL_7CH_adj|9QUH_2bb_6Np":[12,5,47,7],"VuuL_7CH_adj|tF3y_MF9_h5G":[19,2,26,10],"VuuL_7CH_adj|9hXe_F4g_eTG":[15,4,48,9],"VuuL_7CH_adj|CaRE_1nn_cSU":[90,13,196,29],"VuuL_7CH_adj|CifL_Rzy_Mku":[109,39,274,64],"VuuL_7CH_adj|s93u_BEb_sx2":[20,5,40,9],"VuuL_7CH_adj|zBon_eET_fFU":[30,4,57,10],"VuuL_7CH_adj|EVVp_h6U_GSZ":[29,3,38,7],"VuuL_7CH_adj|g5Tt_CAV_zBd":[12,2,70,13],"VuuL_7CH_adj|NvUF_SP1_1zo":[14,1,44,5],"VuuL_7CH_adj|G6DV_fKE_Viz":[6,1,15,6],"VuuL_7CH_adj|zdoY_6u5_Krt":[78,17,132,30],"VuuL_7CH_adj|xTCk_nT5_Zjm":[14,3,16,4],"VuuL_7CH_adj|oLT3_Q9p_3nn":[19,5,50,13],"kJeN_wmw_9wX|":[904,92,1960,302],"kJeN_wmw_9wX|DQZd_uYs_oKb":[13,3,14,6],"kJeN_wmw_9wX|oDpK_oZ2_WYt":[12,0,28,6],"kJeN_wmw_9wX|K8iD_VQv_2BA":[8,0,10,3],"kJeN_wmw_9wX|zupA_8Nt_xcD":[15,0,24,5],"kJeN_wmw_9wX|wjee_qH2_yb6":[12,0,24,5],"kJeN_wmw_9wX|65Ms_7r1_RTG":[5,0,13,7],"kJeN_wmw_9wX|MtbE_xWT_eMi":[10,0,39,5],"kJeN_wmw_9wX|9QUH_2bb_6Np":[11,1,18,4],"kJeN_wmw_9wX|tF3y_MF9_h5G":[8,2,12,4],"kJeN_wmw_9wX|9hXe_F4g_eTG":[28,3,71,11],"kJeN_wmw_9wX|CaRE_1nn_cSU":[96,8,205,33],"kJeN_wmw_9wX|CifL_Rzy_Mku":[191,29,491,72],"kJeN_wmw_9wX|s93u_BEb_sx2":[26,2,44,5],"kJeN_wmw_9wX|zBon_eET_fFU":[150,13,265,44],"kJeN_wmw_9wX|EVVp_h6U_GSZ":[11,0,28,1],"kJeN_wmw_9wX|g5Tt_CAV_zBd":[52,4,104,20],"kJeN_wmw_9wX|NvUF_SP1_1zo":[14,0,30,0],"kJeN_wmw_9wX|G6DV_fKE_Viz":[21,3,53,7],"kJeN_wmw_9wX|zdoY_6u5_Krt":[130,17,313,41],"kJeN_wmw_9wX|xTCk_nT5_Zjm":[34,3,35,8],"kJeN_wmw_9wX|oLT3_Q9p_3nn":[44,2,77,9],"MVqp_eS8_kDZ|":[8588,821,17868,3126],"MVqp_eS8_kDZ|DQZd_uYs_oKb":[130,12,132,35],"MVqp_eS8_kDZ|oDpK_oZ2_WYt":[242,28,475,91],"MVqp_eS8_kDZ|K8iD_VQv_2BA":[48,6,74,24],"MVqp_eS8_kDZ|zupA_8Nt_xcD":[240,10,550,75],"MVqp_eS8_kDZ|wjee_qH2_yb6":[314,22,644,115],"MVqp_eS8_kDZ|65Ms_7r1_RTG":[142,19,294,66],"MVqp_eS8_kDZ|MtbE_xWT_eMi":[305,27,647,116],"MVqp_eS8_kDZ|9QUH_2bb_6Np":[156,12,245,51],"MVqp_eS8_kDZ|tF3y_MF9_h5G":[194,11,351,83],"MVqp_eS8_kDZ|9hXe_F4g_eTG":[307,35,781,123],"MVqp_eS8_kDZ|CaRE_1nn_cSU":[1136,88,2294,386],"MVqp_eS8_kDZ|CifL_Rzy_Mku":[2088,186,4279,648],"MVqp_eS8_kDZ|s93u_BEb_sx2":[242,26,420,88],"MVqp_eS8_kDZ|zBon_eET_fFU":[358,53,611,145],"MVqp_eS8_kDZ|EVVp_h6U_GSZ":[189,18,446,82],"MVqp_eS8_kDZ|g5Tt_CAV_zBd":[251,28,514,96],"MVqp_eS8_kDZ|NvUF_SP1_1zo":[172,18,349,62],"MVqp_eS8_kDZ|G6DV_fKE_Viz":[157,16,383,63],"MVqp_eS8_kDZ|zdoY_6u5_Krt":[1333,147,2673,542],"MVqp_eS8_kDZ|xTCk_nT5_Zjm":[199,14,491,101],"MVqp_eS8_kDZ|oLT3_Q9p_3nn":[372,44,1014,146],"whao_Q6A_ScE|":[4033,530,7007,1409],"whao_Q6A_ScE|DQZd_uYs_oKb":[44,3,90,11],"whao_Q6A_ScE|oDpK_oZ2_WYt":[81,8,201,34],"whao_Q6A_ScE|K8iD_VQv_2BA":[14,0,31,1],"whao_Q6A_ScE|zupA_8Nt_xcD":[31,7,101,13],"whao_Q6A_ScE|wjee_qH2_yb6":[159,18,205,54],"whao_Q6A_ScE|65Ms_7r1_RTG":[35,12,87,19],"whao_Q6A_ScE|MtbE_xWT_eMi":[135,14,175,46],"whao_Q6A_ScE|9QUH_2bb_6Np":[97,9,146,23],"whao_Q6A_ScE|tF3y_MF9_h5G":[58,5,115,15],"whao_Q6A_ScE|9hXe_F4g_eTG":[89,17,250,31],"whao_Q6A_ScE|CaRE_1nn_cSU":[516,70,803,148],"whao_Q6A_ScE|CifL_Rzy_Mku":[1447,160,2304,473],"whao_Q6A_ScE|s93u_BEb_sx2":[73,13,175,34],"whao_Q6A_ScE|zBon_eET_fFU":[135,20,237,41],"whao_Q6A_ScE|EVVp_h6U_GSZ":[77,9,105,34],"whao_Q6A_ScE|g5Tt_CAV_zBd":[96,9,168,22],"whao_Q6A_ScE|NvUF_SP1_1zo":[44,9,126,13],"whao_Q6A_ScE|G6DV_fKE_Viz":[99,16,113,46],"whao_Q6A_ScE|zdoY_6u5_Krt":[486,71,898,184],"whao_Q6A_ScE|xTCk_nT5_Zjm":[60,7,152,27],"whao_Q6A_ScE|oLT3_Q9p_3nn":[165,18,291,69],"E7hm_BLq_fqZ|":[1258,192,2969,538],"E7hm_BLq_fqZ|DQZd_uYs_oKb":[16,5,57,8],"E7hm_BLq_fqZ|oDpK_oZ2_WYt":[40,10,97,17],"E7hm_BLq_fqZ|K8iD_VQv_2BA":[7,2,29,5],"E7hm_BLq_fqZ|zupA_8Nt_xcD":[36,4,92,11],"E7hm_BLq_fqZ|wjee_qH2_yb6":[53,4,65,14],"E7hm_BLq_fqZ|65Ms_7r1_RTG":[13,1,35,1],"E7hm_BLq_fqZ|MtbE_xWT_eMi":[48,10,77,22],"E7hm_BLq_fqZ|9QUH_2bb_6Np":[30,1,56,9],"E7hm_BLq_fqZ|tF3y_MF9_h5G":[16,2,37,14],"E7hm_BLq_fqZ|9hXe_F4g_eTG":[81,18,139,36],"E7hm_BLq_fqZ|CaRE_1nn_cSU":[106,8,274,39],"E7hm_BLq_fqZ|CifL_Rzy_Mku":[334,41,755,133],"E7hm_BLq_fqZ|s93u_BEb_sx2":[33,4,101,17],"E7hm_BLq_fqZ|zBon_eET_fFU":[45,10,108,21],"E7hm_BLq_fqZ|EVVp_h6U_GSZ":[33,4,62,12],"E7hm_BLq_fqZ|g5Tt_CAV_zBd":[41,8,96,18],"E7hm_BLq_fqZ|NvUF_SP1_1zo":[38,5,95,17],"E7hm_BLq_fqZ|G6DV_fKE_Viz":[29,4,66,14],"E7hm_BLq_fqZ|zdoY_6u5_Krt":[164,26,425,87],"E7hm_BLq_fqZ|xTCk_nT5_Zjm":[34,3,103,10],"E7hm_BLq_fqZ|oLT3_Q9p_3nn":[51,16,137,25],"ASGV_zcE_bWf|":[6216,895,11193,2530],"ASGV_zcE_bWf|DQZd_uYs_oKb":[43,7,46,22],"ASGV_zcE_bWf|oDpK_oZ2_WYt":[105,15,129,41],"ASGV_zcE_bWf|K8iD_VQv_2BA":[32,3,18,12],"ASGV_zcE_bWf|zupA_8Nt_xcD":[61,8,108,24],"ASGV_zcE_bWf|wjee_qH2_yb6":[158,14,267,58],"ASGV_zcE_bWf|65Ms_7r1_RTG":[29,8,54,21],"ASGV_zcE_bWf|MtbE_xWT_eMi":[435,62,766,160],"ASGV_zcE_bWf|9QUH_2bb_6Np":[84,8,120,32],"ASGV_zcE_bWf|tF3y_MF9_h5G":[162,16,363,66],"ASGV_zcE_bWf|9hXe_F4g_eTG":[185,34,398,79],"ASGV_zcE_bWf|CaRE_1nn_cSU":[766,120,1535,320],"ASGV_zcE_bWf|CifL_Rzy_Mku":[1730,245,3165,748],"ASGV_zcE_bWf|s93u_BEb_sx2":[191,37,265,88],"ASGV_zcE_bWf|zBon_eET_fFU":[150,22,304,64],"ASGV_zcE_bWf|EVVp_h6U_GSZ":[60,10,120,27],"ASGV_zcE_bWf|g5Tt_CAV_zBd":[139,15,213,45],"ASGV_zcE_bWf|NvUF_SP1_1zo":[75,10,128,30],"ASGV_zcE_bWf|G6DV_fKE_Viz":[120,21,158,51],"ASGV_zcE_bWf|zdoY_6u5_Krt":[1107,147,2095,392],"ASGV_zcE_bWf|xTCk_nT5_Zjm":[221,26,306,63],"ASGV_zcE_bWf|oLT3_Q9p_3nn":[267,41,347,119],"GazW_2TU_kJw|":[10263,1299,21465,4135],"GazW_2TU_kJw|DQZd_uYs_oKb":[124,31,242,66],"GazW_2TU_kJw|oDpK_oZ2_WYt":[355,49,651,140],"GazW_2TU_kJw|K8iD_VQv_2BA":[149,18,223,46],"GazW_2TU_kJw|zupA_8Nt_xcD":[234,42,471,115],"GazW_2TU_kJw|wjee_qH2_yb6":[274,38,504,116],"GazW_2TU_kJw|65Ms_7r1_RTG":[147,22,293,64],"GazW_2TU_kJw|MtbE_xWT_eMi":[396,72,758,182],"GazW_2TU_kJw|9QUH_2bb_6Np":[223,31,413,84],"GazW_2TU_kJw|tF3y_MF9_h5G":[166,24,397,67],"GazW_2TU_kJw|9hXe_F4g_eTG":[313,42,760,145],"GazW_2TU_kJw|CaRE_1nn_cSU":[1334,167,2519,500],"GazW_2TU_kJw|CifL_Rzy_Mku":[2232,284,4933,904],"GazW_2TU_kJw|s93u_BEb_sx2":[258,31,513,114],"GazW_2TU_kJw|zBon_eET_fFU":[372,71,794,180],"GazW_2TU_kJw|EVVp_h6U_GSZ":[246,50,522,121],"GazW_2TU_kJw|g5Tt_CAV_zBd":[359,28,674,124],"GazW_2TU_kJw|NvUF_SP1_1zo":[268,21,588,105],"GazW_2TU_kJw|G6DV_fKE_Viz":[254,22,483,84],"GazW_2TU_kJw|zdoY_6u5_Krt":[1716,164,3931,677],"GazW_2TU_kJw|xTCk_nT5_Zjm":[348,29,750,127],"GazW_2TU_kJw|oLT3_Q9p_3nn":[469,60,940,177],"6Hq3_tKo_V57|":[5541,929,11587,2650],"6Hq3_tKo_V57|DQZd_uYs_oKb":[140,16,210,48],"6Hq3_tKo_V57|oDpK_oZ2_WYt":[164,58,333,133],"6Hq3_tKo_V57|K8iD_VQv_2BA":[5,1,41,2],"6Hq3_tKo_V57|zupA_8Nt_xcD":[65,12,226,33],"6Hq3_tKo_V57|wjee_qH2_yb6":[106,10,172,37],"6Hq3_tKo_V57|65Ms_7r1_RTG":[52,3,115,10],"6Hq3_tKo_V57|MtbE_xWT_eMi":[197,43,454,102],"6Hq3_tKo_V57|9QUH_2bb_6Np":[116,17,189,54],"6Hq3_tKo_V57|tF3y_MF9_h5G":[106,16,294,52],"6Hq3_tKo_V57|9hXe_F4g_eTG":[194,25,376,100],"6Hq3_tKo_V57|CaRE_1nn_cSU":[538,86,1099,234],"6Hq3_tKo_V57|CifL_Rzy_Mku":[1079,186,2100,534],"6Hq3_tKo_V57|s93u_BEb_sx2":[114,11,231,34],"6Hq3_tKo_V57|zBon_eET_fFU":[191,19,451,78],"6Hq3_tKo_V57|EVVp_h6U_GSZ":[119,25,249,81],"6Hq3_tKo_V57|g5Tt_CAV_zBd":[107,25,297,81],"6Hq3_tKo_V57|NvUF_SP1_1zo":[123,28,311,70],"6Hq3_tKo_V57|G6DV_fKE_Viz":[315,49,571,132],"6Hq3_tKo_V57|zdoY_6u5_Krt":[858,158,1679,423],"6Hq3_tKo_V57|xTCk_nT5_Zjm":[241,38,482,128],"6Hq3_tKo_V57|oLT3_Q9p_3nn":[624,98,1327,277]}},"regions":[["Blekinge län","DQZd_uYs_oKb"],["Dalarnas län","oDpK_oZ2_WYt"],["Gotlands län","K8iD_VQv_2BA"],["Gävleborgs län","zupA_8Nt_xcD"],["Hallands län","wjee_qH2_yb6"],["Jämtlands län","65Ms_7r1_RTG"],["Jönköpings län","MtbE_xWT_eMi"],["Kalmar län","9QUH_2bb_6Np"],["Kronobergs län","tF3y_MF9_h5G"],["Norrbottens län","9hXe_F4g_eTG"],["Skåne län","CaRE_1nn_cSU"],["Stockholms län","CifL_Rzy_Mku"],["Södermanlands län","s93u_BEb_sx2"],["Uppsala län","zBon_eET_fFU"],["Värmlands län","EVVp_h6U_GSZ"],["Västerbottens län","g5Tt_CAV_zBd"],["Västernorrlands län","NvUF_SP1_1zo"],["Västmanlands län","G6DV_fKE_Viz"],["Västra Götalands län","zdoY_6u5_Krt"],["Örebro län","xTCk_nT5_Zjm"],["Östergötlands län","oLT3_Q9p_3nn"]]};
+const MK_FIELDS = [["Administration, ekonomi, juridik","X82t_awd_Qyc"],["Bygg och anläggning","j7Cq_ZJe_GkT"],["Chefer och verksamhetsledare","bh3H_Y3h_5eD"],["Data/IT","apaJ_2ja_LuF"],["Försäljning, inköp, marknadsföring","RPTn_bxG_ExZ"],["Hantverk","PaxQ_o1G_wWH"],["Hotell, restaurang, storhushåll","ScKy_FHB_7wT"],["Hälso- och sjukvård","NYW6_mP6_vwf"],["Industriell tillverkning","wTEr_CBC_bqh"],["Installation, drift, underhåll","yhCP_AqT_tns"],["Kropps- och skönhetsvård","Uuf1_GMh_Uvw"],["Kultur, media, design","9puE_nYg_crq"],["Militära yrken","bH5L_uXD_ZAX"],["Naturbruk","VuuL_7CH_adj"],["Naturvetenskap","kJeN_wmw_9wX"],["Pedagogik","MVqp_eS8_kDZ"],["Sanering och renhållning","whao_Q6A_ScE"],["Säkerhet och bevakning","E7hm_BLq_fqZ"],["Transport, distribution, lager","ASGV_zcE_bWf"],["Yrken med social inriktning","GazW_2TU_kJw"],["Yrken med teknisk inriktning","6Hq3_tKo_V57"]];   // [Swedish label, JobTech id] for all 21 occupation fields, from the package
+
+Object.assign(I18N, {
+  "tab.market": ["Market", "Marknad"],
+  "mk.eyebrow": ["Market analysis · open data", "Marknadsanalys · öppna data"], "mk.h1": ["How's the job market?", "Hur ser jobbmarknaden ut?"],
+  "mk.lede": ["See how many employers are advertising in your field compared with a year ago, and what the latest figures for Sweden say. Worked out from Platsbanken and official statistics on the 1st of every month, with no AI.",
+    "Se hur många arbetsgivare som annonserar inom ditt yrkesområde jämfört med för ett år sedan, och vad de senaste siffrorna för Sverige säger. Räknat fram ur Platsbanken och officiell statistik den 1:a varje månad, utan AI."],
+  "mk.field": ["Your field", "Ditt yrkesområde"], "mk.allfields": ["All fields", "Alla yrkesområden"], "mk.where": ["Where", "Var"], "mk.sweden": ["All of Sweden", "Hela Sverige"],
+  "mk.guessed": ["Picked from your searches and applications. Change it if it isn't right.", "Valt utifrån dina sökningar och ansökningar. Ändra om det inte stämmer."],
+  "mk.choose": ["Pick your field to see how it compares with the rest of the job market.", "Välj ditt yrkesområde för att se hur det står sig mot resten av jobbmarknaden."],
+  "mk.mood.tough": ["A tough market", "En tuff marknad"], "mk.mood.slow": ["Slower than last year", "Lugnare än i fjol"],
+  "mk.mood.steady": ["About the same as last year", "Ungefär som i fjol"], "mk.mood.busy": ["Busier than last year", "Fler jobb än i fjol"],
+  "mk.nocounts": ["The figures for each field are counted on Platsbanken on the 1st of every month and aren't in yet.", "Siffrorna för varje yrkesområde räknas i Platsbanken den 1:a varje månad och har inte kommit in än."],
+  "mk.last3": ["the last three full months", "de tre senaste hela månaderna"],
+  "mk.in": ["in {place}", "i {place}"],
+  "mk.s.down.f": ["There were about {p} fewer {field} ads {where} from {months} than a year earlier.", "Det kom ungefär {p} färre annonser inom {field} {where} under {months} än ett år tidigare."],
+  "mk.s.up.f": ["There were about {p} more {field} ads {where} from {months} than a year earlier.", "Det kom ungefär {p} fler annonser inom {field} {where} under {months} än ett år tidigare."],
+  "mk.s.same.f": ["There were about as many {field} ads {where} from {months} as a year earlier.", "Det kom ungefär lika många annonser inom {field} {where} under {months} som ett år tidigare."],
+  "mk.s.down.a": ["There were about {p} fewer job ads {where} from {months} than a year earlier.", "Det kom ungefär {p} färre jobbannonser {where} under {months} än ett år tidigare."],
+  "mk.s.up.a": ["There were about {p} more job ads {where} from {months} than a year earlier.", "Det kom ungefär {p} fler jobbannonser {where} under {months} än ett år tidigare."],
+  "mk.s.same.a": ["There were about as many job ads {where} from {months} as a year earlier.", "Det kom ungefär lika många jobbannonser {where} under {months} som ett år tidigare."],
+  "mk.s.nat.down": ["Across Sweden, Arbetsförmedlingen got {p} fewer new job postings in {month} than a year earlier.", "I hela Sverige fick Arbetsförmedlingen in {p} färre nya lediga jobb i {month} än ett år tidigare."],
+  "mk.s.nat.up": ["Across Sweden, Arbetsförmedlingen got {p} more new job postings in {month} than a year earlier.", "I hela Sverige fick Arbetsförmedlingen in {p} fler nya lediga jobb i {month} än ett år tidigare."],
+  "mk.vs.worse": ["That's weaker than the job market as a whole, where new postings {chg} in {month}.", "Det är svagare än jobbmarknaden i stort, där nya lediga jobb {chg} i {month}."],
+  "mk.vs.better": ["That's stronger than the job market as a whole, where new postings {chg} in {month}.", "Det är starkare än jobbmarknaden i stort, där nya lediga jobb {chg} i {month}."],
+  "mk.vs.same": ["That's in line with the job market as a whole, where new postings {chg} in {month}.", "Det följer jobbmarknaden i stort, där nya lediga jobb {chg} i {month}."],
+  "mk.fell": ["fell {p}", "minskade med {p}"], "mk.rose": ["rose {p}", "ökade med {p}"],
+  "mk.small": ["There are too few {what} {where} to compare with last year, so this goes by {wider}.", "Det finns för få {what} {where} för att jämföra med i fjol, så det här utgår från {wider}."],
+  "mk.small.ads": ["ads", "annonser"], "mk.small.fads": ["{field} ads", "annonser inom {field}"],
+  "mk.wider.f": ["{field} in all of Sweden", "{field} i hela Sverige"], "mk.wider.nat": ["the figures for all of Sweden", "siffrorna för hela Sverige"],
+  "mk.wider.place": ["all job ads in {place}", "alla jobbannonser i {place}"],
+  "mk.rough": ["That's based on {n} ads, so treat it as a rough guide: a few employers can move it a lot.", "Det bygger på {n} annonser, så se det som en grov fingervisning: några få arbetsgivare kan flytta det mycket."],
+  "mk.t.open": ["Open ads on {date}", "Lediga jobb den {date}"], "mk.t.change": ["Ads compared with a year earlier", "Annonser jämfört med ett år tidigare"],
+  "mk.t.about": ["About, {months}", "Ungefär, {months}"], "mk.t.share": ["Share of all job ads", "Andel av alla jobbannonser"], "mk.t.sharein": ["Share of job ads in {place}", "Andel av jobbannonserna i {place}"],
+  "mk.t.share.sub": ["{prev} a year earlier", "{prev} ett år tidigare"], "mk.t.na": ["Not enough ads to tell", "För få annonser för att säga"],
+  "mk.cmp.title": ["Compared with a year earlier", "Jämfört med ett år tidigare"],
+  "mk.cmp.sub": ["Estimated change in job ads from {months}. All of Sweden is Arbetsförmedlingen's change in new postings in {month}.", "Uppskattad förändring i antalet jobbannonser under {months}. Hela Sverige är Arbetsförmedlingens förändring i nya lediga jobb i {month}."],
+  "mk.cmp.all": ["All fields, {place}", "Alla yrkesområden, {place}"], "mk.cmp.sweden": ["All fields, all of Sweden", "Alla yrkesområden, hela Sverige"],
+  "mk.nat.title": ["Across Sweden", "Hela Sverige"], "mk.nat.sub": ["The latest official figures", "De senaste officiella siffrorna"],
+  "mk.n.postings": ["New job postings", "Nya lediga jobb"], "mk.n.postings.sub": ["At Arbetsförmedlingen, {month}", "Hos Arbetsförmedlingen, {month}"],
+  "mk.n.unemp": ["Unemployment", "Arbetslöshet"], "mk.n.unemp.sub": ["{month}, seasonally adjusted (SCB)", "{month}, säsongsrensad (SCB)"],
+  "mk.n.notices": ["Given notice of redundancy", "Varslade om uppsägning"], "mk.n.notices.sub": ["People, {month}", "Personer, {month}"],
+  "mk.n.openings": ["Job openings", "Lediga jobb"], "mk.n.openings.sub": ["Whole economy, {q} (SCB)", "Hela ekonomin, {q} (SCB)"],
+  "mk.n.yago": ["{v} on a year earlier", "{v} mot ett år tidigare"],
+  "mk.c.unemp": ["Unemployment by year", "Arbetslöshet per år"], "mk.c.unemp.sub": ["SCB, with Konjunkturinstitutet's forecast from {y}", "SCB, med Konjunkturinstitutets prognos från {y}"],
+  "mk.c.actual": ["Actual", "Utfall"], "mk.c.forecast": ["Forecast", "Prognos"],
+  "mk.c.notices": ["Redundancy notices each month", "Varsel varje månad"], "mk.c.notices.sub": ["People given notice, Arbetsförmedlingen", "Personer som varslats, Arbetsförmedlingen"],
+  "mk.c.month": ["Each month", "Varje månad"], "mk.c.trend": ["Trend", "Trend"],
+  "mk.c.outlook": ["Employers' hiring plans for {q}", "Arbetsgivarnas anställningsplaner för {q}"],
+  "mk.c.outlook.sub": ["ManpowerGroup: the share of employers planning to hire minus the share planning to cut. Yours are highlighted.", "ManpowerGroup: andelen arbetsgivare som planerar att anställa minus andelen som planerar att minska. Dina är markerade."],
+  "mk.c.prev": ["{v} the quarter before", "{v} kvartalet innan"],
+  "mk.c.ki": ["Konjunkturinstitutet's business survey, {month}: hiring plans for all businesses at {v}, against {prev} a year earlier.", "Konjunkturinstitutets barometer, {month}: anställningsplanerna för hela näringslivet låg på {v}, mot {prev} ett år tidigare."],
+  "mk.table": ["Show as a table", "Visa som tabell"], "mk.th.year": ["Year", "År"], "mk.th.month": ["Month", "Månad"], "mk.th.rate": ["Unemployment", "Arbetslöshet"], "mk.th.kind": ["Kind", "Typ"],
+  "mk.th.notices": ["Notices", "Varsel"], "mk.th.trend": ["Trend", "Trend"],
+  "mk.sec.title": ["More on {field}", "Mer om {field}"], "mk.sec.sub": ["Figures for the industries closest to your field", "Siffror för de branscher som ligger närmast ditt yrkesområde"],
+  "mk.sec.emp": ["{n} people work in {sector}, {chg} on a year earlier ({q}, SCB).", "{n} personer arbetar inom {sector}, {chg} mot ett år tidigare ({q}, SCB)."],
+  "mk.sec.outlook": ["ManpowerGroup's hiring outlook for {group} is {v} for {q}, against {prev} the quarter before.", "ManpowerGroups anställningsutsikter för {group} ligger på {v} för {q}, mot {prev} kvartalet innan."],
+  "mk.sec.outlook1": ["ManpowerGroup's hiring outlook for {group} is {v} for {q}.", "ManpowerGroups anställningsutsikter för {group} ligger på {v} för {q}."],
+  "mk.sec.ki": ["Hiring plans in {sector} were {v} in {month}, against {prev} a year earlier (Konjunkturinstitutet).", "Anställningsplanerna inom {sector} låg på {v} i {month}, mot {prev} ett år tidigare (Konjunkturinstitutet)."],
+  "mk.sec.eng": ["Unemployment among Sveriges Ingenjörer's members was {v} in {month}, down from a peak of {peak} in {pm}. For everyone it was {all}.", "Arbetslösheten bland Sveriges Ingenjörers medlemmar var {v} i {month}, ned från toppen på {peak} i {pm}. För alla var den {all}."],
+  "mk.sec.eng1": ["Unemployment among Sveriges Ingenjörer's members was {v} in {month}. For everyone it was {all}.", "Arbetslösheten bland Sveriges Ingenjörers medlemmar var {v} i {month}. För alla var den {all}."],
+  "mk.sec.cons": ["{n} of 25 listed Nordic consultancies added staff in {q}, and the typical firm's revenue changed by {g} on a year earlier (Cinode).", "{n} av 25 börsnoterade nordiska konsultbolag ökade personalen under {q}, och det typiska bolagets intäkter förändrades med {g} mot ett år tidigare (Cinode)."],
+  "mk.do.title": ["What you can do", "Vad du kan göra"],
+  "mk.do.tough": ["When there are fewer jobs, each one gets more applicants. It helps to aim where you're a strong match and to make that easy to see.", "När jobben är färre får varje jobb fler sökande. Det hjälper att sikta där du matchar väl och att göra det lätt att se."],
+  "mk.do.ok": ["Employers in your field are hiring. Applying where you match well, and making that easy to see, gets the most out of it.", "Arbetsgivarna inom ditt yrkesområde anställer. Sök där du matchar väl, och gör det lätt att se, så får du ut mest av det."],
+  "mk.do.mentor": ["The Mentor reads your CV and suggests roles you match well and skills employers ask for.", "Mentorn läser ditt CV och föreslår jobb du matchar väl och kunskaper som arbetsgivare efterfrågar."],
+  "mk.do.tailor": ["Tailor my application rewrites your CV and cover letter for each ad, so it's clear why you fit.", "Anpassa min ansökan skriver om ditt CV och personliga brev för varje annons, så att det syns varför du passar."],
+  "mk.do.find": ["Search Find jobs in a wider area, or with a related job title, to find more openings.", "Sök i Hitta jobb i ett större område, eller på en närliggande yrkestitel, för att hitta fler lediga jobb."],
+  "mk.how": ["How these numbers are made", "Så tas siffrorna fram"],
+  "mk.how.field": ["Your field", "Ditt yrkesområde"],
+  "mk.how.field.d": ["Counted on Platsbanken on the 1st of every month: ads published from {months}, both those still open and those in the archive, against the same months a year earlier. The archive covers some years more fully than others, so the app compares your field with all ads rather than raw counts, and applies the difference to Arbetsförmedlingen's official change in new postings.",
+    "Räknat i Platsbanken den 1:a varje månad: annonser publicerade under {months}, både de som är öppna och de i arkivet, mot samma månader ett år tidigare. Arkivet täcker vissa år bättre än andra, så appen jämför ditt yrkesområde med alla annonser i stället för med råa antal, och tillämpar skillnaden på Arbetsförmedlingens officiella förändring i nya lediga jobb."],
+  "mk.how.sweden": ["Sweden", "Sverige"],
+  "mk.how.sweden.d": ["The latest releases from SCB, Arbetsförmedlingen, Konjunkturinstitutet, ManpowerGroup, Sveriges Ingenjörer and Cinode, each with the date it was compiled.", "De senaste siffrorna från SCB, Arbetsförmedlingen, Konjunkturinstitutet, ManpowerGroup, Sveriges Ingenjörer och Cinode, med datum för när de sammanställdes."],
+  "mk.how.you": ["Your data", "Dina uppgifter"],
+  "mk.how.you.d": ["Nothing about you leaves your browser. The counts are the same for anyone who picks the same field and place.", "Inget om dig lämnar webbläsaren. Siffrorna är desamma för alla som väljer samma yrkesområde och plats."],
+  "mk.src": ["Sources", "Källor"], "mk.compiled": ["compiled {date}", "sammanställt {date}"], "mk.counted": ["counted {date}", "räknat {date}"],
+  "mk.s.live": ["Platsbanken, through JobTech's open APIs", "Platsbanken, via JobTechs öppna API:er"],
+  "mk.s.national_now": ["SCB's labour force survey and Arbetsförmedlingen's monthly statistics", "SCB:s arbetskraftsundersökning och Arbetsförmedlingens månadsstatistik"],
+  "mk.s.national_yearly": ["SCB, and Konjunkturinstitutet's forecast", "SCB, och Konjunkturinstitutets prognos"],
+  "mk.s.hiring_outlook": ["ManpowerGroup Employment Outlook Survey", "ManpowerGroups arbetsmarknadsbarometer"],
+  "mk.s.hiring_plans": ["Konjunkturinstitutet's business survey, via Ekonomifakta", "Konjunkturinstitutets konjunkturbarometer, via Ekonomifakta"],
+  "mk.s.redundancies": ["Arbetsförmedlingen's redundancy notices, via Ekonomifakta", "Arbetsförmedlingens varselstatistik, via Ekonomifakta"],
+  "mk.s.engineers": ["Sveriges Ingenjörer's reports and member survey", "Sveriges Ingenjörers rapporter och medlemsundersökning"],
+  "mk.s.consulting": ["Cinode's reports on listed Nordic consultancies", "Cinodes rapporter om börsnoterade nordiska konsultbolag"],
+  "mk.s.tech_employment": ["SCB, people employed by industry", "SCB, sysselsatta per bransch"],
+  "mk.s.job_openings": ["SCB, job openings", "SCB, lediga jobb"],
+  "foot.market": ["<b>Market.</b> The Market tab shows how many job ads there were in your field compared with a year earlier, next to the latest official figures for Sweden. The ads are counted on Platsbanken on the 1st of every month and built into the page, so the tab sends nothing anywhere. It goes by your searches to pick your field.",
+    "<b>Marknaden.</b> Fliken Marknaden visar hur många jobbannonser det fanns inom ditt yrkesområde jämfört med ett år tidigare, bredvid de senaste officiella siffrorna för Sverige. Annonserna räknas i Platsbanken den 1:a varje månad och byggs in i sidan, så fliken skickar ingenting någonstans. Den utgår från dina sökningar för att välja yrkesområde."],
+
+  // The pop-up after a few rejections
+  "ng.eyebrow": ["A word on the market", "Ett ord om marknaden"],
+  "ng.h.tough": ["It's a tough market right now", "Det är en tuff marknad just nu"], "ng.h.slow": ["The market has slowed down", "Marknaden har saktat in"],
+  "ng.h.ok": ["No's are part of every job search", "Avslag hör till varje jobbsökande"],
+  "ng.ack": ["You've marked {n} applications as rejected. That's hard to take, so here's what the figures say about the market right now.", "Du har markerat {n} ansökningar som avslag. Det är tungt, så här är vad siffrorna säger om marknaden just nu."],
+  "ng.unemp": ["Unemployment in Sweden is {u}.", "Arbetslösheten i Sverige är {u}."],
+  "ng.why.tough": ["With fewer openings and more people applying for each one, even strong candidates hear no more often than usual.", "Med färre lediga jobb och fler som söker varje jobb får även starka kandidater nej oftare än vanligt."],
+  "ng.why.slow": ["With fewer openings, there's more competition for each one.", "Med färre lediga jobb blir det mer konkurrens om varje jobb."],
+  "ng.why.ok": ["Employers are still hiring, so a few no's are normal. It often comes down to how clearly your CV matches each ad.", "Arbetsgivarna anställer fortfarande, så några nej är normalt. Ofta handlar det om hur tydligt ditt CV matchar varje annons."],
+  "ng.hope": ["Konjunkturinstitutet expects unemployment to ease to {f} in {y}.", "Konjunkturinstitutet räknar med att arbetslösheten sjunker till {f} under {y}."],
+  "ng.mentor": ["While it's tight, it pays to put your effort where you stand out. The Mentor reads your CV and suggests roles you match well and skills employers ask for, so you can become a stronger candidate.",
+    "När det är trångt lönar det sig att lägga krutet där du sticker ut. Mentorn läser ditt CV och föreslår jobb du matchar väl och kunskaper som arbetsgivare efterfrågar, så att du blir en starkare kandidat."],
+  "ng.mentor.ok": ["The Mentor reads your CV and suggests roles you match well and skills employers in your field ask for. It can show where a small change makes you stand out.",
+    "Mentorn läser ditt CV och föreslår jobb du matchar väl och kunskaper som arbetsgivare inom ditt yrkesområde efterfrågar. Den kan visa var en liten förändring gör att du sticker ut."],
+  "ng.nomentor": ["The Market tab shows how your field compares with the rest of the job market.", "Fliken Marknaden visar hur ditt yrkesområde står sig mot resten av jobbmarknaden."],
+  "ng.go.mentor": ["Get ideas from the Mentor", "Få idéer av Mentorn"], "ng.go.market": ["See the market for {field}", "Se marknaden för {field}"], "ng.go.marketall": ["See the job market", "Se jobbmarknaden"],
+  "ng.later": ["Not now", "Inte nu"],
+  "ng.src": ["From Platsbanken ({months}) and official statistics ({month}).", "Från Platsbanken ({months}) och officiell statistik ({month})."],
+  "ng.src.nat": ["From official statistics ({month}).", "Från officiell statistik ({month})."],
+});
+
+/* ---------- Fields, places and formatting ---------- */
+const MK_EN = { "X82t_awd_Qyc": "Administration, finance and law", "j7Cq_ZJe_GkT": "Construction and civil engineering", "bh3H_Y3h_5eD": "Managers and executives",
+  "apaJ_2ja_LuF": "IT", "RPTn_bxG_ExZ": "Sales, purchasing and marketing", "PaxQ_o1G_wWH": "Crafts and trades", "ScKy_FHB_7wT": "Hotels, restaurants and catering",
+  "NYW6_mP6_vwf": "Health care", "wTEr_CBC_bqh": "Manufacturing and production", "yhCP_AqT_tns": "Installation, operations and maintenance",
+  "Uuf1_GMh_Uvw": "Hair and beauty", "9puE_nYg_crq": "Culture, media and design", "bH5L_uXD_ZAX": "Military", "VuuL_7CH_adj": "Farming, forestry and animal care",
+  "kJeN_wmw_9wX": "Natural sciences", "MVqp_eS8_kDZ": "Teaching and childcare", "whao_Q6A_ScE": "Cleaning and waste", "E7hm_BLq_fqZ": "Security",
+  "ASGV_zcE_bWf": "Transport, distribution and warehouse", "GazW_2TU_kJw": "Social work and care", "6Hq3_tKo_V57": "Engineering and technical work" };
+// Where an industry figure lines up with a field: ManpowerGroup's groups, SCB's employment by industry, Konjunkturinstitutet's sectors
+const MK_LINKS = {
+  "apaJ_2ja_LuF": { outlook: "IT and tech", scb: "Information and communication", ki: "Services", consulting: true },
+  "6Hq3_tKo_V57": { engineers: true, scb: "Professional and technical services", consulting: true },
+  "wTEr_CBC_bqh": { outlook: "Manufacturing, automotive and defence", scb: "Manufacturing", ki: "Manufacturing" },
+  "X82t_awd_Qyc": { scb: "Professional and technical services", ki: "Services" },
+  "RPTn_bxG_ExZ": { ki: "Services" }, "ScKy_FHB_7wT": { ki: "Services" }, "ASGV_zcE_bWf": { ki: "Services" },
+};
+const MK_NAMES = {   // the package's English labels, in both languages ([sentence form, label form])
+  "IT and tech": ["IT and tech", "IT och teknik"], "Services and consulting": ["Services and consulting", "Tjänster och konsulter"],
+  "Manufacturing, automotive and defence": ["Manufacturing, automotive and defence", "Tillverkning, fordon och försvar"], "All employers": ["All employers", "Alla arbetsgivare"],
+  "Stockholm and Uppsala": ["Stockholm and Uppsala", "Stockholm och Uppsala"], "Västra Götaland": ["Västra Götaland", "Västra Götaland"], "Skåne and Blekinge": ["Skåne and Blekinge", "Skåne och Blekinge"],
+  "Information and communication": ["information and communication", "information och kommunikation"], "Manufacturing": ["manufacturing", "tillverkningen"],
+  "Professional and technical services": ["professional and technical services", "företagstjänster"], "Services": ["services", "tjänstesektorn"], "All businesses": ["all businesses", "hela näringslivet"],
+};
+const mkName = k => (MK_NAMES[k] || [k, k])[L()];
+const MK_OUTLOOK_REGION = { "Stockholm": "Stockholm and Uppsala", "Uppsala": "Stockholm and Uppsala", "Västra Götaland": "Västra Götaland", "Skåne": "Skåne and Blekinge", "Blekinge": "Skåne and Blekinge" };
+const MK_MONTHS = [["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+  ["januari", "februari", "mars", "april", "maj", "juni", "juli", "augusti", "september", "oktober", "november", "december"]];
+const MK_FIELD_IDS = new Set(MK_FIELDS.map(f => f[1]));
+const fieldName = id => { const f = MK_FIELDS.find(x => x[1] === id); return f ? (L() ? f[0] : MK_EN[id] || f[0]) : ""; };
+// An ad's or a saved application's field: its JobTech id, or its Swedish label looked up in the list
+const mkFieldOf = x => x && MK_FIELD_IDS.has(x.fieldId) ? x.fieldId : ((MK_FIELDS.find(f => fold(f[0]) === fold(x?.field)) || [])[1] || "");
+const mkNum = n => Math.round(n).toLocaleString(numLoc());
+const mkPct = (x, signed) => { const n = Math.round(Math.abs(x) * 100); return (signed && n ? (x < 0 ? "−" : "+") : "") + n + (L() ? " %" : "%"); };
+const mkRate = v => (+v).toLocaleString(numLoc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + (L() ? " %" : "%");
+const mkSigned = v => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toLocaleString(numLoc());
+function mkYm(s) {
+  let m = /^(\d{4})-(\d{2})/.exec(s || ""); if (m) return { y: +m[1], m: +m[2] - 1 };
+  m = /^([A-Za-z]{3})[a-z]* (\d{4})$/.exec(s || ""); if (!m) return null;
+  const i = MONTHS[0].findIndex(x => fold(x) === fold(m[1])); return i < 0 ? null : { y: +m[2], m: i };
+}
+const mkMonth = s => { const p = mkYm(s); return p ? `${MK_MONTHS[L()][p.m]} ${p.y}` : s || ""; };
+const mkShortMonth = s => { const p = mkYm(s); return p ? `${MONTHS[L()][p.m]} ${p.y}` : s || ""; };
+const mkQuarter = s => { const m = /^(\d{4}) Q([1-4])$/.exec(s || ""); return !m ? s || "" : L() ? `${m[2]}:${+m[2] < 3 ? "a" : "e"} kvartalet ${m[1]}` : `Q${m[2]} ${m[1]}`; };
+const mkRows = id => MK?.[id]?.rows || [];
+const mkDate = d => fmtDate(String(d || "").slice(0, 10));
+
+/* ---------- The months the counts cover: the three full months before the 1st they were counted, and a year earlier ---------- */
+function mkWin(w) {
+  const d = x => new Date(x + "T12:00:00"), start = d(w.from), end = d(w.to), name = x => MK_MONTHS[L()][x.getMonth()];
+  const label = () => start.getFullYear() === end.getFullYear() ? (L() ? `${name(start)}–${name(end)} ${end.getFullYear()}` : `${name(start)} to ${name(end)} ${end.getFullYear()}`)
+    : (L() ? `${name(start)} ${start.getFullYear()}–${name(end)} ${end.getFullYear()}` : `${name(start)} ${start.getFullYear()} to ${name(end)} ${end.getFullYear()}`);
+  return { ...w, label };
+}
+
+/* ---------- The official national figures from the package ---------- */
+function mkNational() {
+  const now = mkRows("national_now"), find = k => now.find(r => r.metric === k);
+  const post = find("New job postings"), unemp = find("Unemployment, seasonally adjusted"), reg = find("Registered unemployed"), notice = find("Redundancy notices");
+  const year = new Date().getFullYear(), fc = mkRows("national_yearly").find(r => r.kind === "forecast" && r.year === year + 1);
+  return { post, unemp, reg, notice, change: post && post.year_ago ? post.value / post.year_ago - 1 : null, month: post?.period || "", forecast: fc || null };
+}
+
+/* ---------- This month's counts, made on the 1st by market.py ---------- */
+// Below these the year-on-year comparison is too noisy to show (counting noise alone moves it by about ±18% at 200 against 300),
+// and below MK_ROUGH ads it's shown with a note that it's a rough guide
+const MK_SMALL_NOW = 200, MK_SMALL_PREV = 300, MK_ROUGH = 600;
+const MK_REGIONS = MK?.regions || [];   // [county, JobTech id] for the 21 counties counted with every field
+const mkRegionName = id => (MK_REGIONS.find(r => r[1] === id) || [])[0] || "";
+// The field in the place, the wider slices around it and all of Sweden. Each slice's change on a year earlier is its own
+// change divided by the change for all of Sweden (which cancels out the archive's coverage), times the official change.
+function mkSummary(field, region) {
+  const c = MK?.counts; if (!c || !c.n || !c.window) return null;
+  const nat = mkNational(), slices = [];
+  for (const [f, r] of [[field, region], [field, ""], ["", region], ["", ""]]) if (!slices.some(s => s.field === f && s.region === r)) slices.push({ field: f, region: r });
+  for (const s of slices) {
+    const v = c.n[s.field + "|" + s.region] || [];
+    [s.hist, s.live, s.prev, s.open] = v;   // closed ads in the archive, ads still open, the same months a year earlier, all open ads on the 1st
+    s.known = v.length === 4 && v.slice(0, 3).every(x => x != null);
+    s.now = s.known ? s.hist + s.live : null;
+  }
+  const all = slices[slices.length - 1], allRatio = all.known && all.prev ? all.now / all.prev : 0;
+  for (const s of slices) {
+    s.small = !s.known || s.now < MK_SMALL_NOW || s.prev < MK_SMALL_PREV || !allRatio;
+    s.rel = s.small ? null : (s.now / s.prev) / allRatio;
+    s.est = s.rel == null || nat.change == null ? null : (1 + nat.change) * s.rel - 1;
+    // A field in a county is a share of that county's ads; anything else is a share of all of Sweden's
+    const base = s.field && s.region ? slices.find(x => !x.field && x.region === s.region) : all;
+    s.shareIn = base === all ? "" : s.region;
+    s.share = s.known && base?.known && base.now ? s.now / base.now : null; s.sharePrev = s.known && base?.known && base.prev ? s.prev / base.prev : null;
+  }
+  all.est = nat.change;   // all of Sweden is the official figure itself
+  // The figure the verdict goes by: the slice asked for, or the nearest wider one with enough ads
+  const basis = slices.find(s => s.est != null) || null;
+  return { field, region, w: mkWin(c.window), on: c.on, slices, main: slices[0], basis, all, nat };
+}
+const mkMood = e => e == null ? null : e <= -0.15 ? "tough" : e <= -0.05 ? "slow" : e < 0.05 ? "steady" : "busy";
+
+/* ---------- Which field and place ---------- */
+let mkPick = store.get("jf-market", {});   // { field, region } picked in the tab; missing = follow the searches
+// The field the person's applications are in, or failing that the one most of their search results are in
+function mkGuess(only) {
+  const fromApps = Object.values(apps).filter(x => only ? x.status === only : x.status && x.status !== "Not interested")
+    .map(x => mkFieldOf(x.snap) || mkFieldOf(results?.ads.find(a => a.url === x.snap?.url))).filter(Boolean);
+  if (fromApps.length) return mode(fromApps);
+  return only ? "" : mode((results?.ads || []).map(mkFieldOf).filter(Boolean)) || "";
+}
+// A county's short name ("Västra Götaland"), for ManpowerGroup's regions
+const mkShort = label => (Object.entries(COUNTY_FULL).find(([, f]) => f === label) || [])[0] || "";
+// The county of the last search, short name
+function mkSearchCounty() {
+  const g = results?.geo; if (!g) return "";
+  return g.mode === "county" ? mkShort(g.label) : (MUNIS.find(([m]) => fold(m) === fold(g.muni || g.label)) || [])[1] || "";
+}
+function mkSel() {
+  const guess = mkGuess();
+  const field = mkPick.field !== undefined && (mkPick.field === "" || MK_FIELD_IDS.has(mkPick.field)) ? mkPick.field : guess;
+  const region = mkPick.region && MK_REGIONS.some(r => r[1] === mkPick.region) ? mkPick.region : "";
+  return { field, region, guessed: mkPick.field === undefined && !!guess };
+}
+const mkPlaceName = region => region ? mkRegionName(region) : t("mk.sweden");
+const mkCurrent = () => { const { field, region } = mkSel(); return mkSummary(field, region); };
+
+/* ---------- The tab ---------- */
+function showMarket() { mkFillControls(); renderMarket(); }
+function mkFillControls() {
+  const fs = $("mk-field"), ps = $("mk-place"); if (!fs || !ps) return;
+  const { field, region } = mkSel();
+  fs.innerHTML = `<option value="">${esc(t("mk.allfields"))}</option>` + MK_FIELDS.map(([, id]) => [id, fieldName(id)]).sort((a, b) => a[1].localeCompare(b[1], lang))
+    .map(([id, n]) => `<option value="${esc(id)}"${id === field ? " selected" : ""}>${esc(n)}</option>`).join("");
+  ps.innerHTML = `<option value="">${esc(t("mk.sweden"))}</option>` + [...MK_REGIONS].sort((a, b) => a[0].localeCompare(b[0], "sv"))
+    .map(([n, id]) => `<option value="${esc(id)}"${id === region ? " selected" : ""}>${esc(n)}</option>`).join("");
+  ps.disabled = !MK_REGIONS.length || !MK?.counts;
+}
+function mkTile(label, value, sub) {
+  return `<div class="mk-tile"><span class="label">${esc(label)}</span><b>${esc(value)}</b>${sub ? `<span class="mk-sub">${esc(cap(sub))}</span>` : ""}</div>`;
+}
+// Bars that go left for a fall and right for a rise, from one baseline, each with its value at the end. rows: { label, v, main, note }
+function mkBars(rows, fmt) {
+  const neg = Math.max(0, ...rows.map(r => -r.v)), pos = Math.max(0, ...rows.map(r => r.v)), span = Math.max(neg, pos) || 1;
+  // Each side gets room in proportion to its largest bar (at least a quarter when it has any), as shares of 100fr
+  const a = neg ? Math.max(neg, span * 0.25) : 0, b = pos ? Math.max(pos, span * 0.25) : 0;
+  const cols = `${(a / (a + b) * 100).toFixed(2)}fr ${(b / (a + b) * 100).toFixed(2)}fr`;
+  return `<div class="mk-bars">${rows.map(r => {
+    const frac = Math.abs(r.v) / (r.v < 0 ? neg : pos || 1), bar = `<i class="mk-fill" style="width: calc((100% - 56px) * ${frac.toFixed(3)})"></i>`, val = `<span class="mk-val">${esc(fmt(r.v))}</span>`;
+    return `<div class="mk-bar${r.main ? " main" : ""}"><span class="mk-bar-label">${esc(r.label)}${r.note ? ` <span class="mk-sub">${esc(r.note)}</span>` : ""}</span>
+      <div class="mk-track" style="grid-template-columns: ${cols}">
+        <div class="mk-half neg">${r.v < 0 ? val + bar : ""}</div><div class="mk-half pos">${r.v >= 0 ? bar + val : ""}</div></div></div>`;
+  }).join("")}</div>`;
+}
+function mkTable(head, rows) {
+  return `<details class="mk-table"><summary>${esc(t("mk.table"))}</summary><table><thead><tr>${head.map(h => `<th scope="col">${esc(h)}</th>`).join("")}</tr></thead>
+    <tbody>${rows.map(r => `<tr>${r.map((c, i) => i ? `<td>${esc(c)}</td>` : `<th scope="row">${esc(c)}</th>`).join("")}</tr>`).join("")}</tbody></table></details>`;
+}
+// The verdict for the chosen field and place
+function mkSentence(s, sum) {
+  const nat = sum.nat;
+  if (!s.field && !s.region) return nat.change == null ? "" : t(nat.change < 0 ? "mk.s.nat.down" : "mk.s.nat.up", { p: mkPct(nat.change), month: mkMonth(nat.month) });
+  const where = t("mk.in", { place: s.region ? mkRegionName(s.region) : L() ? "Sverige" : "Sweden" });
+  const kind = Math.abs(s.est) < 0.03 ? "same" : s.est < 0 ? "down" : "up";
+  return t(`mk.s.${kind}.${s.field ? "f" : "a"}`, { p: mkPct(s.est), field: fieldName(s.field), where, months: sum.w.label() });
+}
+function mkVersus(s, sum) {
+  const nat = sum.nat;
+  if ((!s.field && !s.region) || s.rel == null || nat.change == null) return "";
+  const k = s.rel <= 0.95 ? "worse" : s.rel >= 1.05 ? "better" : "same";
+  return t("mk.vs." + k, { chg: t(nat.change < 0 ? "mk.fell" : "mk.rose", { p: mkPct(nat.change) }), month: mkMonth(nat.month) });
+}
+function mkVerdictHtml() {
+  const sum = mkCurrent(), nat = mkNational();
+  if (!sum) {   // before the first monthly count: the figures for Sweden only
+    const natMood = mkMood(nat.change);
+    return `<section class="mk-verdict" aria-labelledby="mk-verdict-h">
+      ${natMood ? `<span class="mk-mood m-${natMood}">${esc(t("mk.sweden"))}</span>` : ""}
+      <h2 id="mk-verdict-h">${esc(natMood ? t("mk.mood." + natMood) : t("mk.t.na"))}</h2>
+      ${nat.change != null ? `<p>${esc(t(nat.change < 0 ? "mk.s.nat.down" : "mk.s.nat.up", { p: mkPct(nat.change), month: mkMonth(nat.month) }))}</p>` : ""}
+      <p class="mk-sub">${esc(t("mk.nocounts"))}</p>
+    </section>`;
+  }
+  const s = sum.main, b = sum.basis, mood = mkMood(b?.est), place = mkPlaceName(sum.region);
+  const lines = [];
+  if (s.est != null || (!s.field && !s.region)) { lines.push(mkSentence(s, sum)); lines.push(mkVersus(s, sum)); if (s.est != null && s.now < MK_ROUGH) lines.push(t("mk.rough", { n: mkNum(s.now) })); }
+  else if (b) {
+    const wider = b.field ? t("mk.wider.f", { field: fieldName(b.field) }) : b.region ? t("mk.wider.place", { place: mkRegionName(b.region) }) : t("mk.wider.nat");
+    lines.push(t("mk.small", { what: s.field ? t("mk.small.fads", { field: fieldName(s.field) }) : t("mk.small.ads"), where: t("mk.in", { place }), wider }));
+    lines.push(mkSentence(b, sum));
+  }
+  const tiles = [mkTile(t("mk.t.open", { date: mkDate(sum.on) }), s.open != null ? mkNum(s.open) : "–", [s.field ? fieldName(s.field) : t("mk.allfields"), s.region ? place : t("allswe")].join(", "))];
+  if (s.field || s.region) {
+    tiles.push(mkTile(t("mk.t.change"), s.est != null ? mkPct(s.est, true) : "–", s.est != null ? t("mk.t.about", { months: sum.w.label() }) : t("mk.t.na")));
+    if (s.share != null && s.sharePrev != null && !s.small) tiles.push(mkTile(s.shareIn ? t("mk.t.sharein", { place: mkRegionName(s.shareIn) }) : t("mk.t.share"), mkRate(s.share * 100), t("mk.t.share.sub", { prev: mkRate(s.sharePrev * 100) })));
+  } else if (nat.change != null) tiles.push(mkTile(t("mk.n.postings"), mkPct(nat.change, true), t("mk.n.postings.sub", { month: mkMonth(nat.month) })));
+  return `<section class="mk-verdict" aria-labelledby="mk-verdict-h">
+    <span class="mk-mood${mood ? " m-" + mood : ""}">${esc([s.field ? fieldName(s.field) : t("mk.allfields"), place].join(" · "))}</span>
+    <h2 id="mk-verdict-h">${esc(mood ? t("mk.mood." + mood) : t("mk.t.na"))}</h2>
+    ${lines.filter(Boolean).map(l => `<p>${esc(l)}</p>`).join("")}
+    <div class="mk-tiles">${tiles.join("")}</div>
+  </section>`;
+}
+function mkCompareHtml() {
+  const sum = mkCurrent(); if (!sum || !sum.main.field && !sum.main.region) return "";
+  const nat = sum.nat, rows = [];
+  for (const s of sum.slices) {
+    if (s.est == null) continue;
+    const place = s.region ? mkRegionName(s.region) : t("allswe");
+    if (!s.field && !s.region) rows.push({ label: t("mk.cmp.sweden"), v: s.est });
+    else rows.push({ label: s.field ? `${fieldName(s.field)}, ${place}` : t("mk.cmp.all", { place }), v: s.est, main: s === sum.main });
+  }
+  if (rows.length < 2) return "";
+  return `<section class="mk-card" aria-labelledby="mk-cmp-h"><h3 id="mk-cmp-h">${esc(t("mk.cmp.title"))}</h3>
+    <p class="mk-sub">${esc(t("mk.cmp.sub", { months: sum.w.label(), month: mkMonth(nat.month) }))}</p>${mkBars(rows, v => mkPct(v, true))}</section>`;
+}
+// Unemployment by year, the forecast years lighter
+function mkUnempChart() {
+  const rows = mkRows("national_yearly"); if (!rows.length) return "";
+  const max = Math.max(10, Math.ceil(Math.max(...rows.map(r => r.value)) / 5) * 5), fc0 = rows.find(r => r.kind === "forecast");
+  const lastActual = [...rows].reverse().find(r => r.kind === "actual"), next = rows.find(r => r.kind === "forecast" && r.year === new Date().getFullYear() + 1);
+  const cols = rows.map(r => {
+    const tip = `${r.year} · ${t(r.kind === "forecast" ? "mk.c.forecast" : "mk.c.actual")}`, cap = r === lastActual || r === next;
+    return `<div class="mk-hit" data-v="${esc(mkRate(r.value))}" data-l="${esc(tip)}"><i class="mk-col${r.kind === "forecast" ? " fc" : ""}" style="height: ${(r.value / max * 100).toFixed(1)}%">${cap ? `<span class="mk-cap">${esc(mkRate(r.value))}</span>` : ""}</i></div>`;
+  }).join("");
+  return `<section class="mk-card" aria-labelledby="mk-un-h"><h3 id="mk-un-h">${esc(t("mk.c.unemp"))}</h3><p class="mk-sub">${esc(t("mk.c.unemp.sub", { y: fc0?.year || "" }))}</p>
+    <div class="mk-legend"><span><i class="mk-key"></i>${esc(t("mk.c.actual"))}</span><span><i class="mk-key fc"></i>${esc(t("mk.c.forecast"))}</span></div>
+    <div class="mk-chart" tabindex="0" role="img" aria-label="${esc(t("mk.c.unemp") + ": " + rows.map(r => `${r.year} ${mkRate(r.value)}`).join(", "))}">
+      <div class="mk-yaxis" aria-hidden="true"><span>${esc(mkRate(max).replace(/[.,]0/, ""))}</span><span>${esc(mkRate(max / 2).replace(/[.,]0/, ""))}</span><span>0</span></div>
+      <div class="mk-plot"><i class="mk-gl" style="bottom: 50%"></i><i class="mk-gl" style="bottom: 100%"></i><div class="mk-colrow">${cols}</div></div>
+      <div class="mk-xaxis" aria-hidden="true">${rows.map(r => `<span>’${String(r.year).slice(2)}</span>`).join("")}</div>
+    </div>
+    ${mkTable([t("mk.th.year"), t("mk.th.rate"), t("mk.th.kind")], rows.map(r => [r.year, mkRate(r.value), t(r.kind === "forecast" ? "mk.c.forecast" : "mk.c.actual")]))}</section>`;
+}
+// Redundancy notices: each month as thin columns, the trend as a line
+function mkNoticeChart() {
+  const rows = mkRows("redundancies"); if (rows.length < 3) return "";
+  const n = rows.length, max = Math.ceil(Math.max(...rows.map(r => Math.max(r.notices, r.notices_trend))) / 2000) * 2000;
+  const x = i => (i + 0.5) / n * 100, y = v => 100 - v / max * 100, last = rows[n - 1];
+  const pts = rows.map((r, i) => `${x(i).toFixed(2)},${y(r.notices_trend).toFixed(2)}`).join(" ");
+  const bars = rows.map((r, i) => `<rect x="${(x(i) - 100 / n * 0.3).toFixed(2)}" y="${y(r.notices).toFixed(2)}" width="${(100 / n * 0.6).toFixed(2)}" height="${(100 - y(r.notices)).toFixed(2)}" rx="0.6"/>`).join("");
+  const hits = rows.map(r => `<div class="mk-hit" data-v="${esc(mkNum(r.notices))}" data-l="${esc(`${mkShortMonth(r.month)} · ${t("mk.c.trend").toLowerCase()} ${mkNum(r.notices_trend)}`)}"></div>`).join("");
+  const ticks = [0, Math.floor((n - 1) / 2), n - 1];
+  return `<section class="mk-card" aria-labelledby="mk-no-h"><h3 id="mk-no-h">${esc(t("mk.c.notices"))}</h3><p class="mk-sub">${esc(t("mk.c.notices.sub"))}</p>
+    <div class="mk-legend"><span><i class="mk-key ctx"></i>${esc(t("mk.c.month"))}</span><span><i class="mk-key line"></i>${esc(t("mk.c.trend"))}</span></div>
+    <div class="mk-chart" tabindex="0" role="img" aria-label="${esc(`${t("mk.c.notices")}: ${mkShortMonth(rows[0].month)} ${mkNum(rows[0].notices)}, ${mkShortMonth(last.month)} ${mkNum(last.notices)}, ${t("mk.c.trend").toLowerCase()} ${mkNum(last.notices_trend)}`)}">
+      <div class="mk-yaxis" aria-hidden="true"><span>${esc(mkNum(max))}</span><span>${esc(mkNum(max / 2))}</span><span>0</span></div>
+      <div class="mk-plot"><i class="mk-gl" style="bottom: 50%"></i><i class="mk-gl" style="bottom: 100%"></i>
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><g class="mk-raw">${bars}</g><polyline class="mk-line" points="${pts}" vector-effect="non-scaling-stroke"/></svg>
+        <i class="mk-dot" style="left: ${x(n - 1).toFixed(2)}%; bottom: ${(100 - y(last.notices_trend)).toFixed(2)}%"></i>
+        <span class="mk-endlabel" style="right: calc(${(100 - x(n - 1)).toFixed(2)}% + 8px); bottom: ${(100 - y(last.notices_trend)).toFixed(2)}%">${esc(mkNum(last.notices_trend))}</span>
+        <i class="mk-cross" hidden></i><div class="mk-colrow mk-hits">${hits}</div></div>
+      <div class="mk-xaxis spread" aria-hidden="true">${ticks.map(i => `<span>${esc(mkShortMonth(rows[i].month))}</span>`).join("")}</div>
+    </div>
+    ${mkTable([t("mk.th.month"), t("mk.th.notices"), t("mk.th.trend")], rows.map(r => [mkShortMonth(r.month), mkNum(r.notices), mkNum(r.notices_trend)]))}</section>`;
+}
+function mkOutlookHtml() {
+  const d = MK?.hiring_outlook, rows = d?.rows || []; if (!rows.length) return "";
+  const { field, region: rid } = mkSel(), link = MK_LINKS[field] || {}, region = MK_OUTLOOK_REGION[rid ? mkShort(mkRegionName(rid)) : mkSearchCounty()];
+  const mine = new Set([link.outlook, region].filter(Boolean)); if (!mine.size) mine.add("All employers");
+  const q = mkQuarter(d.period), plans = mkRows("hiring_plans").filter(r => r.sector === "All businesses"), kiNow = plans[plans.length - 1], kiPrev = plans[0];
+  const bars = rows.map(r => ({ label: mkName(r.group), v: r.value, main: mine.has(r.group), note: r.previous != null ? t("mk.c.prev", { v: mkSigned(r.previous) }) : "" }));
+  return `<section class="mk-card" aria-labelledby="mk-out-h"><h3 id="mk-out-h">${esc(t("mk.c.outlook", { q }))}</h3><p class="mk-sub">${esc(t("mk.c.outlook.sub"))}</p>
+    ${mkBars(bars, mkSigned)}
+    ${kiNow && kiPrev && kiNow !== kiPrev ? `<p class="mk-sub">${esc(t("mk.c.ki", { month: mkMonth(kiNow.month), v: mkSigned(kiNow.net_balance), prev: mkSigned(kiPrev.net_balance) }))}</p>` : ""}</section>`;
+}
+function mkNationalHtml() {
+  const nat = mkNational(), tiles = [], open = mkRows("job_openings"), notices = mkRows("redundancies");
+  if (nat.post) tiles.push(mkTile(t("mk.n.postings"), mkNum(nat.post.value), t("mk.n.postings.sub", { month: mkMonth(nat.post.period) }) + (nat.change != null ? " · " + t("mk.n.yago", { v: mkPct(nat.change, true) }) : "")));
+  if (nat.unemp) tiles.push(mkTile(t("mk.n.unemp"), mkRate(nat.unemp.value), t("mk.n.unemp.sub", { month: mkMonth(nat.unemp.period) })));
+  if (nat.notice) tiles.push(mkTile(t("mk.n.notices"), mkNum(nat.notice.value), t("mk.n.notices.sub", { month: mkMonth(nat.notice.period) }) + (nat.notice.year_ago ? " · " + t("mk.n.yago", { v: mkPct(nat.notice.value / nat.notice.year_ago - 1, true) }) : "")));
+  if (open.length >= 5) { const a = open[open.length - 1], b = open[open.length - 5]; tiles.push(mkTile(t("mk.n.openings"), mkNum(a.openings_sa), t("mk.n.openings.sub", { q: mkQuarter(a.quarter) }) + " · " + t("mk.n.yago", { v: mkPct(a.openings_sa / b.openings_sa - 1, true) }))); }
+  return `<section aria-labelledby="mk-nat-h"><div class="mt-block-head"><h2 id="mk-nat-h">${esc(t("mk.nat.title"))}</h2><p>${esc(t("mk.nat.sub"))}</p></div>
+    <div class="mk-tiles">${tiles.join("")}</div>
+    <div class="mk-grid">${mkUnempChart()}${notices.length ? mkNoticeChart() : ""}</div>
+    ${mkOutlookHtml()}</section>`;
+}
+// Industry figures that line up with the chosen field
+function mkSectorHtml() {
+  const { field } = mkSel(), link = MK_LINKS[field]; if (!link) return "";
+  const notes = [];
+  if (link.scb) {
+    const r = mkRows("tech_employment").filter(x => x.sector === link.scb);
+    if (r.length >= 5) { const a = r[r.length - 1], b = r[r.length - 5]; notes.push(t("mk.sec.emp", { n: mkNum(Math.round(a.thousands * 10) * 100), sector: mkName(link.scb), chg: mkPct(a.thousands / b.thousands - 1, true), q: mkQuarter(a.quarter) })); }
+  }
+  if (link.outlook) {
+    const o = mkRows("hiring_outlook").find(x => x.group === link.outlook), q = mkQuarter(MK.hiring_outlook.period);
+    if (o) notes.push(t(o.previous != null ? "mk.sec.outlook" : "mk.sec.outlook1", { group: mkName(o.group), v: mkSigned(o.value), prev: mkSigned(o.previous ?? 0), q }));
+  }
+  if (link.ki) {
+    const r = mkRows("hiring_plans").filter(x => x.sector === link.ki);
+    if (r.length > 1) notes.push(t("mk.sec.ki", { sector: mkName(link.ki), v: mkSigned(r[r.length - 1].net_balance), month: mkMonth(r[r.length - 1].month), prev: mkSigned(r[0].net_balance) }));
+  }
+  if (link.engineers) {
+    const u = mkRows("engineers").filter(x => x.measure === "unemployment" && x.date).sort((a, b) => a.date.localeCompare(b.date)), last = u[u.length - 1];
+    const everyone = mkRows("engineers").find(x => x.measure.startsWith("compare") && x.label === "Everyone"), peak = u.reduce((p, x) => x.value > p.value ? x : p, u[0] || {});
+    if (last && everyone) notes.push(t(peak.value > last.value ? "mk.sec.eng" : "mk.sec.eng1", { v: mkRate(last.value), month: mkMonth(last.date), peak: mkRate(peak.value), pm: mkMonth(peak.date), all: mkRate(everyone.value) }));
+  }
+  if (link.consulting) {
+    const c = mkRows("consulting").filter(x => x.firms_adding_staff != null), last = c[c.length - 1];
+    if (last) notes.push(t("mk.sec.cons", { n: last.firms_adding_staff, q: mkQuarter(last.quarter.replace(/^Q(\d) (\d{4})$/, "$2 Q$1")), g: (last.median_growth < 0 ? "−" : last.median_growth > 0 ? "+" : "") + mkRate(Math.abs(last.median_growth)) }));
+  }
+  if (!notes.length) return "";
+  return `<section class="mk-card" aria-labelledby="mk-sec-h"><h3 id="mk-sec-h">${esc(t("mk.sec.title", { field: fieldName(field) }))}</h3><p class="mk-sub">${esc(t("mk.sec.sub"))}</p>
+    <ul class="mk-notes">${notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul></section>`;
+}
+function mkDoHtml() {
+  const mood = mkMood(mkCurrent()?.basis?.est ?? mkNational().change), tough = mood === "tough" || mood === "slow";
+  const items = [];
+  if (ABOUT.tailor) items.push(`<li><span>${esc(t("mk.do.mentor"))}</span><button class="btn sm" type="button" data-mk="mentor">${esc(t("empty.mentor.go"))}</button></li>`);
+  if (ABOUT.tailor) items.push(`<li><span>${esc(t("mk.do.tailor"))}</span></li>`);
+  items.push(`<li><span>${esc(t("mk.do.find"))}</span><button class="btn ghost sm" type="button" data-mk="find">${esc(t("tab.res"))}</button></li>`);
+  return `<section class="mk-do" aria-labelledby="mk-do-h"><h2 id="mk-do-h">${esc(t("mk.do.title"))}</h2><p>${esc(t(tough ? "mk.do.tough" : "mk.do.ok"))}</p><ul>${items.join("")}</ul></section>`;
+}
+function mkHowHtml() {
+  const sum = mkCurrent(), srcs = ["national_now", "national_yearly", "redundancies", "job_openings", "hiring_outlook", "hiring_plans", "tech_employment", "engineers", "consulting"].filter(id => MK?.[id]);
+  return `<section class="mt-how" aria-labelledby="mk-how-h"><h2 id="mk-how-h">${esc(t("mk.how"))}</h2>
+    <dl>${[["field", { months: sum ? sum.w.label() : t("mk.last3") }], ["sweden", {}], ["you", {}]].map(([k, v]) => `<div><dt>${esc(t("mk.how." + k))}</dt><dd>${esc(t("mk.how." + k + ".d", v))}</dd></div>`).join("")}</dl>
+    <h3 class="mk-src-h">${esc(t("mk.src"))}</h3>
+    <ul class="mk-src">${sum ? `<li>${esc(t("mk.s.live"))}, ${esc(t("mk.counted", { date: mkDate(sum.on) }))}</li>` : ""}
+      ${srcs.map(id => `<li>${esc(t("mk.s." + id))}, ${esc(t("mk.compiled", { date: mkDate(MK[id].as_of) }))}</li>`).join("")}</ul></section>`;
+}
+function marketLang() { mkFillControls(); renderMarket(); drawNudge(); }
+function renderMarket() {
+  const box = $("mk-body"); if (!box) return;
+  const { guessed, field } = mkSel();
+  const hint = $("mk-hint"); if (hint) hint.textContent = guessed ? t("mk.guessed") : field ? "" : t("mk.choose");
+  box.innerHTML = mkVerdictHtml() + mkCompareHtml() + mkSectorHtml() + mkNationalHtml() + mkDoHtml() + mkHowHtml();
+}
+
+/* ---------- Hover and keyboard on the charts: one tooltip for the whole tab ---------- */
+function mkTipAt(el) {
+  const tip = $("mk-tip"); if (!tip || !el) return;
+  tip.replaceChildren(Object.assign(document.createElement("b"), { textContent: el.dataset.v }), Object.assign(document.createElement("span"), { textContent: el.dataset.l }));
+  tip.hidden = false;
+  const r = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+  tip.style.left = Math.max(8, Math.min(innerWidth - tw - 8, r.left + r.width / 2 - tw / 2)) + "px";
+  tip.style.top = Math.max(8, r.top - th - 8) + "px";
+  const chart = el.closest(".mk-chart");
+  chart?.querySelectorAll(".mk-hit.on").forEach(h => h.classList.remove("on")); el.classList.add("on");
+  const cross = chart?.querySelector(".mk-cross"), plot = chart?.querySelector(".mk-plot");
+  if (cross && plot) { const p = plot.getBoundingClientRect(); cross.hidden = false; cross.style.left = (r.left + r.width / 2 - p.left) + "px"; }
+}
+function mkTipOff() {
+  const tip = $("mk-tip"); if (tip) tip.hidden = true;
+  document.querySelectorAll("#market .mk-hit.on").forEach(h => h.classList.remove("on"));
+  document.querySelectorAll("#market .mk-cross").forEach(c => { c.hidden = true; });
+}
+
+/* ---------- The pop-up after a few rejections ---------- */
+// After the third rejection, then after every three more, at most once every two weeks
+const NUDGE_AT = 3, NUDGE_EVERY = 3, NUDGE_GAP = 14;
+let ng = null;   // { n, field, sum }
+function maybeNudge() {
+  const n = Object.values(apps).filter(x => x.status === "Rejected").length, last = store.get("jf-nudge", null);
+  if (n < NUDGE_AT || (last && (n < last.n + NUDGE_EVERY || -daysTo(last.on) < NUDGE_GAP))) return;
+  store.set("jf-nudge", { n, on: today() });
+  openNudge(n);
+}
+function openNudge(n) {
+  const field = mkGuess("Rejected") || mkSel().field;
+  ng = { n, field, sum: mkSummary(field, "") };
+  const d = $("nudge"); if (!d || d.open) return;
+  drawNudge(); d.showModal();
+  d.querySelector(".ng-go")?.focus();
+}
+function drawNudge() {
+  const d = $("nudge"); if (!d || !ng) return;
+  const nat = mkNational(), s = ng.sum?.basis && ng.sum.basis.field ? ng.sum.basis : null;
+  const mood = mkMood(s ? s.est : nat.change), tough = mood === "tough" || mood === "slow";
+  const data = [];
+  if (s) data.push(mkSentence(s, ng.sum));
+  else if (nat.change != null) data.push(t(nat.change < 0 ? "mk.s.nat.down" : "mk.s.nat.up", { p: mkPct(nat.change), month: mkMonth(nat.month) }));
+  if (nat.unemp) data.push(t("ng.unemp", { u: mkRate(nat.unemp.value) }));
+  data.push(t(mood === "tough" ? "ng.why.tough" : mood === "slow" ? "ng.why.slow" : "ng.why.ok"));
+  if (tough && nat.forecast && nat.unemp && nat.forecast.value < nat.unemp.value) data.push(t("ng.hope", { f: mkRate(nat.forecast.value), y: nat.forecast.year }));
+  const fname = ng.field ? fieldName(ng.field) : "";
+  const src = s ? t("ng.src", { months: ng.sum.w.label(), month: mkMonth(nat.month) }) : t("ng.src.nat", { month: mkMonth(nat.month) });
+  d.innerHTML = `<form method="dialog" class="ng">
+    <div class="ng-head"><span class="label">${esc(t("ng.eyebrow"))}</span><button class="ng-x" value="close" aria-label="${esc(t("tl.close"))}">×</button></div>
+    <h2 id="ng-title">${esc(t(mood === "tough" ? "ng.h.tough" : mood === "slow" ? "ng.h.slow" : "ng.h.ok"))}</h2>
+    <p>${esc(t("ng.ack", { n: ng.n }))}</p>
+    <div class="ng-data${tough ? " tough" : ""}">${data.map(x => `<p>${esc(x)}</p>`).join("")}</div>
+    <p>${esc(t(ABOUT.tailor ? (tough ? "ng.mentor" : "ng.mentor.ok") : "ng.nomentor"))}</p>
+    <div class="row">${ABOUT.tailor ? `<button class="btn ng-go" type="button" data-ng="mentor">${esc(t("ng.go.mentor"))}</button>` : ""}
+      <button class="btn ${ABOUT.tailor ? "ghost" : "ng-go"}" type="button" data-ng="market">${esc(fname ? t("ng.go.market", { field: fname }) : t("ng.go.marketall"))}</button>
+      <button class="btn ghost" value="close">${esc(t("ng.later"))}</button></div>
+    <p class="tl-hint">${esc(src)}</p>
+  </form>`;
+}
+
+/* ---------- Events ---------- */
+function initMarket() {
+  const m = $("market"); if (!m) return;
+  m.innerHTML = `<div class="mk-controls"><label class="field"><span class="label" data-t="mk.field">${esc(t("mk.field"))}</span><select id="mk-field"></select></label>
+      <label class="field"><span class="label" data-t="mk.where">${esc(t("mk.where"))}</span><select id="mk-place"></select></label><p class="mk-hint" id="mk-hint"></p></div>
+    <p class="mk-live" id="mk-live" aria-live="polite"></p><div class="mk" id="mk-body"></div><div class="mk-tip" id="mk-tip" role="tooltip" hidden></div>`;
+  m.addEventListener("change", e => {
+    if (e.target.id === "mk-field") mkPick.field = e.target.value;
+    else if (e.target.id === "mk-place") mkPick.region = e.target.value;
+    else return;
+    store.set("jf-market", mkPick); renderMarket();
+    const live = $("mk-live"); if (live) live.textContent = $("mk-verdict-h")?.textContent || "";
+  });
+  m.addEventListener("click", e => {
+    const b = e.target.closest("[data-mk]"); if (!b) return;
+    if (b.dataset.mk === "mentor") { selectTab("mentor", true); }
+    else if (b.dataset.mk === "find") { selectTab("res"); $("place").focus(); }
+  });
+  m.addEventListener("pointerover", e => { const h = e.target.closest(".mk-hit"); if (h) mkTipAt(h); });
+  m.addEventListener("pointerout", e => { if (!e.relatedTarget || !e.relatedTarget.closest?.(".mk-hit")) mkTipOff(); });
+  // A chart takes focus as a whole; the arrow keys step through its marks, with the same tooltip as hovering
+  m.addEventListener("keydown", e => {
+    const c = e.target.closest?.(".mk-chart"); if (!c || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+    e.preventDefault();
+    const hits = [...c.querySelectorAll(".mk-hit")], i = hits.findIndex(h => h.classList.contains("on"));
+    const k = e.key === "Home" ? 0 : e.key === "End" ? hits.length - 1 : i < 0 ? (e.key === "ArrowLeft" ? hits.length - 1 : 0) : Math.max(0, Math.min(hits.length - 1, i + (e.key === "ArrowRight" ? 1 : -1)));
+    mkTipAt(hits[k]);
+  });
+  m.addEventListener("focusout", e => { if (e.target.closest?.(".mk-chart")) mkTipOff(); });
+  addEventListener("scroll", () => { const on = document.querySelector("#market .mk-hit.on"); if (on && !$("mk-tip").hidden) mkTipAt(on); }, { passive: true });
+  const d = $("nudge");
+  d.addEventListener("click", e => {
+    const b = e.target.closest("[data-ng]"); if (!b) return;
+    d.close();
+    if (b.dataset.ng === "mentor") selectTab("mentor", true);
+    else { if (ng?.field) { mkPick.field = ng.field; mkPick.region = ""; store.set("jf-market", mkPick); } selectTab("market", true); }
+  });
+}
+
+
 /* ---------- Start ---------- */
 if (ABOUT.tailor) document.querySelector('[data-th="about.privacy"]').dataset.th = "about.privacy.ai";
 $("tab-mentor").hidden = !ABOUT.tailor;
 initTailor();
 initMentor();
+initMarket();
 applyLang();
 applyPalette();
 loadPrefs();
 fillForm(store.get("jf-search", null) || { country: "SE", place: "", radius: 25, terms: [], excludes: [], links: true });
 render();
-selectTab({ "#mentor": "mentor", "#applications": "app", "#jobs": "res" }[location.hash] || store.get("jf-tab", "res"));
+selectTab({ "#mentor": "mentor", "#market": "market", "#applications": "app", "#jobs": "res" }[location.hash] || store.get("jf-tab", "res"));
 initWelcome();
 
 </script>

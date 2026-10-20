@@ -1,0 +1,2504 @@
+{
+ "id": "regional_jobs",
+ "title": "Jobs by county (SCB)",
+ "description": "People employed aged 15 to 74 by workplace county, men and women, Q1 2020 to Q2 2026, preliminary statistics. SCB Statistikdatabasen table TAB3786: information and communication (J) for Sweden, Stockholm, Skåne and Västra Götaland, and manufacturing (B+C) for Sweden and Västra Götaland. Not seasonally adjusted.",
+ "as_of": "2026-10-19",
+ "rows": [
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 155946
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 156236
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 155800
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 156042
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 156919
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 159286
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 161587
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 163782
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 165514
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 168359
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 171019
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 172623
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 173545
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 174979
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 176021
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 175217
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 173217
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 172602
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 172567
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 171683
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 171509
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 171613
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 171740
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 171015
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 169580
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 169502
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 63370
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 63414
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 63118
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 63729
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 63892
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 65690
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 67224
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 68560
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 69232
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 71198
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 72451
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 73613
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 74016
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 75245
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 75820
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 75369
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 73922
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 73882
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 74066
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 73785
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 73625
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 73900
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 74035
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 73811
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 72649
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "region": "Sweden",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 72836
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 75265
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 75821
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 75632
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 75806
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 76002
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 77106
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 77965
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 79197
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 80238
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 81647
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 82910
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 83529
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 83659
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 84157
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 84227
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 83931
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 83103
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 82967
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 82736
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 82606
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 82322
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 82512
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 82501
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 82299
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 81622
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 81879
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 34632
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 34776
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 34698
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 35147
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 35213
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 36185
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 36832
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 37564
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 37918
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 39085
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 39733
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 40374
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 40437
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 41039
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 41115
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 40938
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 40272
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 40370
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 40340
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 40232
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 39950
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 40170
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 40159
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 40247
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 39581
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "region": "Stockholm",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 39806
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 18020
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 17905
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 17899
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 18124
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 18271
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 18598
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 18963
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 19364
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 19590
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20018
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20298
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20521
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20638
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20865
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20958
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20866
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20704
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20666
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20652
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20456
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20277
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20245
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20290
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20232
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 20093
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 19848
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 6372
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 6393
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 6360
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 6475
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 6454
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 6689
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 6954
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 7239
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 7368
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 7572
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 7677
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 7896
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 7922
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 8047
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 8165
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 8138
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 7992
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 7995
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 8055
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 8003
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 7942
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 8008
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 8030
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 8007
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 7882
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "region": "Skåne",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 7837
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 24320
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 24283
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 24162
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 24341
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 24597
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 24963
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 25427
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 25785
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 26058
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 26574
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 26894
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 27214
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 27380
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 27629
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 27934
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 27996
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 27372
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 27025
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 27005
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 27039
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 27625
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 27684
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 27723
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 27538
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 27011
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Men",
+   "employed": 26988
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 8481
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 8445
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 8349
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 8529
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 8661
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 8901
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 9172
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 9396
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 9568
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 9883
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10022
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10121
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10171
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10310
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10474
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10569
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10257
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10108
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10186
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10277
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10599
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10597
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10628
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10515
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10349
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "region": "Västra Götaland",
+   "sector": "Information and communication",
+   "sex": "Women",
+   "employed": 10302
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 412081
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 411777
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 417131
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 406948
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 406528
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 412326
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 424085
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 413572
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 413559
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 419823
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 431405
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 418905
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 417122
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 421180
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 431065
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 417356
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 414761
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 418733
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 428106
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 414599
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 411199
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 415158
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 420551
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 406749
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 405536
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 410617
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 133029
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 133493
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 137456
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 132012
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 132370
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 135569
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 142772
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 137568
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 138314
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 141760
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 148887
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 141903
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 141166
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 144005
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 150484
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 143655
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 142687
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 145540
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 151693
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 145028
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 143571
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 146373
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 151390
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 144264
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 144430
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "region": "Sweden",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 147252
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 86006
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 85869
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 86833
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 84308
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 83426
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 84079
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 85974
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 83975
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 84054
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 85590
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 87779
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 85299
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 85233
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 85788
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 87402
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 84549
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 84190
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 85014
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 86056
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 83473
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 82162
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 82998
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 84566
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 81581
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 81921
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Men",
+   "employed": 82865
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 29765
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 29645
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 30377
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 29131
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 28960
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 29469
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 30716
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 29827
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 30088
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 30830
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 32195
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 30961
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 30825
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 31267
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 32328
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 31101
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 31015
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 31551
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 32275
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 31085
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 30186
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 30704
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 31640
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 30086
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 30236
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "region": "Västra Götaland",
+   "sector": "Manufacturing",
+   "sex": "Women",
+   "employed": 30696
+  }
+ ]
+}

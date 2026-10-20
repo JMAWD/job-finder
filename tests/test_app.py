@@ -99,7 +99,7 @@ async def main():
 
         check('starts empty', 'Start with a search' in await pg.locator('#list').inner_text())
         check('suite navigation sits above the search form', await pg.evaluate("document.getElementById('tab-app').getBoundingClientRect().bottom <= document.getElementById('search').getBoundingClientRect().top"))
-        check('three parts in the navigation', await pg.locator('.topbar [role=tab]:visible').all_inner_texts() == ['Find jobs', 'My applications', 'Mentor'])
+        check('four parts in the navigation', await pg.locator('.topbar [role=tab]:visible').all_inner_texts() == ['Find jobs', 'My applications', 'Market', 'Mentor'])
         await pg.click('[data-act=goto-mentor]')
         check('empty search points to the Mentor', await pg.locator('#tab-mentor').get_attribute('aria-selected') == 'true' and await pg.locator('#view-res').is_hidden()
               and 'Your advice will appear here' in await pg.locator('#mentor').inner_text())

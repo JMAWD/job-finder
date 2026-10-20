@@ -1,0 +1,728 @@
+{
+ "id": "tech_employment",
+ "title": "Jobs by sector (SCB)",
+ "description": "Number employed in thousands, calendar and seasonally adjusted, national accounts, Q1 2019 to Q2 2026. SCB Statistikdatabasen table TAB4936, sectors J58-J63, C10-C33, M69-N82 and the total.",
+ "as_of": "2026-10-19",
+ "rows": [
+  {
+   "quarter": "2019 Q1",
+   "date": "2019-03-31",
+   "sector": "All jobs",
+   "thousands": 5216.6
+  },
+  {
+   "quarter": "2019 Q2",
+   "date": "2019-06-30",
+   "sector": "All jobs",
+   "thousands": 5216.3
+  },
+  {
+   "quarter": "2019 Q3",
+   "date": "2019-09-30",
+   "sector": "All jobs",
+   "thousands": 5218.5
+  },
+  {
+   "quarter": "2019 Q4",
+   "date": "2019-12-31",
+   "sector": "All jobs",
+   "thousands": 5220.5
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "sector": "All jobs",
+   "thousands": 5219.2
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "sector": "All jobs",
+   "thousands": 5118.1
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "sector": "All jobs",
+   "thousands": 5123.8
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "sector": "All jobs",
+   "thousands": 5142.3
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "sector": "All jobs",
+   "thousands": 5143.1
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "sector": "All jobs",
+   "thousands": 5162.8
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "sector": "All jobs",
+   "thousands": 5262.0
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "sector": "All jobs",
+   "thousands": 5295.7
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "sector": "All jobs",
+   "thousands": 5341.1
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "sector": "All jobs",
+   "thousands": 5382.0
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "sector": "All jobs",
+   "thousands": 5423.5
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "sector": "All jobs",
+   "thousands": 5444.5
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "sector": "All jobs",
+   "thousands": 5455.9
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "sector": "All jobs",
+   "thousands": 5465.4
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "sector": "All jobs",
+   "thousands": 5470.2
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "sector": "All jobs",
+   "thousands": 5466.4
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "sector": "All jobs",
+   "thousands": 5460.1
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "sector": "All jobs",
+   "thousands": 5451.1
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "sector": "All jobs",
+   "thousands": 5446.0
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "sector": "All jobs",
+   "thousands": 5439.8
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "sector": "All jobs",
+   "thousands": 5439.7
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "sector": "All jobs",
+   "thousands": 5443.7
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "sector": "All jobs",
+   "thousands": 5446.0
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "sector": "All jobs",
+   "thousands": 5453.3
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "sector": "All jobs",
+   "thousands": 5460.1
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "sector": "All jobs",
+   "thousands": 5467.3
+  },
+  {
+   "quarter": "2019 Q1",
+   "date": "2019-03-31",
+   "sector": "Information and communication",
+   "thousands": 211.3
+  },
+  {
+   "quarter": "2019 Q2",
+   "date": "2019-06-30",
+   "sector": "Information and communication",
+   "thousands": 212.1
+  },
+  {
+   "quarter": "2019 Q3",
+   "date": "2019-09-30",
+   "sector": "Information and communication",
+   "thousands": 214.4
+  },
+  {
+   "quarter": "2019 Q4",
+   "date": "2019-12-31",
+   "sector": "Information and communication",
+   "thousands": 218.7
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "sector": "Information and communication",
+   "thousands": 217.4
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "sector": "Information and communication",
+   "thousands": 216.1
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "sector": "Information and communication",
+   "thousands": 217.5
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "sector": "Information and communication",
+   "thousands": 218.8
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "sector": "Information and communication",
+   "thousands": 220.1
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "sector": "Information and communication",
+   "thousands": 222.2
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "sector": "Information and communication",
+   "thousands": 227.5
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "sector": "Information and communication",
+   "thousands": 230.9
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "sector": "Information and communication",
+   "thousands": 234.0
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "sector": "Information and communication",
+   "thousands": 237.7
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "sector": "Information and communication",
+   "thousands": 241.8
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "sector": "Information and communication",
+   "thousands": 245.0
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "sector": "Information and communication",
+   "thousands": 247.4
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "sector": "Information and communication",
+   "thousands": 248.3
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "sector": "Information and communication",
+   "thousands": 248.8
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "sector": "Information and communication",
+   "thousands": 248.3
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "sector": "Information and communication",
+   "thousands": 245.5
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "sector": "Information and communication",
+   "thousands": 244.5
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "sector": "Information and communication",
+   "thousands": 243.7
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "sector": "Information and communication",
+   "thousands": 243.0
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "sector": "Information and communication",
+   "thousands": 244.1
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "sector": "Information and communication",
+   "thousands": 243.3
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "sector": "Information and communication",
+   "thousands": 242.8
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "sector": "Information and communication",
+   "thousands": 242.0
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "sector": "Information and communication",
+   "thousands": 241.2
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "sector": "Information and communication",
+   "thousands": 240.6
+  },
+  {
+   "quarter": "2019 Q1",
+   "date": "2019-03-31",
+   "sector": "Manufacturing",
+   "thousands": 557.0
+  },
+  {
+   "quarter": "2019 Q2",
+   "date": "2019-06-30",
+   "sector": "Manufacturing",
+   "thousands": 554.9
+  },
+  {
+   "quarter": "2019 Q3",
+   "date": "2019-09-30",
+   "sector": "Manufacturing",
+   "thousands": 558.4
+  },
+  {
+   "quarter": "2019 Q4",
+   "date": "2019-12-31",
+   "sector": "Manufacturing",
+   "thousands": 554.9
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "sector": "Manufacturing",
+   "thousands": 552.5
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "sector": "Manufacturing",
+   "thousands": 543.2
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "sector": "Manufacturing",
+   "thousands": 542.3
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "sector": "Manufacturing",
+   "thousands": 544.6
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "sector": "Manufacturing",
+   "thousands": 546.5
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "sector": "Manufacturing",
+   "thousands": 544.5
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "sector": "Manufacturing",
+   "thousands": 555.0
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "sector": "Manufacturing",
+   "thousands": 556.6
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "sector": "Manufacturing",
+   "thousands": 561.1
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "sector": "Manufacturing",
+   "thousands": 564.8
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "sector": "Manufacturing",
+   "thousands": 570.2
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "sector": "Manufacturing",
+   "thousands": 571.3
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "sector": "Manufacturing",
+   "thousands": 571.8
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "sector": "Manufacturing",
+   "thousands": 573.6
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "sector": "Manufacturing",
+   "thousands": 575.4
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "sector": "Manufacturing",
+   "thousands": 574.4
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "sector": "Manufacturing",
+   "thousands": 570.6
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "sector": "Manufacturing",
+   "thousands": 569.9
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "sector": "Manufacturing",
+   "thousands": 570.4
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "sector": "Manufacturing",
+   "thousands": 570.3
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "sector": "Manufacturing",
+   "thousands": 568.4
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "sector": "Manufacturing",
+   "thousands": 567.7
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "sector": "Manufacturing",
+   "thousands": 563.1
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "sector": "Manufacturing",
+   "thousands": 562.3
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "sector": "Manufacturing",
+   "thousands": 561.8
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "sector": "Manufacturing",
+   "thousands": 560.6
+  },
+  {
+   "quarter": "2019 Q1",
+   "date": "2019-03-31",
+   "sector": "Professional and technical services",
+   "thousands": 608.2
+  },
+  {
+   "quarter": "2019 Q2",
+   "date": "2019-06-30",
+   "sector": "Professional and technical services",
+   "thousands": 610.8
+  },
+  {
+   "quarter": "2019 Q3",
+   "date": "2019-09-30",
+   "sector": "Professional and technical services",
+   "thousands": 610.5
+  },
+  {
+   "quarter": "2019 Q4",
+   "date": "2019-12-31",
+   "sector": "Professional and technical services",
+   "thousands": 609.4
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "sector": "Professional and technical services",
+   "thousands": 605.4
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "sector": "Professional and technical services",
+   "thousands": 589.1
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "sector": "Professional and technical services",
+   "thousands": 582.8
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "sector": "Professional and technical services",
+   "thousands": 584.6
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "sector": "Professional and technical services",
+   "thousands": 589.7
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "sector": "Professional and technical services",
+   "thousands": 591.2
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "sector": "Professional and technical services",
+   "thousands": 607.9
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "sector": "Professional and technical services",
+   "thousands": 615.4
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "sector": "Professional and technical services",
+   "thousands": 626.1
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "sector": "Professional and technical services",
+   "thousands": 634.3
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "sector": "Professional and technical services",
+   "thousands": 644.3
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "sector": "Professional and technical services",
+   "thousands": 650.6
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "sector": "Professional and technical services",
+   "thousands": 649.4
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "sector": "Professional and technical services",
+   "thousands": 651.3
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "sector": "Professional and technical services",
+   "thousands": 651.7
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "sector": "Professional and technical services",
+   "thousands": 650.5
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "sector": "Professional and technical services",
+   "thousands": 651.5
+  },
+  {
+   "quarter": "2024 Q2",
+   "date": "2024-06-30",
+   "sector": "Professional and technical services",
+   "thousands": 648.7
+  },
+  {
+   "quarter": "2024 Q3",
+   "date": "2024-09-30",
+   "sector": "Professional and technical services",
+   "thousands": 645.7
+  },
+  {
+   "quarter": "2024 Q4",
+   "date": "2024-12-31",
+   "sector": "Professional and technical services",
+   "thousands": 643.4
+  },
+  {
+   "quarter": "2025 Q1",
+   "date": "2025-03-31",
+   "sector": "Professional and technical services",
+   "thousands": 645.8
+  },
+  {
+   "quarter": "2025 Q2",
+   "date": "2025-06-30",
+   "sector": "Professional and technical services",
+   "thousands": 646.3
+  },
+  {
+   "quarter": "2025 Q3",
+   "date": "2025-09-30",
+   "sector": "Professional and technical services",
+   "thousands": 649.4
+  },
+  {
+   "quarter": "2025 Q4",
+   "date": "2025-12-31",
+   "sector": "Professional and technical services",
+   "thousands": 651.8
+  },
+  {
+   "quarter": "2026 Q1",
+   "date": "2026-03-31",
+   "sector": "Professional and technical services",
+   "thousands": 650.8
+  },
+  {
+   "quarter": "2026 Q2",
+   "date": "2026-06-30",
+   "sector": "Professional and technical services",
+   "thousands": 652.0
+  }
+ ]
+}

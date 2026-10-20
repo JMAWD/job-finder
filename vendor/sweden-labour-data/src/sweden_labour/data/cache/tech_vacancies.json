@@ -1,0 +1,596 @@
+{
+ "id": "tech_vacancies",
+ "title": "Open positions by industry (SCB)",
+ "description": "Job openings (lediga jobb) in the private sector by industry with margin of error, Q1 2019 to Q1 2024, from SCB's vacancy survey (KV), table TAB4299. The survey ended after Q1 2024.",
+ "as_of": "2026-10-19",
+ "rows": [
+  {
+   "quarter": "2019 Q1",
+   "date": "2019-03-31",
+   "sector": "All private sector",
+   "openings": 91563,
+   "margin": 5077
+  },
+  {
+   "quarter": "2019 Q2",
+   "date": "2019-06-30",
+   "sector": "All private sector",
+   "openings": 92645,
+   "margin": 5414
+  },
+  {
+   "quarter": "2019 Q3",
+   "date": "2019-09-30",
+   "sector": "All private sector",
+   "openings": 76068,
+   "margin": 5639
+  },
+  {
+   "quarter": "2019 Q4",
+   "date": "2019-12-31",
+   "sector": "All private sector",
+   "openings": 69738,
+   "margin": 3894
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "sector": "All private sector",
+   "openings": 83015,
+   "margin": 5397
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "sector": "All private sector",
+   "openings": 49717,
+   "margin": 3845
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "sector": "All private sector",
+   "openings": 48447,
+   "margin": 3328
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "sector": "All private sector",
+   "openings": 52109,
+   "margin": 3018
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "sector": "All private sector",
+   "openings": 64731,
+   "margin": 3093
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "sector": "All private sector",
+   "openings": 86883,
+   "margin": 4537
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "sector": "All private sector",
+   "openings": 84966,
+   "margin": 4343
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "sector": "All private sector",
+   "openings": 92356,
+   "margin": 4235
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "sector": "All private sector",
+   "openings": 120253,
+   "margin": 6046
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "sector": "All private sector",
+   "openings": 129419,
+   "margin": 6661
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "sector": "All private sector",
+   "openings": 109374,
+   "margin": 5914
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "sector": "All private sector",
+   "openings": 93309,
+   "margin": 5074
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "sector": "All private sector",
+   "openings": 117535,
+   "margin": 10005
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "sector": "All private sector",
+   "openings": 106569,
+   "margin": 5648
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "sector": "All private sector",
+   "openings": 83073,
+   "margin": 4330
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "sector": "All private sector",
+   "openings": 74581,
+   "margin": 4347
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "sector": "All private sector",
+   "openings": 85420,
+   "margin": 4571
+  },
+  {
+   "quarter": "2019 Q1",
+   "date": "2019-03-31",
+   "sector": "Information and communication",
+   "openings": 10565,
+   "margin": 1860
+  },
+  {
+   "quarter": "2019 Q2",
+   "date": "2019-06-30",
+   "sector": "Information and communication",
+   "openings": 10925,
+   "margin": 2210
+  },
+  {
+   "quarter": "2019 Q3",
+   "date": "2019-09-30",
+   "sector": "Information and communication",
+   "openings": 9950,
+   "margin": 2465
+  },
+  {
+   "quarter": "2019 Q4",
+   "date": "2019-12-31",
+   "sector": "Information and communication",
+   "openings": 10195,
+   "margin": 1491
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "sector": "Information and communication",
+   "openings": 10031,
+   "margin": 1829
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "sector": "Information and communication",
+   "openings": 5788,
+   "margin": 1084
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "sector": "Information and communication",
+   "openings": 6058,
+   "margin": 906
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "sector": "Information and communication",
+   "openings": 7323,
+   "margin": 1061
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "sector": "Information and communication",
+   "openings": 8161,
+   "margin": 873
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "sector": "Information and communication",
+   "openings": 10410,
+   "margin": 1596
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "sector": "Information and communication",
+   "openings": 9731,
+   "margin": 1212
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "sector": "Information and communication",
+   "openings": 11948,
+   "margin": 1598
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "sector": "Information and communication",
+   "openings": 15097,
+   "margin": 2457
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "sector": "Information and communication",
+   "openings": 14635,
+   "margin": 1907
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "sector": "Information and communication",
+   "openings": 12595,
+   "margin": 1768
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "sector": "Information and communication",
+   "openings": 9697,
+   "margin": 1196
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "sector": "Information and communication",
+   "openings": 9934,
+   "margin": 1501
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "sector": "Information and communication",
+   "openings": 9834,
+   "margin": 1591
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "sector": "Information and communication",
+   "openings": 7949,
+   "margin": 1067
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "sector": "Information and communication",
+   "openings": 7700,
+   "margin": 1551
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "sector": "Information and communication",
+   "openings": 6927,
+   "margin": 1122
+  },
+  {
+   "quarter": "2019 Q1",
+   "date": "2019-03-31",
+   "sector": "Manufacturing",
+   "openings": 14057,
+   "margin": 648
+  },
+  {
+   "quarter": "2019 Q2",
+   "date": "2019-06-30",
+   "sector": "Manufacturing",
+   "openings": 13406,
+   "margin": 869
+  },
+  {
+   "quarter": "2019 Q3",
+   "date": "2019-09-30",
+   "sector": "Manufacturing",
+   "openings": 8133,
+   "margin": 487
+  },
+  {
+   "quarter": "2019 Q4",
+   "date": "2019-12-31",
+   "sector": "Manufacturing",
+   "openings": 8220,
+   "margin": 517
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "sector": "Manufacturing",
+   "openings": 12608,
+   "margin": 1053
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "sector": "Manufacturing",
+   "openings": 6246,
+   "margin": 430
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "sector": "Manufacturing",
+   "openings": 5452,
+   "margin": 720
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "sector": "Manufacturing",
+   "openings": 6271,
+   "margin": 459
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "sector": "Manufacturing",
+   "openings": 11051,
+   "margin": 633
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "sector": "Manufacturing",
+   "openings": 10634,
+   "margin": 539
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "sector": "Manufacturing",
+   "openings": 10695,
+   "margin": 639
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "sector": "Manufacturing",
+   "openings": 12617,
+   "margin": 933
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "sector": "Manufacturing",
+   "openings": 16965,
+   "margin": 1034
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "sector": "Manufacturing",
+   "openings": 15750,
+   "margin": 996
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "sector": "Manufacturing",
+   "openings": 13249,
+   "margin": 806
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "sector": "Manufacturing",
+   "openings": 13241,
+   "margin": 797
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "sector": "Manufacturing",
+   "openings": 17714,
+   "margin": 1118
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "sector": "Manufacturing",
+   "openings": 14383,
+   "margin": 1040
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "sector": "Manufacturing",
+   "openings": 11683,
+   "margin": 1113
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "sector": "Manufacturing",
+   "openings": 9930,
+   "margin": 888
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "sector": "Manufacturing",
+   "openings": 15326,
+   "margin": 924
+  },
+  {
+   "quarter": "2019 Q1",
+   "date": "2019-03-31",
+   "sector": "Professional and technical services",
+   "openings": 9883,
+   "margin": 1286
+  },
+  {
+   "quarter": "2019 Q2",
+   "date": "2019-06-30",
+   "sector": "Professional and technical services",
+   "openings": 10477,
+   "margin": 1435
+  },
+  {
+   "quarter": "2019 Q3",
+   "date": "2019-09-30",
+   "sector": "Professional and technical services",
+   "openings": 10193,
+   "margin": 1504
+  },
+  {
+   "quarter": "2019 Q4",
+   "date": "2019-12-31",
+   "sector": "Professional and technical services",
+   "openings": 8657,
+   "margin": 1164
+  },
+  {
+   "quarter": "2020 Q1",
+   "date": "2020-03-31",
+   "sector": "Professional and technical services",
+   "openings": 8320,
+   "margin": 1355
+  },
+  {
+   "quarter": "2020 Q2",
+   "date": "2020-06-30",
+   "sector": "Professional and technical services",
+   "openings": 4931,
+   "margin": 1010
+  },
+  {
+   "quarter": "2020 Q3",
+   "date": "2020-09-30",
+   "sector": "Professional and technical services",
+   "openings": 5938,
+   "margin": 1020
+  },
+  {
+   "quarter": "2020 Q4",
+   "date": "2020-12-31",
+   "sector": "Professional and technical services",
+   "openings": 6282,
+   "margin": 929
+  },
+  {
+   "quarter": "2021 Q1",
+   "date": "2021-03-31",
+   "sector": "Professional and technical services",
+   "openings": 7672,
+   "margin": 976
+  },
+  {
+   "quarter": "2021 Q2",
+   "date": "2021-06-30",
+   "sector": "Professional and technical services",
+   "openings": 11062,
+   "margin": 1393
+  },
+  {
+   "quarter": "2021 Q3",
+   "date": "2021-09-30",
+   "sector": "Professional and technical services",
+   "openings": 11538,
+   "margin": 1408
+  },
+  {
+   "quarter": "2021 Q4",
+   "date": "2021-12-31",
+   "sector": "Professional and technical services",
+   "openings": 12768,
+   "margin": 1404
+  },
+  {
+   "quarter": "2022 Q1",
+   "date": "2022-03-31",
+   "sector": "Professional and technical services",
+   "openings": 15446,
+   "margin": 1835
+  },
+  {
+   "quarter": "2022 Q2",
+   "date": "2022-06-30",
+   "sector": "Professional and technical services",
+   "openings": 14473,
+   "margin": 2138
+  },
+  {
+   "quarter": "2022 Q3",
+   "date": "2022-09-30",
+   "sector": "Professional and technical services",
+   "openings": 15315,
+   "margin": 2307
+  },
+  {
+   "quarter": "2022 Q4",
+   "date": "2022-12-31",
+   "sector": "Professional and technical services",
+   "openings": 13296,
+   "margin": 2015
+  },
+  {
+   "quarter": "2023 Q1",
+   "date": "2023-03-31",
+   "sector": "Professional and technical services",
+   "openings": 13662,
+   "margin": 3569
+  },
+  {
+   "quarter": "2023 Q2",
+   "date": "2023-06-30",
+   "sector": "Professional and technical services",
+   "openings": 12944,
+   "margin": 1760
+  },
+  {
+   "quarter": "2023 Q3",
+   "date": "2023-09-30",
+   "sector": "Professional and technical services",
+   "openings": 12757,
+   "margin": 1577
+  },
+  {
+   "quarter": "2023 Q4",
+   "date": "2023-12-31",
+   "sector": "Professional and technical services",
+   "openings": 12619,
+   "margin": 1626
+  },
+  {
+   "quarter": "2024 Q1",
+   "date": "2024-03-31",
+   "sector": "Professional and technical services",
+   "openings": 11873,
+   "margin": 2536
+  }
+ ]
+}

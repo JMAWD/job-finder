@@ -1,0 +1,50 @@
+{
+ "id": "hiring_outlook",
+ "title": "Hiring outlook (ManpowerGroup)",
+ "description": "ManpowerGroup's net employment outlook for Q4 2026 (survey 1 to 31 July 2026, press release 8 Sep 2026): share of employers planning to add staff minus share planning to cut, seasonally adjusted. IT and tech's previous value is ManpowerGroup's Q3 2026 figure from 9 Jun 2026; Västra Götaland's follows from the stated 2-point fall. Regions cover all industries.",
+ "as_of": "2026-10-19",
+ "rows": [
+  {
+   "group": "IT and tech",
+   "kind": "industry",
+   "value": 41,
+   "previous": 27
+  },
+  {
+   "group": "Services and consulting",
+   "kind": "industry",
+   "value": 44,
+   "previous": null
+  },
+  {
+   "group": "Manufacturing, automotive and defence",
+   "kind": "industry",
+   "value": 31,
+   "previous": null
+  },
+  {
+   "group": "All employers",
+   "kind": "total",
+   "value": 39,
+   "previous": null
+  },
+  {
+   "group": "Stockholm and Uppsala",
+   "kind": "region",
+   "value": 45,
+   "previous": null
+  },
+  {
+   "group": "Västra Götaland",
+   "kind": "region",
+   "value": 37,
+   "previous": 39
+  },
+  {
+   "group": "Skåne and Blekinge",
+   "kind": "region",
+   "value": 31,
+   "previous": null
+  }
+ ]
+}

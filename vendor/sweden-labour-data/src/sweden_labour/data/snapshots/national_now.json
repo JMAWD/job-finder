@@ -1,0 +1,40 @@
+{
+ "id": "national_now",
+ "title": "Job market, September 2026",
+ "description": "SCB labour force survey for September 2026 (table TAB6387, seasonally adjusted) and Arbetsförmedlingen's statistics for September 2026 (published 15 Oct 2026). Arbetsförmedlingen's 2026 figures cover ages 16 to 66 and its 2025 figures 16 to 65.",
+ "as_of": "2026-10-19",
+ "rows": [
+  {
+   "metric": "Unemployment, seasonally adjusted",
+   "period": "Sep 2026",
+   "value": 8.6,
+   "year_ago": null,
+   "unit": "percent",
+   "note": "SCB survey; 8.1% before seasonal adjustment"
+  },
+  {
+   "metric": "Registered unemployed",
+   "period": "Sep 2026",
+   "value": 6.4,
+   "year_ago": 6.9,
+   "unit": "percent",
+   "note": "Arbetsförmedlingen, share of the labour force"
+  },
+  {
+   "metric": "New job postings",
+   "period": "Sep 2026",
+   "value": 65000,
+   "year_ago": 78000,
+   "unit": "count",
+   "note": "Arbetsförmedlingen"
+  },
+  {
+   "metric": "Redundancy notices",
+   "period": "Sep 2026",
+   "value": 5487,
+   "year_ago": 5057,
+   "unit": "count",
+   "note": "Arbetsförmedlingen"
+  }
+ ]
+}

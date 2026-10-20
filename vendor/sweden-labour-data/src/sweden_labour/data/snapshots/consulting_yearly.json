@@ -1,0 +1,50 @@
+{
+ "id": "consulting_yearly",
+ "title": "Consulting by year (Konsultkollen)",
+ "description": "Cinode's annual Konsultkollen reports 2021 to 2026, covering 200 to 370 Swedish consultancies with at least 15 staff. Growth of the typical firm on the year before; Cinode calls it the median in its 2022 to 2024 reports and growth on average in later ones.",
+ "as_of": "2026-10-20",
+ "rows": [
+  {
+   "year": 2020,
+   "revenue_growth": 0.6,
+   "headcount_growth": null,
+   "firms": "200+",
+   "note": "Half the firms shrank; the Volvo companies cut most of their hired consultants, hitting Gothenburg hardest"
+  },
+  {
+   "year": 2021,
+   "revenue_growth": 9.4,
+   "headcount_growth": 2.6,
+   "firms": "250+",
+   "note": ""
+  },
+  {
+   "year": 2022,
+   "revenue_growth": 16.7,
+   "headcount_growth": 8.2,
+   "firms": "250+",
+   "note": "Record year"
+  },
+  {
+   "year": 2023,
+   "revenue_growth": 7.5,
+   "headcount_growth": 4.8,
+   "firms": "300+",
+   "note": "A third of firms cut staff"
+  },
+  {
+   "year": 2024,
+   "revenue_growth": 2.6,
+   "headcount_growth": 0.7,
+   "firms": "300+",
+   "note": ""
+  },
+  {
+   "year": 2025,
+   "revenue_growth": 1.2,
+   "headcount_growth": -0.6,
+   "firms": "350+",
+   "note": "IT consultancies -0.1% revenue, -1.8% staff; technology consultancies +3.5% revenue"
+  }
+ ]
+}

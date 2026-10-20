@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sweden-labour-data"
+version = "0.1.0"
+description = "Swedish labour market data from SCB and JobTech, plus the hand-compiled sources behind the Labor Market Tracker."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "John Mawdsley" }]
+dependencies = ["requests>=2.28"]
+keywords = ["sweden", "labour market", "scb", "jobtech", "statistics", "pxweb"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+
+[project.optional-dependencies]
+pandas = ["pandas>=1.5"]
+
+[project.scripts]
+sweden-labour = "sweden_labour.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sweden_labour = ["data/snapshots/*.json", "data/cache/*.json"]

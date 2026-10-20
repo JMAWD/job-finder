@@ -1,0 +1,134 @@
+{
+ "id": "job_ads",
+ "title": "Job ads (JobTech)",
+ "description": "Ads and positions published in Platsbanken from 1 January to 30 September of each year 2020 to 2026, counted with Arbetsförmedlingen's JobTech historical ads API: occupation field Data/IT, occupation field 'Yrken med teknisk inriktning', and all ads. The archive's coverage varies by year.",
+ "as_of": "2026-10-19",
+ "rows": [
+  {
+   "year": 2020,
+   "field": "Data/IT",
+   "ads": 23486,
+   "positions": 36161
+  },
+  {
+   "year": 2020,
+   "field": "Technical",
+   "ads": 12149,
+   "positions": 16190
+  },
+  {
+   "year": 2020,
+   "field": "All occupations",
+   "ads": 365720,
+   "positions": 749790
+  },
+  {
+   "year": 2021,
+   "field": "Data/IT",
+   "ads": 36135,
+   "positions": 49566
+  },
+  {
+   "year": 2021,
+   "field": "Technical",
+   "ads": 19834,
+   "positions": 24567
+  },
+  {
+   "year": 2021,
+   "field": "All occupations",
+   "ads": 503684,
+   "positions": 924927
+  },
+  {
+   "year": 2022,
+   "field": "Data/IT",
+   "ads": 48743,
+   "positions": 63757
+  },
+  {
+   "year": 2022,
+   "field": "Technical",
+   "ads": 30838,
+   "positions": 40379
+  },
+  {
+   "year": 2022,
+   "field": "All occupations",
+   "ads": 796531,
+   "positions": 1517088
+  },
+  {
+   "year": 2023,
+   "field": "Data/IT",
+   "ads": 46425,
+   "positions": 56479
+  },
+  {
+   "year": 2023,
+   "field": "Technical",
+   "ads": 30137,
+   "positions": 39593
+  },
+  {
+   "year": 2023,
+   "field": "All occupations",
+   "ads": 822919,
+   "positions": 1508156
+  },
+  {
+   "year": 2024,
+   "field": "Data/IT",
+   "ads": 31579,
+   "positions": 36856
+  },
+  {
+   "year": 2024,
+   "field": "Technical",
+   "ads": 27476,
+   "positions": 34220
+  },
+  {
+   "year": 2024,
+   "field": "All occupations",
+   "ads": 562195,
+   "positions": 991660
+  },
+  {
+   "year": 2025,
+   "field": "Data/IT",
+   "ads": 41977,
+   "positions": 50807
+  },
+  {
+   "year": 2025,
+   "field": "Technical",
+   "ads": 34037,
+   "positions": 41257
+  },
+  {
+   "year": 2025,
+   "field": "All occupations",
+   "ads": 687322,
+   "positions": 1238104
+  },
+  {
+   "year": 2026,
+   "field": "Data/IT",
+   "ads": 37442,
+   "positions": 43273
+  },
+  {
+   "year": 2026,
+   "field": "Technical",
+   "ads": 31922,
+   "positions": 37053
+  },
+  {
+   "year": 2026,
+   "field": "All occupations",
+   "ads": 641618,
+   "positions": 1145521
+  }
+ ]
+}

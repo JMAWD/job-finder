@@ -1,0 +1,1223 @@
+{
+ "id": "hiring_plans",
+ "title": "Hiring plans (KI)",
+ "description": "Konjunkturinstitutet's business survey: hiring plans for the next three months, net balance, seasonally adjusted, January 2020 to September 2026, for all businesses, manufacturing and services. Via Ekonomifakta (Macrobond).",
+ "as_of": "2026-10-19",
+ "rows": [
+  {
+   "month": "2020-01",
+   "sector": "All businesses",
+   "net_balance": 3
+  },
+  {
+   "month": "2020-02",
+   "sector": "All businesses",
+   "net_balance": 2
+  },
+  {
+   "month": "2020-03",
+   "sector": "All businesses",
+   "net_balance": -4
+  },
+  {
+   "month": "2020-04",
+   "sector": "All businesses",
+   "net_balance": -49
+  },
+  {
+   "month": "2020-05",
+   "sector": "All businesses",
+   "net_balance": -37
+  },
+  {
+   "month": "2020-06",
+   "sector": "All businesses",
+   "net_balance": -25
+  },
+  {
+   "month": "2020-07",
+   "sector": "All businesses",
+   "net_balance": -15
+  },
+  {
+   "month": "2020-08",
+   "sector": "All businesses",
+   "net_balance": -16
+  },
+  {
+   "month": "2020-09",
+   "sector": "All businesses",
+   "net_balance": -11
+  },
+  {
+   "month": "2020-10",
+   "sector": "All businesses",
+   "net_balance": -7
+  },
+  {
+   "month": "2020-11",
+   "sector": "All businesses",
+   "net_balance": -6
+  },
+  {
+   "month": "2020-12",
+   "sector": "All businesses",
+   "net_balance": -3
+  },
+  {
+   "month": "2021-01",
+   "sector": "All businesses",
+   "net_balance": 2
+  },
+  {
+   "month": "2021-02",
+   "sector": "All businesses",
+   "net_balance": 6
+  },
+  {
+   "month": "2021-03",
+   "sector": "All businesses",
+   "net_balance": 7
+  },
+  {
+   "month": "2021-04",
+   "sector": "All businesses",
+   "net_balance": 16
+  },
+  {
+   "month": "2021-05",
+   "sector": "All businesses",
+   "net_balance": 19
+  },
+  {
+   "month": "2021-06",
+   "sector": "All businesses",
+   "net_balance": 21
+  },
+  {
+   "month": "2021-07",
+   "sector": "All businesses",
+   "net_balance": 23
+  },
+  {
+   "month": "2021-08",
+   "sector": "All businesses",
+   "net_balance": 24
+  },
+  {
+   "month": "2021-09",
+   "sector": "All businesses",
+   "net_balance": 26
+  },
+  {
+   "month": "2021-10",
+   "sector": "All businesses",
+   "net_balance": 32
+  },
+  {
+   "month": "2021-11",
+   "sector": "All businesses",
+   "net_balance": 32
+  },
+  {
+   "month": "2021-12",
+   "sector": "All businesses",
+   "net_balance": 30
+  },
+  {
+   "month": "2022-01",
+   "sector": "All businesses",
+   "net_balance": 27
+  },
+  {
+   "month": "2022-02",
+   "sector": "All businesses",
+   "net_balance": 29
+  },
+  {
+   "month": "2022-03",
+   "sector": "All businesses",
+   "net_balance": 27
+  },
+  {
+   "month": "2022-04",
+   "sector": "All businesses",
+   "net_balance": 27
+  },
+  {
+   "month": "2022-05",
+   "sector": "All businesses",
+   "net_balance": 24
+  },
+  {
+   "month": "2022-06",
+   "sector": "All businesses",
+   "net_balance": 21
+  },
+  {
+   "month": "2022-07",
+   "sector": "All businesses",
+   "net_balance": 20
+  },
+  {
+   "month": "2022-08",
+   "sector": "All businesses",
+   "net_balance": 16
+  },
+  {
+   "month": "2022-09",
+   "sector": "All businesses",
+   "net_balance": 12
+  },
+  {
+   "month": "2022-10",
+   "sector": "All businesses",
+   "net_balance": 9
+  },
+  {
+   "month": "2022-11",
+   "sector": "All businesses",
+   "net_balance": 7
+  },
+  {
+   "month": "2022-12",
+   "sector": "All businesses",
+   "net_balance": 5
+  },
+  {
+   "month": "2023-01",
+   "sector": "All businesses",
+   "net_balance": 4
+  },
+  {
+   "month": "2023-02",
+   "sector": "All businesses",
+   "net_balance": 4
+  },
+  {
+   "month": "2023-03",
+   "sector": "All businesses",
+   "net_balance": 6
+  },
+  {
+   "month": "2023-04",
+   "sector": "All businesses",
+   "net_balance": 2
+  },
+  {
+   "month": "2023-05",
+   "sector": "All businesses",
+   "net_balance": 3
+  },
+  {
+   "month": "2023-06",
+   "sector": "All businesses",
+   "net_balance": 3
+  },
+  {
+   "month": "2023-07",
+   "sector": "All businesses",
+   "net_balance": -4
+  },
+  {
+   "month": "2023-08",
+   "sector": "All businesses",
+   "net_balance": 0
+  },
+  {
+   "month": "2023-09",
+   "sector": "All businesses",
+   "net_balance": -1
+  },
+  {
+   "month": "2023-10",
+   "sector": "All businesses",
+   "net_balance": -3
+  },
+  {
+   "month": "2023-11",
+   "sector": "All businesses",
+   "net_balance": -6
+  },
+  {
+   "month": "2023-12",
+   "sector": "All businesses",
+   "net_balance": -4
+  },
+  {
+   "month": "2024-01",
+   "sector": "All businesses",
+   "net_balance": -1
+  },
+  {
+   "month": "2024-02",
+   "sector": "All businesses",
+   "net_balance": -1
+  },
+  {
+   "month": "2024-03",
+   "sector": "All businesses",
+   "net_balance": -1
+  },
+  {
+   "month": "2024-04",
+   "sector": "All businesses",
+   "net_balance": 2
+  },
+  {
+   "month": "2024-05",
+   "sector": "All businesses",
+   "net_balance": 1
+  },
+  {
+   "month": "2024-06",
+   "sector": "All businesses",
+   "net_balance": 6
+  },
+  {
+   "month": "2024-07",
+   "sector": "All businesses",
+   "net_balance": 4
+  },
+  {
+   "month": "2024-08",
+   "sector": "All businesses",
+   "net_balance": 3
+  },
+  {
+   "month": "2024-09",
+   "sector": "All businesses",
+   "net_balance": 3
+  },
+  {
+   "month": "2024-10",
+   "sector": "All businesses",
+   "net_balance": 1
+  },
+  {
+   "month": "2024-11",
+   "sector": "All businesses",
+   "net_balance": 1
+  },
+  {
+   "month": "2024-12",
+   "sector": "All businesses",
+   "net_balance": 3
+  },
+  {
+   "month": "2025-01",
+   "sector": "All businesses",
+   "net_balance": 3
+  },
+  {
+   "month": "2025-02",
+   "sector": "All businesses",
+   "net_balance": 4
+  },
+  {
+   "month": "2025-03",
+   "sector": "All businesses",
+   "net_balance": 3
+  },
+  {
+   "month": "2025-04",
+   "sector": "All businesses",
+   "net_balance": 1
+  },
+  {
+   "month": "2025-05",
+   "sector": "All businesses",
+   "net_balance": 2
+  },
+  {
+   "month": "2025-06",
+   "sector": "All businesses",
+   "net_balance": 0
+  },
+  {
+   "month": "2025-07",
+   "sector": "All businesses",
+   "net_balance": -2
+  },
+  {
+   "month": "2025-08",
+   "sector": "All businesses",
+   "net_balance": 2
+  },
+  {
+   "month": "2025-09",
+   "sector": "All businesses",
+   "net_balance": 2
+  },
+  {
+   "month": "2025-10",
+   "sector": "All businesses",
+   "net_balance": 3
+  },
+  {
+   "month": "2025-11",
+   "sector": "All businesses",
+   "net_balance": 6
+  },
+  {
+   "month": "2025-12",
+   "sector": "All businesses",
+   "net_balance": 6
+  },
+  {
+   "month": "2026-01",
+   "sector": "All businesses",
+   "net_balance": 6
+  },
+  {
+   "month": "2026-02",
+   "sector": "All businesses",
+   "net_balance": 4
+  },
+  {
+   "month": "2026-03",
+   "sector": "All businesses",
+   "net_balance": 4
+  },
+  {
+   "month": "2026-04",
+   "sector": "All businesses",
+   "net_balance": 3
+  },
+  {
+   "month": "2026-05",
+   "sector": "All businesses",
+   "net_balance": 1
+  },
+  {
+   "month": "2026-06",
+   "sector": "All businesses",
+   "net_balance": 1
+  },
+  {
+   "month": "2026-07",
+   "sector": "All businesses",
+   "net_balance": 4
+  },
+  {
+   "month": "2026-08",
+   "sector": "All businesses",
+   "net_balance": 6
+  },
+  {
+   "month": "2026-09",
+   "sector": "All businesses",
+   "net_balance": 7
+  },
+  {
+   "month": "2020-01",
+   "sector": "Manufacturing",
+   "net_balance": -9
+  },
+  {
+   "month": "2020-02",
+   "sector": "Manufacturing",
+   "net_balance": -15
+  },
+  {
+   "month": "2020-03",
+   "sector": "Manufacturing",
+   "net_balance": -1
+  },
+  {
+   "month": "2020-04",
+   "sector": "Manufacturing",
+   "net_balance": -50
+  },
+  {
+   "month": "2020-05",
+   "sector": "Manufacturing",
+   "net_balance": -32
+  },
+  {
+   "month": "2020-06",
+   "sector": "Manufacturing",
+   "net_balance": -28
+  },
+  {
+   "month": "2020-07",
+   "sector": "Manufacturing",
+   "net_balance": -24
+  },
+  {
+   "month": "2020-08",
+   "sector": "Manufacturing",
+   "net_balance": -22
+  },
+  {
+   "month": "2020-09",
+   "sector": "Manufacturing",
+   "net_balance": -13
+  },
+  {
+   "month": "2020-10",
+   "sector": "Manufacturing",
+   "net_balance": -11
+  },
+  {
+   "month": "2020-11",
+   "sector": "Manufacturing",
+   "net_balance": -7
+  },
+  {
+   "month": "2020-12",
+   "sector": "Manufacturing",
+   "net_balance": -5
+  },
+  {
+   "month": "2021-01",
+   "sector": "Manufacturing",
+   "net_balance": 6
+  },
+  {
+   "month": "2021-02",
+   "sector": "Manufacturing",
+   "net_balance": 9
+  },
+  {
+   "month": "2021-03",
+   "sector": "Manufacturing",
+   "net_balance": 11
+  },
+  {
+   "month": "2021-04",
+   "sector": "Manufacturing",
+   "net_balance": 20
+  },
+  {
+   "month": "2021-05",
+   "sector": "Manufacturing",
+   "net_balance": 20
+  },
+  {
+   "month": "2021-06",
+   "sector": "Manufacturing",
+   "net_balance": 25
+  },
+  {
+   "month": "2021-07",
+   "sector": "Manufacturing",
+   "net_balance": 21
+  },
+  {
+   "month": "2021-08",
+   "sector": "Manufacturing",
+   "net_balance": 30
+  },
+  {
+   "month": "2021-09",
+   "sector": "Manufacturing",
+   "net_balance": 34
+  },
+  {
+   "month": "2021-10",
+   "sector": "Manufacturing",
+   "net_balance": 34
+  },
+  {
+   "month": "2021-11",
+   "sector": "Manufacturing",
+   "net_balance": 27
+  },
+  {
+   "month": "2021-12",
+   "sector": "Manufacturing",
+   "net_balance": 32
+  },
+  {
+   "month": "2022-01",
+   "sector": "Manufacturing",
+   "net_balance": 26
+  },
+  {
+   "month": "2022-02",
+   "sector": "Manufacturing",
+   "net_balance": 27
+  },
+  {
+   "month": "2022-03",
+   "sector": "Manufacturing",
+   "net_balance": 26
+  },
+  {
+   "month": "2022-04",
+   "sector": "Manufacturing",
+   "net_balance": 24
+  },
+  {
+   "month": "2022-05",
+   "sector": "Manufacturing",
+   "net_balance": 29
+  },
+  {
+   "month": "2022-06",
+   "sector": "Manufacturing",
+   "net_balance": 26
+  },
+  {
+   "month": "2022-07",
+   "sector": "Manufacturing",
+   "net_balance": 27
+  },
+  {
+   "month": "2022-08",
+   "sector": "Manufacturing",
+   "net_balance": 22
+  },
+  {
+   "month": "2022-09",
+   "sector": "Manufacturing",
+   "net_balance": 15
+  },
+  {
+   "month": "2022-10",
+   "sector": "Manufacturing",
+   "net_balance": 11
+  },
+  {
+   "month": "2022-11",
+   "sector": "Manufacturing",
+   "net_balance": 8
+  },
+  {
+   "month": "2022-12",
+   "sector": "Manufacturing",
+   "net_balance": 5
+  },
+  {
+   "month": "2023-01",
+   "sector": "Manufacturing",
+   "net_balance": 0
+  },
+  {
+   "month": "2023-02",
+   "sector": "Manufacturing",
+   "net_balance": 4
+  },
+  {
+   "month": "2023-03",
+   "sector": "Manufacturing",
+   "net_balance": 11
+  },
+  {
+   "month": "2023-04",
+   "sector": "Manufacturing",
+   "net_balance": 5
+  },
+  {
+   "month": "2023-05",
+   "sector": "Manufacturing",
+   "net_balance": -1
+  },
+  {
+   "month": "2023-06",
+   "sector": "Manufacturing",
+   "net_balance": -1
+  },
+  {
+   "month": "2023-07",
+   "sector": "Manufacturing",
+   "net_balance": -5
+  },
+  {
+   "month": "2023-08",
+   "sector": "Manufacturing",
+   "net_balance": -5
+  },
+  {
+   "month": "2023-09",
+   "sector": "Manufacturing",
+   "net_balance": -6
+  },
+  {
+   "month": "2023-10",
+   "sector": "Manufacturing",
+   "net_balance": -4
+  },
+  {
+   "month": "2023-11",
+   "sector": "Manufacturing",
+   "net_balance": 1
+  },
+  {
+   "month": "2023-12",
+   "sector": "Manufacturing",
+   "net_balance": -2
+  },
+  {
+   "month": "2024-01",
+   "sector": "Manufacturing",
+   "net_balance": -1
+  },
+  {
+   "month": "2024-02",
+   "sector": "Manufacturing",
+   "net_balance": -5
+  },
+  {
+   "month": "2024-03",
+   "sector": "Manufacturing",
+   "net_balance": -3
+  },
+  {
+   "month": "2024-04",
+   "sector": "Manufacturing",
+   "net_balance": -4
+  },
+  {
+   "month": "2024-05",
+   "sector": "Manufacturing",
+   "net_balance": -2
+  },
+  {
+   "month": "2024-06",
+   "sector": "Manufacturing",
+   "net_balance": -1
+  },
+  {
+   "month": "2024-07",
+   "sector": "Manufacturing",
+   "net_balance": 1
+  },
+  {
+   "month": "2024-08",
+   "sector": "Manufacturing",
+   "net_balance": 2
+  },
+  {
+   "month": "2024-09",
+   "sector": "Manufacturing",
+   "net_balance": 3
+  },
+  {
+   "month": "2024-10",
+   "sector": "Manufacturing",
+   "net_balance": 1
+  },
+  {
+   "month": "2024-11",
+   "sector": "Manufacturing",
+   "net_balance": 2
+  },
+  {
+   "month": "2024-12",
+   "sector": "Manufacturing",
+   "net_balance": 4
+  },
+  {
+   "month": "2025-01",
+   "sector": "Manufacturing",
+   "net_balance": 1
+  },
+  {
+   "month": "2025-02",
+   "sector": "Manufacturing",
+   "net_balance": 1
+  },
+  {
+   "month": "2025-03",
+   "sector": "Manufacturing",
+   "net_balance": 0
+  },
+  {
+   "month": "2025-04",
+   "sector": "Manufacturing",
+   "net_balance": -1
+  },
+  {
+   "month": "2025-05",
+   "sector": "Manufacturing",
+   "net_balance": -1
+  },
+  {
+   "month": "2025-06",
+   "sector": "Manufacturing",
+   "net_balance": -6
+  },
+  {
+   "month": "2025-07",
+   "sector": "Manufacturing",
+   "net_balance": -7
+  },
+  {
+   "month": "2025-08",
+   "sector": "Manufacturing",
+   "net_balance": -4
+  },
+  {
+   "month": "2025-09",
+   "sector": "Manufacturing",
+   "net_balance": -8
+  },
+  {
+   "month": "2025-10",
+   "sector": "Manufacturing",
+   "net_balance": -4
+  },
+  {
+   "month": "2025-11",
+   "sector": "Manufacturing",
+   "net_balance": -7
+  },
+  {
+   "month": "2025-12",
+   "sector": "Manufacturing",
+   "net_balance": -11
+  },
+  {
+   "month": "2026-01",
+   "sector": "Manufacturing",
+   "net_balance": 1
+  },
+  {
+   "month": "2026-02",
+   "sector": "Manufacturing",
+   "net_balance": -4
+  },
+  {
+   "month": "2026-03",
+   "sector": "Manufacturing",
+   "net_balance": -3
+  },
+  {
+   "month": "2026-04",
+   "sector": "Manufacturing",
+   "net_balance": -4
+  },
+  {
+   "month": "2026-05",
+   "sector": "Manufacturing",
+   "net_balance": 1
+  },
+  {
+   "month": "2026-06",
+   "sector": "Manufacturing",
+   "net_balance": 3
+  },
+  {
+   "month": "2026-07",
+   "sector": "Manufacturing",
+   "net_balance": 2
+  },
+  {
+   "month": "2026-08",
+   "sector": "Manufacturing",
+   "net_balance": -1
+  },
+  {
+   "month": "2026-09",
+   "sector": "Manufacturing",
+   "net_balance": 5
+  },
+  {
+   "month": "2020-01",
+   "sector": "Services",
+   "net_balance": 4
+  },
+  {
+   "month": "2020-02",
+   "sector": "Services",
+   "net_balance": 6
+  },
+  {
+   "month": "2020-03",
+   "sector": "Services",
+   "net_balance": -6
+  },
+  {
+   "month": "2020-04",
+   "sector": "Services",
+   "net_balance": -57
+  },
+  {
+   "month": "2020-05",
+   "sector": "Services",
+   "net_balance": -44
+  },
+  {
+   "month": "2020-06",
+   "sector": "Services",
+   "net_balance": -27
+  },
+  {
+   "month": "2020-07",
+   "sector": "Services",
+   "net_balance": -12
+  },
+  {
+   "month": "2020-08",
+   "sector": "Services",
+   "net_balance": -14
+  },
+  {
+   "month": "2020-09",
+   "sector": "Services",
+   "net_balance": -10
+  },
+  {
+   "month": "2020-10",
+   "sector": "Services",
+   "net_balance": -4
+  },
+  {
+   "month": "2020-11",
+   "sector": "Services",
+   "net_balance": -4
+  },
+  {
+   "month": "2020-12",
+   "sector": "Services",
+   "net_balance": 2
+  },
+  {
+   "month": "2021-01",
+   "sector": "Services",
+   "net_balance": 7
+  },
+  {
+   "month": "2021-02",
+   "sector": "Services",
+   "net_balance": 11
+  },
+  {
+   "month": "2021-03",
+   "sector": "Services",
+   "net_balance": 13
+  },
+  {
+   "month": "2021-04",
+   "sector": "Services",
+   "net_balance": 23
+  },
+  {
+   "month": "2021-05",
+   "sector": "Services",
+   "net_balance": 22
+  },
+  {
+   "month": "2021-06",
+   "sector": "Services",
+   "net_balance": 24
+  },
+  {
+   "month": "2021-07",
+   "sector": "Services",
+   "net_balance": 27
+  },
+  {
+   "month": "2021-08",
+   "sector": "Services",
+   "net_balance": 25
+  },
+  {
+   "month": "2021-09",
+   "sector": "Services",
+   "net_balance": 29
+  },
+  {
+   "month": "2021-10",
+   "sector": "Services",
+   "net_balance": 39
+  },
+  {
+   "month": "2021-11",
+   "sector": "Services",
+   "net_balance": 37
+  },
+  {
+   "month": "2021-12",
+   "sector": "Services",
+   "net_balance": 35
+  },
+  {
+   "month": "2022-01",
+   "sector": "Services",
+   "net_balance": 30
+  },
+  {
+   "month": "2022-02",
+   "sector": "Services",
+   "net_balance": 35
+  },
+  {
+   "month": "2022-03",
+   "sector": "Services",
+   "net_balance": 33
+  },
+  {
+   "month": "2022-04",
+   "sector": "Services",
+   "net_balance": 36
+  },
+  {
+   "month": "2022-05",
+   "sector": "Services",
+   "net_balance": 32
+  },
+  {
+   "month": "2022-06",
+   "sector": "Services",
+   "net_balance": 27
+  },
+  {
+   "month": "2022-07",
+   "sector": "Services",
+   "net_balance": 27
+  },
+  {
+   "month": "2022-08",
+   "sector": "Services",
+   "net_balance": 22
+  },
+  {
+   "month": "2022-09",
+   "sector": "Services",
+   "net_balance": 20
+  },
+  {
+   "month": "2022-10",
+   "sector": "Services",
+   "net_balance": 18
+  },
+  {
+   "month": "2022-11",
+   "sector": "Services",
+   "net_balance": 15
+  },
+  {
+   "month": "2022-12",
+   "sector": "Services",
+   "net_balance": 14
+  },
+  {
+   "month": "2023-01",
+   "sector": "Services",
+   "net_balance": 11
+  },
+  {
+   "month": "2023-02",
+   "sector": "Services",
+   "net_balance": 12
+  },
+  {
+   "month": "2023-03",
+   "sector": "Services",
+   "net_balance": 16
+  },
+  {
+   "month": "2023-04",
+   "sector": "Services",
+   "net_balance": 10
+  },
+  {
+   "month": "2023-05",
+   "sector": "Services",
+   "net_balance": 13
+  },
+  {
+   "month": "2023-06",
+   "sector": "Services",
+   "net_balance": 14
+  },
+  {
+   "month": "2023-07",
+   "sector": "Services",
+   "net_balance": 8
+  },
+  {
+   "month": "2023-08",
+   "sector": "Services",
+   "net_balance": 11
+  },
+  {
+   "month": "2023-09",
+   "sector": "Services",
+   "net_balance": 9
+  },
+  {
+   "month": "2023-10",
+   "sector": "Services",
+   "net_balance": 5
+  },
+  {
+   "month": "2023-11",
+   "sector": "Services",
+   "net_balance": -4
+  },
+  {
+   "month": "2023-12",
+   "sector": "Services",
+   "net_balance": 2
+  },
+  {
+   "month": "2024-01",
+   "sector": "Services",
+   "net_balance": 8
+  },
+  {
+   "month": "2024-02",
+   "sector": "Services",
+   "net_balance": 6
+  },
+  {
+   "month": "2024-03",
+   "sector": "Services",
+   "net_balance": 6
+  },
+  {
+   "month": "2024-04",
+   "sector": "Services",
+   "net_balance": 7
+  },
+  {
+   "month": "2024-05",
+   "sector": "Services",
+   "net_balance": 8
+  },
+  {
+   "month": "2024-06",
+   "sector": "Services",
+   "net_balance": 13
+  },
+  {
+   "month": "2024-07",
+   "sector": "Services",
+   "net_balance": 11
+  },
+  {
+   "month": "2024-08",
+   "sector": "Services",
+   "net_balance": 6
+  },
+  {
+   "month": "2024-09",
+   "sector": "Services",
+   "net_balance": 7
+  },
+  {
+   "month": "2024-10",
+   "sector": "Services",
+   "net_balance": 1
+  },
+  {
+   "month": "2024-11",
+   "sector": "Services",
+   "net_balance": 3
+  },
+  {
+   "month": "2024-12",
+   "sector": "Services",
+   "net_balance": 5
+  },
+  {
+   "month": "2025-01",
+   "sector": "Services",
+   "net_balance": 4
+  },
+  {
+   "month": "2025-02",
+   "sector": "Services",
+   "net_balance": 5
+  },
+  {
+   "month": "2025-03",
+   "sector": "Services",
+   "net_balance": 6
+  },
+  {
+   "month": "2025-04",
+   "sector": "Services",
+   "net_balance": 3
+  },
+  {
+   "month": "2025-05",
+   "sector": "Services",
+   "net_balance": 4
+  },
+  {
+   "month": "2025-06",
+   "sector": "Services",
+   "net_balance": 1
+  },
+  {
+   "month": "2025-07",
+   "sector": "Services",
+   "net_balance": 2
+  },
+  {
+   "month": "2025-08",
+   "sector": "Services",
+   "net_balance": 4
+  },
+  {
+   "month": "2025-09",
+   "sector": "Services",
+   "net_balance": 5
+  },
+  {
+   "month": "2025-10",
+   "sector": "Services",
+   "net_balance": 7
+  },
+  {
+   "month": "2025-11",
+   "sector": "Services",
+   "net_balance": 8
+  },
+  {
+   "month": "2025-12",
+   "sector": "Services",
+   "net_balance": 11
+  },
+  {
+   "month": "2026-01",
+   "sector": "Services",
+   "net_balance": 9
+  },
+  {
+   "month": "2026-02",
+   "sector": "Services",
+   "net_balance": 8
+  },
+  {
+   "month": "2026-03",
+   "sector": "Services",
+   "net_balance": 4
+  },
+  {
+   "month": "2026-04",
+   "sector": "Services",
+   "net_balance": 4
+  },
+  {
+   "month": "2026-05",
+   "sector": "Services",
+   "net_balance": -1
+  },
+  {
+   "month": "2026-06",
+   "sector": "Services",
+   "net_balance": 1
+  },
+  {
+   "month": "2026-07",
+   "sector": "Services",
+   "net_balance": 4
+  },
+  {
+   "month": "2026-08",
+   "sector": "Services",
+   "net_balance": 6
+  },
+  {
+   "month": "2026-09",
+   "sector": "Services",
+   "net_balance": 5
+  }
+ ]
+}

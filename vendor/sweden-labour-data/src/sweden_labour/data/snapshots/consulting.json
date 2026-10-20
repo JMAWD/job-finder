@@ -1,0 +1,44 @@
+{
+ "id": "consulting",
+ "title": "Consulting market (Cinode)",
+ "description": "Quarterly results of 25 listed Nordic consultancies compiled by Cinode, Q3 2025 to Q2 2026 (cinode.com, Economic Reports). Growth is reported revenue growth on a year earlier, including acquisitions. 'More than half' is Cinode's own wording for Q3 and Q4 2025; it gave no exact count.",
+ "as_of": "2026-10-19",
+ "rows": [
+  {
+   "quarter": "Q3 2025",
+   "median_growth": 0.9,
+   "avg_growth": -1.6,
+   "firms_adding_staff": null,
+   "adding_staff_text": "More than half",
+   "headcount_change": null,
+   "headcount_change_excl_divestments": null
+  },
+  {
+   "quarter": "Q4 2025",
+   "median_growth": -0.8,
+   "avg_growth": -1.6,
+   "firms_adding_staff": null,
+   "adding_staff_text": "More than half",
+   "headcount_change": null,
+   "headcount_change_excl_divestments": null
+  },
+  {
+   "quarter": "Q1 2026",
+   "median_growth": -1.1,
+   "avg_growth": -0.4,
+   "firms_adding_staff": 7,
+   "adding_staff_text": "7 of 25",
+   "headcount_change": null,
+   "headcount_change_excl_divestments": null
+  },
+  {
+   "quarter": "Q2 2026",
+   "median_growth": -0.7,
+   "avg_growth": 0.8,
+   "firms_adding_staff": 5,
+   "adding_staff_text": "5 of 25",
+   "headcount_change": -1126,
+   "headcount_change_excl_divestments": -740
+  }
+ ]
+}
