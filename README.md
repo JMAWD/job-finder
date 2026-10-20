@@ -40,15 +40,21 @@ To find a place, the app asks Platsbanken for ads in that place and reads their 
 
 Step 2 and the Mentor need a small server, because an AI model can't be called safely from a public web page. `server/` is one Scaleway Serverless Function (Node 22) in Paris. The browser sends it the CV, the ad and which text to write (or, for the Mentor, only the CV), with a beta access code. The function checks the code, limits how often each code can be used, adds its own instructions (so the codes only unlock these five jobs) and asks an EU-hosted model through Scaleway Generative APIs. For the Mentor the model answers with JSON: a pool of roles and courses with hours, costs and which directions they suit. The browser checks that answer, ranks it against the four answers and counts open ads for each role straight from JobTech. The function logs only sizes and timings, never the CV or the ad. Setup steps are in [server/SETUP.md](server/SETUP.md). Without a server address in `config.json`, the app is built without step 2 and the Mentor.
 
-## Build and run
+## How I thought about it
 
-```
-python3 build.py        # writes index.html and "Job Finder.html"
-```
+Job Finder started as a tool I built to find Swedish companies that need consultants. I turned it into something for anyone looking for work, not just engineers, and made it free.
 
-Open `index.html` in a browser, or publish the repo with GitHub Pages (Settings → Pages → deploy from the main branch). Fill in `config.json` with your name, links and the site address first; the site address turns on the link preview image for LinkedIn and other sites. `tailor_url` is the address of the tailoring server.
+Looking for work is hard enough already, so the app had to be easy to use. It's one page with no account, no install and nothing to set up. Saved jobs, notes and your CV stay in your own browser, because a job search is personal and I didn't want to hold anyone's data. The welcome-back card and follow-up reminders are there so you don't have to remember which ads are new or who to chase.
 
-Source files are in `src/`: `shell.html` (layout and styles), `app.js` (everything else, including both languages), `tailor.js` (step 2), `mentor.js` (the Mentor), `munis.txt` (Sweden's municipalities and counties) and `titles.txt` (English job titles and the Swedish words ads use for them).
+Search comes first and AI second. Finding employers who are hiring works without any AI. Step 2 and the Mentor only come in once you've picked a job or want advice. They run on my own small server with a model hosted in the EU, so nobody has to install or run a model on their own computer, and the server never logs your CV or the ad.
+
+The AI follows firm rules. It never invents experience that isn't in your CV. The Mentor judges you on your experience and your plans, never your age, and its advice fits how long you plan to keep working and where you want to go next.
+
+Sweden comes first, but the search is built so more countries can be added later.
+
+I built it with Claude as my coding assistant. The tests run the real page against made-up data, so I can change things and know straight away if something broke.
+
+`python3 build.py` joins the source files into one HTML file. They're in `src/`: `shell.html` (layout and styles), `app.js` (everything else, including both languages), `tailor.js` (step 2), `mentor.js` (the Mentor), `munis.txt` (Sweden's municipalities and counties) and `titles.txt` (English job titles and the Swedish words ads use for them).
 
 ## Tests
 
