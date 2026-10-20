@@ -52,7 +52,7 @@ The Market tab's figures are gathered once a month. On the 1st, `.github/workflo
 
 ## How I thought about it
 
-Job Finder started as a tool I built to find Swedish companies that need consultants. I turned it into something for anyone looking for work, not just engineers, and made it free.
+Job Finder started with a frustration: I wanted to push back against AI-powered CV filters that can screen people out before a person ever sees their application. I wanted to help job seekers find relevant openings and present their real experience clearly, giving them a better chance of being shortlisted. I built it for anyone looking for work—not just engineers—and made it free.
 
 Looking for work is hard enough already, so the app had to be easy to use. It's one page with no account, no install and nothing to set up. Saved jobs, notes and your CV stay in your own browser, because a job search is personal and I didn't want to hold anyone's data. The welcome-back card and follow-up reminders are there so you don't have to remember which ads are new or who to chase.
 
