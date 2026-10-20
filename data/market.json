@@ -171,7 +171,6 @@
    "oLT3_Q9p_3nn"
   ]
  ],
- "counts": null,
  "datasets": {
   "national_now": {
    "as_of": "2026-10-19",
@@ -889,8 +888,8 @@
    ]
   },
   "tech_employment": {
-   "as_of": "2026-10-19",
-   "stale": true,
+   "as_of": "2026-10-20",
+   "stale": false,
    "rows": [
     {
      "quarter": "2025 Q2",
@@ -902,7 +901,7 @@
      "quarter": "2025 Q3",
      "date": "2025-09-30",
      "sector": "All jobs",
-     "thousands": 5446.0
+     "thousands": 5446
     },
     {
      "quarter": "2025 Q4",
@@ -938,7 +937,7 @@
      "quarter": "2025 Q4",
      "date": "2025-12-31",
      "sector": "Information and communication",
-     "thousands": 242.0
+     "thousands": 242
     },
     {
      "quarter": "2026 Q1",
@@ -1010,13 +1009,13 @@
      "quarter": "2026 Q2",
      "date": "2026-06-30",
      "sector": "Professional and technical services",
-     "thousands": 652.0
+     "thousands": 652
     }
    ]
   },
   "job_openings": {
-   "as_of": "2026-10-19",
-   "stale": true,
+   "as_of": "2026-10-20",
+   "stale": false,
    "rows": [
     {
      "quarter": "2025 Q2",
@@ -1043,6 +1042,2921 @@
      "date": "2026-06-30",
      "openings_sa": 139600
     }
+   ]
+  }
+ },
+ "counts": {
+  "on": "2026-10-20",
+  "window": {
+   "from": "2026-07-01",
+   "to": "2026-09-30",
+   "from_prev": "2025-07-01",
+   "to_prev": "2025-09-30"
+  },
+  "n": {
+   "|": [
+    114236,
+    13915,
+    233853,
+    42163
+   ],
+   "|DQZd_uYs_oKb": [
+    1399,
+    215,
+    2808,
+    584
+   ],
+   "|oDpK_oZ2_WYt": [
+    2888,
+    425,
+    5646,
+    1178
+   ],
+   "|K8iD_VQv_2BA": [
+    683,
+    69,
+    1269,
+    222
+   ],
+   "|zupA_8Nt_xcD": [
+    2364,
+    265,
+    4938,
+    829
+   ],
+   "|wjee_qH2_yb6": [
+    2966,
+    326,
+    5762,
+    1083
+   ],
+   "|65Ms_7r1_RTG": [
+    1565,
+    256,
+    3335,
+    663
+   ],
+   "|MtbE_xWT_eMi": [
+    4445,
+    606,
+    8702,
+    1732
+   ],
+   "|9QUH_2bb_6Np": [
+    2128,
+    266,
+    3927,
+    776
+   ],
+   "|tF3y_MF9_h5G": [
+    2407,
+    232,
+    4983,
+    856
+   ],
+   "|9hXe_F4g_eTG": [
+    4095,
+    511,
+    8529,
+    1494
+   ],
+   "|CaRE_1nn_cSU": [
+    12944,
+    1480,
+    27378,
+    4576
+   ],
+   "|CifL_Rzy_Mku": [
+    29646,
+    3589,
+    59641,
+    10941
+   ],
+   "|s93u_BEb_sx2": [
+    2562,
+    368,
+    5084,
+    1035
+   ],
+   "|zBon_eET_fFU": [
+    4091,
+    531,
+    8265,
+    1556
+   ],
+   "|EVVp_h6U_GSZ": [
+    2488,
+    297,
+    4702,
+    943
+   ],
+   "|g5Tt_CAV_zBd": [
+    3176,
+    324,
+    6022,
+    1094
+   ],
+   "|NvUF_SP1_1zo": [
+    2723,
+    281,
+    5493,
+    912
+   ],
+   "|G6DV_fKE_Viz": [
+    2817,
+    335,
+    5366,
+    1081
+   ],
+   "|zdoY_6u5_Krt": [
+    17842,
+    2158,
+    35548,
+    6708
+   ],
+   "|xTCk_nT5_Zjm": [
+    3027,
+    344,
+    6683,
+    1120
+   ],
+   "|oLT3_Q9p_3nn": [
+    6010,
+    769,
+    11638,
+    2300
+   ],
+   "X82t_awd_Qyc|": [
+    12828,
+    804,
+    25823,
+    3693
+   ],
+   "X82t_awd_Qyc|DQZd_uYs_oKb": [
+    153,
+    7,
+    253,
+    51
+   ],
+   "X82t_awd_Qyc|oDpK_oZ2_WYt": [
+    241,
+    16,
+    417,
+    74
+   ],
+   "X82t_awd_Qyc|K8iD_VQv_2BA": [
+    45,
+    4,
+    107,
+    12
+   ],
+   "X82t_awd_Qyc|zupA_8Nt_xcD": [
+    213,
+    19,
+    469,
+    66
+   ],
+   "X82t_awd_Qyc|wjee_qH2_yb6": [
+    234,
+    11,
+    506,
+    65
+   ],
+   "X82t_awd_Qyc|65Ms_7r1_RTG": [
+    175,
+    16,
+    450,
+    61
+   ],
+   "X82t_awd_Qyc|MtbE_xWT_eMi": [
+    326,
+    14,
+    740,
+    108
+   ],
+   "X82t_awd_Qyc|9QUH_2bb_6Np": [
+    172,
+    13,
+    331,
+    65
+   ],
+   "X82t_awd_Qyc|tF3y_MF9_h5G": [
+    170,
+    7,
+    385,
+    49
+   ],
+   "X82t_awd_Qyc|9hXe_F4g_eTG": [
+    351,
+    24,
+    705,
+    90
+   ],
+   "X82t_awd_Qyc|CaRE_1nn_cSU": [
+    1411,
+    83,
+    2953,
+    390
+   ],
+   "X82t_awd_Qyc|CifL_Rzy_Mku": [
+    4395,
+    281,
+    8483,
+    1222
+   ],
+   "X82t_awd_Qyc|s93u_BEb_sx2": [
+    230,
+    17,
+    408,
+    75
+   ],
+   "X82t_awd_Qyc|zBon_eET_fFU": [
+    398,
+    20,
+    775,
+    122
+   ],
+   "X82t_awd_Qyc|EVVp_h6U_GSZ": [
+    401,
+    14,
+    412,
+    74
+   ],
+   "X82t_awd_Qyc|g5Tt_CAV_zBd": [
+    281,
+    14,
+    544,
+    86
+   ],
+   "X82t_awd_Qyc|NvUF_SP1_1zo": [
+    282,
+    14,
+    538,
+    60
+   ],
+   "X82t_awd_Qyc|G6DV_fKE_Viz": [
+    261,
+    19,
+    474,
+    74
+   ],
+   "X82t_awd_Qyc|zdoY_6u5_Krt": [
+    1878,
+    119,
+    3698,
+    549
+   ],
+   "X82t_awd_Qyc|xTCk_nT5_Zjm": [
+    293,
+    18,
+    608,
+    85
+   ],
+   "X82t_awd_Qyc|oLT3_Q9p_3nn": [
+    674,
+    54,
+    1222,
+    243
+   ],
+   "j7Cq_ZJe_GkT|": [
+    4653,
+    819,
+    9176,
+    2072
+   ],
+   "j7Cq_ZJe_GkT|DQZd_uYs_oKb": [
+    32,
+    7,
+    94,
+    17
+   ],
+   "j7Cq_ZJe_GkT|oDpK_oZ2_WYt": [
+    162,
+    19,
+    177,
+    59
+   ],
+   "j7Cq_ZJe_GkT|K8iD_VQv_2BA": [
+    13,
+    3,
+    24,
+    8
+   ],
+   "j7Cq_ZJe_GkT|zupA_8Nt_xcD": [
+    88,
+    10,
+    144,
+    33
+   ],
+   "j7Cq_ZJe_GkT|wjee_qH2_yb6": [
+    107,
+    21,
+    206,
+    49
+   ],
+   "j7Cq_ZJe_GkT|65Ms_7r1_RTG": [
+    33,
+    11,
+    59,
+    19
+   ],
+   "j7Cq_ZJe_GkT|MtbE_xWT_eMi": [
+    131,
+    28,
+    252,
+    54
+   ],
+   "j7Cq_ZJe_GkT|9QUH_2bb_6Np": [
+    53,
+    11,
+    148,
+    30
+   ],
+   "j7Cq_ZJe_GkT|tF3y_MF9_h5G": [
+    81,
+    9,
+    139,
+    23
+   ],
+   "j7Cq_ZJe_GkT|9hXe_F4g_eTG": [
+    309,
+    49,
+    573,
+    114
+   ],
+   "j7Cq_ZJe_GkT|CaRE_1nn_cSU": [
+    439,
+    71,
+    906,
+    181
+   ],
+   "j7Cq_ZJe_GkT|CifL_Rzy_Mku": [
+    1346,
+    252,
+    2776,
+    667
+   ],
+   "j7Cq_ZJe_GkT|s93u_BEb_sx2": [
+    89,
+    23,
+    250,
+    67
+   ],
+   "j7Cq_ZJe_GkT|zBon_eET_fFU": [
+    152,
+    25,
+    284,
+    54
+   ],
+   "j7Cq_ZJe_GkT|EVVp_h6U_GSZ": [
+    50,
+    8,
+    154,
+    27
+   ],
+   "j7Cq_ZJe_GkT|g5Tt_CAV_zBd": [
+    140,
+    19,
+    240,
+    54
+   ],
+   "j7Cq_ZJe_GkT|NvUF_SP1_1zo": [
+    125,
+    19,
+    195,
+    39
+   ],
+   "j7Cq_ZJe_GkT|G6DV_fKE_Viz": [
+    128,
+    19,
+    175,
+    59
+   ],
+   "j7Cq_ZJe_GkT|zdoY_6u5_Krt": [
+    703,
+    127,
+    1383,
+    339
+   ],
+   "j7Cq_ZJe_GkT|xTCk_nT5_Zjm": [
+    68,
+    15,
+    146,
+    38
+   ],
+   "j7Cq_ZJe_GkT|oLT3_Q9p_3nn": [
+    170,
+    29,
+    263,
+    66
+   ],
+   "bh3H_Y3h_5eD|": [
+    5902,
+    566,
+    11637,
+    2186
+   ],
+   "bh3H_Y3h_5eD|DQZd_uYs_oKb": [
+    70,
+    12,
+    175,
+    35
+   ],
+   "bh3H_Y3h_5eD|oDpK_oZ2_WYt": [
+    177,
+    30,
+    279,
+    81
+   ],
+   "bh3H_Y3h_5eD|K8iD_VQv_2BA": [
+    52,
+    5,
+    44,
+    22
+   ],
+   "bh3H_Y3h_5eD|zupA_8Nt_xcD": [
+    147,
+    16,
+    261,
+    60
+   ],
+   "bh3H_Y3h_5eD|wjee_qH2_yb6": [
+    141,
+    13,
+    251,
+    44
+   ],
+   "bh3H_Y3h_5eD|65Ms_7r1_RTG": [
+    91,
+    11,
+    203,
+    33
+   ],
+   "bh3H_Y3h_5eD|MtbE_xWT_eMi": [
+    209,
+    22,
+    415,
+    89
+   ],
+   "bh3H_Y3h_5eD|9QUH_2bb_6Np": [
+    133,
+    15,
+    231,
+    49
+   ],
+   "bh3H_Y3h_5eD|tF3y_MF9_h5G": [
+    114,
+    6,
+    251,
+    41
+   ],
+   "bh3H_Y3h_5eD|9hXe_F4g_eTG": [
+    242,
+    20,
+    460,
+    72
+   ],
+   "bh3H_Y3h_5eD|CaRE_1nn_cSU": [
+    594,
+    60,
+    1267,
+    209
+   ],
+   "bh3H_Y3h_5eD|CifL_Rzy_Mku": [
+    1423,
+    130,
+    2831,
+    532
+   ],
+   "bh3H_Y3h_5eD|s93u_BEb_sx2": [
+    135,
+    18,
+    262,
+    52
+   ],
+   "bh3H_Y3h_5eD|zBon_eET_fFU": [
+    228,
+    21,
+    419,
+    76
+   ],
+   "bh3H_Y3h_5eD|EVVp_h6U_GSZ": [
+    141,
+    11,
+    263,
+    49
+   ],
+   "bh3H_Y3h_5eD|g5Tt_CAV_zBd": [
+    166,
+    16,
+    340,
+    69
+   ],
+   "bh3H_Y3h_5eD|NvUF_SP1_1zo": [
+    175,
+    9,
+    354,
+    59
+   ],
+   "bh3H_Y3h_5eD|G6DV_fKE_Viz": [
+    165,
+    12,
+    282,
+    57
+   ],
+   "bh3H_Y3h_5eD|zdoY_6u5_Krt": [
+    966,
+    102,
+    1861,
+    369
+   ],
+   "bh3H_Y3h_5eD|xTCk_nT5_Zjm": [
+    170,
+    14,
+    347,
+    70
+   ],
+   "bh3H_Y3h_5eD|oLT3_Q9p_3nn": [
+    319,
+    38,
+    589,
+    143
+   ],
+   "apaJ_2ja_LuF|": [
+    6251,
+    947,
+    14495,
+    2585
+   ],
+   "apaJ_2ja_LuF|DQZd_uYs_oKb": [
+    33,
+    8,
+    135,
+    19
+   ],
+   "apaJ_2ja_LuF|oDpK_oZ2_WYt": [
+    57,
+    12,
+    141,
+    28
+   ],
+   "apaJ_2ja_LuF|K8iD_VQv_2BA": [
+    9,
+    1,
+    30,
+    3
+   ],
+   "apaJ_2ja_LuF|zupA_8Nt_xcD": [
+    62,
+    9,
+    120,
+    24
+   ],
+   "apaJ_2ja_LuF|wjee_qH2_yb6": [
+    68,
+    3,
+    110,
+    14
+   ],
+   "apaJ_2ja_LuF|65Ms_7r1_RTG": [
+    48,
+    5,
+    108,
+    12
+   ],
+   "apaJ_2ja_LuF|MtbE_xWT_eMi": [
+    135,
+    14,
+    299,
+    51
+   ],
+   "apaJ_2ja_LuF|9QUH_2bb_6Np": [
+    53,
+    7,
+    97,
+    22
+   ],
+   "apaJ_2ja_LuF|tF3y_MF9_h5G": [
+    54,
+    10,
+    130,
+    29
+   ],
+   "apaJ_2ja_LuF|9hXe_F4g_eTG": [
+    92,
+    14,
+    351,
+    48
+   ],
+   "apaJ_2ja_LuF|CaRE_1nn_cSU": [
+    518,
+    81,
+    1520,
+    224
+   ],
+   "apaJ_2ja_LuF|CifL_Rzy_Mku": [
+    2644,
+    394,
+    5518,
+    1088
+   ],
+   "apaJ_2ja_LuF|s93u_BEb_sx2": [
+    52,
+    7,
+    132,
+    16
+   ],
+   "apaJ_2ja_LuF|zBon_eET_fFU": [
+    124,
+    14,
+    263,
+    63
+   ],
+   "apaJ_2ja_LuF|EVVp_h6U_GSZ": [
+    46,
+    7,
+    170,
+    20
+   ],
+   "apaJ_2ja_LuF|g5Tt_CAV_zBd": [
+    67,
+    5,
+    164,
+    18
+   ],
+   "apaJ_2ja_LuF|NvUF_SP1_1zo": [
+    137,
+    10,
+    242,
+    32
+   ],
+   "apaJ_2ja_LuF|G6DV_fKE_Viz": [
+    110,
+    15,
+    279,
+    64
+   ],
+   "apaJ_2ja_LuF|zdoY_6u5_Krt": [
+    1012,
+    197,
+    1800,
+    481
+   ],
+   "apaJ_2ja_LuF|xTCk_nT5_Zjm": [
+    146,
+    13,
+    300,
+    51
+   ],
+   "apaJ_2ja_LuF|oLT3_Q9p_3nn": [
+    567,
+    88,
+    1092,
+    231
+   ],
+   "RPTn_bxG_ExZ|": [
+    12533,
+    1244,
+    27848,
+    4197
+   ],
+   "RPTn_bxG_ExZ|DQZd_uYs_oKb": [
+    134,
+    18,
+    314,
+    51
+   ],
+   "RPTn_bxG_ExZ|oDpK_oZ2_WYt": [
+    233,
+    37,
+    633,
+    93
+   ],
+   "RPTn_bxG_ExZ|K8iD_VQv_2BA": [
+    16,
+    1,
+    75,
+    7
+   ],
+   "RPTn_bxG_ExZ|zupA_8Nt_xcD": [
+    231,
+    24,
+    556,
+    72
+   ],
+   "RPTn_bxG_ExZ|wjee_qH2_yb6": [
+    279,
+    21,
+    622,
+    101
+   ],
+   "RPTn_bxG_ExZ|65Ms_7r1_RTG": [
+    114,
+    13,
+    195,
+    61
+   ],
+   "RPTn_bxG_ExZ|MtbE_xWT_eMi": [
+    463,
+    43,
+    809,
+    144
+   ],
+   "RPTn_bxG_ExZ|9QUH_2bb_6Np": [
+    199,
+    20,
+    360,
+    65
+   ],
+   "RPTn_bxG_ExZ|tF3y_MF9_h5G": [
+    193,
+    19,
+    461,
+    75
+   ],
+   "RPTn_bxG_ExZ|9hXe_F4g_eTG": [
+    321,
+    34,
+    789,
+    99
+   ],
+   "RPTn_bxG_ExZ|CaRE_1nn_cSU": [
+    1509,
+    111,
+    3868,
+    473
+   ],
+   "RPTn_bxG_ExZ|CifL_Rzy_Mku": [
+    3832,
+    377,
+    7776,
+    1304
+   ],
+   "RPTn_bxG_ExZ|s93u_BEb_sx2": [
+    240,
+    28,
+    584,
+    98
+   ],
+   "RPTn_bxG_ExZ|zBon_eET_fFU": [
+    429,
+    34,
+    938,
+    107
+   ],
+   "RPTn_bxG_ExZ|EVVp_h6U_GSZ": [
+    282,
+    31,
+    549,
+    106
+   ],
+   "RPTn_bxG_ExZ|g5Tt_CAV_zBd": [
+    280,
+    27,
+    624,
+    84
+   ],
+   "RPTn_bxG_ExZ|NvUF_SP1_1zo": [
+    270,
+    21,
+    513,
+    75
+   ],
+   "RPTn_bxG_ExZ|G6DV_fKE_Viz": [
+    302,
+    39,
+    724,
+    114
+   ],
+   "RPTn_bxG_ExZ|zdoY_6u5_Krt": [
+    1884,
+    187,
+    3951,
+    630
+   ],
+   "RPTn_bxG_ExZ|xTCk_nT5_Zjm": [
+    330,
+    37,
+    902,
+    113
+   ],
+   "RPTn_bxG_ExZ|oLT3_Q9p_3nn": [
+    625,
+    65,
+    1273,
+    218
+   ],
+   "PaxQ_o1G_wWH|": [
+    341,
+    72,
+    694,
+    175
+   ],
+   "PaxQ_o1G_wWH|DQZd_uYs_oKb": [
+    1,
+    0,
+    0,
+    0
+   ],
+   "PaxQ_o1G_wWH|oDpK_oZ2_WYt": [
+    8,
+    2,
+    15,
+    3
+   ],
+   "PaxQ_o1G_wWH|K8iD_VQv_2BA": [
+    0,
+    0,
+    2,
+    1
+   ],
+   "PaxQ_o1G_wWH|zupA_8Nt_xcD": [
+    3,
+    1,
+    12,
+    1
+   ],
+   "PaxQ_o1G_wWH|wjee_qH2_yb6": [
+    10,
+    2,
+    21,
+    3
+   ],
+   "PaxQ_o1G_wWH|65Ms_7r1_RTG": [
+    8,
+    2,
+    8,
+    3
+   ],
+   "PaxQ_o1G_wWH|MtbE_xWT_eMi": [
+    19,
+    3,
+    27,
+    7
+   ],
+   "PaxQ_o1G_wWH|9QUH_2bb_6Np": [
+    5,
+    1,
+    16,
+    5
+   ],
+   "PaxQ_o1G_wWH|tF3y_MF9_h5G": [
+    5,
+    0,
+    14,
+    2
+   ],
+   "PaxQ_o1G_wWH|9hXe_F4g_eTG": [
+    2,
+    3,
+    18,
+    5
+   ],
+   "PaxQ_o1G_wWH|CaRE_1nn_cSU": [
+    43,
+    12,
+    91,
+    27
+   ],
+   "PaxQ_o1G_wWH|CifL_Rzy_Mku": [
+    108,
+    20,
+    179,
+    56
+   ],
+   "PaxQ_o1G_wWH|s93u_BEb_sx2": [
+    10,
+    0,
+    4,
+    1
+   ],
+   "PaxQ_o1G_wWH|zBon_eET_fFU": [
+    8,
+    1,
+    19,
+    6
+   ],
+   "PaxQ_o1G_wWH|EVVp_h6U_GSZ": [
+    5,
+    0,
+    5,
+    1
+   ],
+   "PaxQ_o1G_wWH|g5Tt_CAV_zBd": [
+    6,
+    0,
+    17,
+    1
+   ],
+   "PaxQ_o1G_wWH|NvUF_SP1_1zo": [
+    4,
+    0,
+    4,
+    1
+   ],
+   "PaxQ_o1G_wWH|G6DV_fKE_Viz": [
+    3,
+    2,
+    8,
+    3
+   ],
+   "PaxQ_o1G_wWH|zdoY_6u5_Krt": [
+    61,
+    18,
+    161,
+    33
+   ],
+   "PaxQ_o1G_wWH|xTCk_nT5_Zjm": [
+    4,
+    0,
+    14,
+    1
+   ],
+   "PaxQ_o1G_wWH|oLT3_Q9p_3nn": [
+    25,
+    1,
+    17,
+    9
+   ],
+   "ScKy_FHB_7wT|": [
+    5704,
+    1031,
+    12168,
+    2286
+   ],
+   "ScKy_FHB_7wT|DQZd_uYs_oKb": [
+    56,
+    22,
+    150,
+    43
+   ],
+   "ScKy_FHB_7wT|oDpK_oZ2_WYt": [
+    189,
+    57,
+    379,
+    97
+   ],
+   "ScKy_FHB_7wT|K8iD_VQv_2BA": [
+    21,
+    8,
+    61,
+    9
+   ],
+   "ScKy_FHB_7wT|zupA_8Nt_xcD": [
+    139,
+    21,
+    222,
+    51
+   ],
+   "ScKy_FHB_7wT|wjee_qH2_yb6": [
+    146,
+    37,
+    356,
+    74
+   ],
+   "ScKy_FHB_7wT|65Ms_7r1_RTG": [
+    148,
+    68,
+    357,
+    112
+   ],
+   "ScKy_FHB_7wT|MtbE_xWT_eMi": [
+    200,
+    27,
+    364,
+    73
+   ],
+   "ScKy_FHB_7wT|9QUH_2bb_6Np": [
+    140,
+    15,
+    247,
+    35
+   ],
+   "ScKy_FHB_7wT|tF3y_MF9_h5G": [
+    87,
+    12,
+    266,
+    46
+   ],
+   "ScKy_FHB_7wT|9hXe_F4g_eTG": [
+    212,
+    58,
+    519,
+    108
+   ],
+   "ScKy_FHB_7wT|CaRE_1nn_cSU": [
+    620,
+    128,
+    1475,
+    263
+   ],
+   "ScKy_FHB_7wT|CifL_Rzy_Mku": [
+    1693,
+    207,
+    3118,
+    554
+   ],
+   "ScKy_FHB_7wT|s93u_BEb_sx2": [
+    97,
+    13,
+    231,
+    41
+   ],
+   "ScKy_FHB_7wT|zBon_eET_fFU": [
+    149,
+    26,
+    346,
+    69
+   ],
+   "ScKy_FHB_7wT|EVVp_h6U_GSZ": [
+    138,
+    28,
+    281,
+    61
+   ],
+   "ScKy_FHB_7wT|g5Tt_CAV_zBd": [
+    158,
+    30,
+    393,
+    58
+   ],
+   "ScKy_FHB_7wT|NvUF_SP1_1zo": [
+    82,
+    18,
+    173,
+    46
+   ],
+   "ScKy_FHB_7wT|G6DV_fKE_Viz": [
+    81,
+    16,
+    216,
+    42
+   ],
+   "ScKy_FHB_7wT|zdoY_6u5_Krt": [
+    1015,
+    163,
+    2180,
+    372
+   ],
+   "ScKy_FHB_7wT|xTCk_nT5_Zjm": [
+    100,
+    22,
+    258,
+    40
+   ],
+   "ScKy_FHB_7wT|oLT3_Q9p_3nn": [
+    151,
+    33,
+    359,
+    59
+   ],
+   "NYW6_mP6_vwf|": [
+    16802,
+    1990,
+    31697,
+    6336
+   ],
+   "NYW6_mP6_vwf|DQZd_uYs_oKb": [
+    224,
+    25,
+    452,
+    88
+   ],
+   "NYW6_mP6_vwf|oDpK_oZ2_WYt": [
+    594,
+    57,
+    1066,
+    204
+   ],
+   "NYW6_mP6_vwf|K8iD_VQv_2BA": [
+    225,
+    11,
+    396,
+    59
+   ],
+   "NYW6_mP6_vwf|zupA_8Nt_xcD": [
+    545,
+    51,
+    1058,
+    183
+   ],
+   "NYW6_mP6_vwf|wjee_qH2_yb6": [
+    501,
+    54,
+    998,
+    191
+   ],
+   "NYW6_mP6_vwf|65Ms_7r1_RTG": [
+    427,
+    53,
+    852,
+    151
+   ],
+   "NYW6_mP6_vwf|MtbE_xWT_eMi": [
+    502,
+    66,
+    1009,
+    204
+   ],
+   "NYW6_mP6_vwf|9QUH_2bb_6Np": [
+    400,
+    60,
+    694,
+    145
+   ],
+   "NYW6_mP6_vwf|tF3y_MF9_h5G": [
+    335,
+    49,
+    652,
+    135
+   ],
+   "NYW6_mP6_vwf|9hXe_F4g_eTG": [
+    831,
+    79,
+    1395,
+    279
+   ],
+   "NYW6_mP6_vwf|CaRE_1nn_cSU": [
+    1998,
+    228,
+    3391,
+    740
+   ],
+   "NYW6_mP6_vwf|CifL_Rzy_Mku": [
+    2653,
+    455,
+    5611,
+    1265
+   ],
+   "NYW6_mP6_vwf|s93u_BEb_sx2": [
+    448,
+    86,
+    859,
+    196
+   ],
+   "NYW6_mP6_vwf|zBon_eET_fFU": [
+    860,
+    140,
+    1634,
+    396
+   ],
+   "NYW6_mP6_vwf|EVVp_h6U_GSZ": [
+    396,
+    52,
+    793,
+    164
+   ],
+   "NYW6_mP6_vwf|g5Tt_CAV_zBd": [
+    738,
+    55,
+    1081,
+    236
+   ],
+   "NYW6_mP6_vwf|NvUF_SP1_1zo": [
+    698,
+    73,
+    1314,
+    242
+   ],
+   "NYW6_mP6_vwf|G6DV_fKE_Viz": [
+    446,
+    38,
+    800,
+    154
+   ],
+   "NYW6_mP6_vwf|zdoY_6u5_Krt": [
+    2431,
+    202,
+    4316,
+    851
+   ],
+   "NYW6_mP6_vwf|xTCk_nT5_Zjm": [
+    491,
+    48,
+    963,
+    156
+   ],
+   "NYW6_mP6_vwf|oLT3_Q9p_3nn": [
+    900,
+    109,
+    1542,
+    317
+   ],
+   "wTEr_CBC_bqh|": [
+    5791,
+    914,
+    11251,
+    2421
+   ],
+   "wTEr_CBC_bqh|DQZd_uYs_oKb": [
+    88,
+    18,
+    202,
+    35
+   ],
+   "wTEr_CBC_bqh|oDpK_oZ2_WYt": [
+    67,
+    16,
+    191,
+    47
+   ],
+   "wTEr_CBC_bqh|K8iD_VQv_2BA": [
+    13,
+    7,
+    12,
+    7
+   ],
+   "wTEr_CBC_bqh|zupA_8Nt_xcD": [
+    83,
+    15,
+    138,
+    32
+   ],
+   "wTEr_CBC_bqh|wjee_qH2_yb6": [
+    246,
+    40,
+    404,
+    107
+   ],
+   "wTEr_CBC_bqh|65Ms_7r1_RTG": [
+    26,
+    6,
+    58,
+    12
+   ],
+   "wTEr_CBC_bqh|MtbE_xWT_eMi": [
+    651,
+    122,
+    1319,
+    304
+   ],
+   "wTEr_CBC_bqh|9QUH_2bb_6Np": [
+    143,
+    28,
+    321,
+    72
+   ],
+   "wTEr_CBC_bqh|tF3y_MF9_h5G": [
+    547,
+    33,
+    819,
+    139
+   ],
+   "wTEr_CBC_bqh|9hXe_F4g_eTG": [
+    208,
+    18,
+    262,
+    59
+   ],
+   "wTEr_CBC_bqh|CaRE_1nn_cSU": [
+    611,
+    97,
+    1456,
+    246
+   ],
+   "wTEr_CBC_bqh|CifL_Rzy_Mku": [
+    815,
+    138,
+    1553,
+    351
+   ],
+   "wTEr_CBC_bqh|s93u_BEb_sx2": [
+    156,
+    24,
+    255,
+    65
+   ],
+   "wTEr_CBC_bqh|zBon_eET_fFU": [
+    92,
+    15,
+    254,
+    50
+   ],
+   "wTEr_CBC_bqh|EVVp_h6U_GSZ": [
+    128,
+    14,
+    255,
+    51
+   ],
+   "wTEr_CBC_bqh|g5Tt_CAV_zBd": [
+    121,
+    18,
+    169,
+    32
+   ],
+   "wTEr_CBC_bqh|NvUF_SP1_1zo": [
+    101,
+    13,
+    245,
+    39
+   ],
+   "wTEr_CBC_bqh|G6DV_fKE_Viz": [
+    145,
+    34,
+    260,
+    79
+   ],
+   "wTEr_CBC_bqh|zdoY_6u5_Krt": [
+    1018,
+    181,
+    1940,
+    488
+   ],
+   "wTEr_CBC_bqh|xTCk_nT5_Zjm": [
+    119,
+    30,
+    398,
+    62
+   ],
+   "wTEr_CBC_bqh|oLT3_Q9p_3nn": [
+    263,
+    40,
+    537,
+    121
+   ],
+   "yhCP_AqT_tns|": [
+    4481,
+    779,
+    10329,
+    2203
+   ],
+   "yhCP_AqT_tns|DQZd_uYs_oKb": [
+    74,
+    12,
+    169,
+    35
+   ],
+   "yhCP_AqT_tns|oDpK_oZ2_WYt": [
+    113,
+    12,
+    322,
+    43
+   ],
+   "yhCP_AqT_tns|K8iD_VQv_2BA": [
+    16,
+    2,
+    58,
+    3
+   ],
+   "yhCP_AqT_tns|zupA_8Nt_xcD": [
+    128,
+    20,
+    300,
+    50
+   ],
+   "yhCP_AqT_tns|wjee_qH2_yb6": [
+    108,
+    13,
+    262,
+    48
+   ],
+   "yhCP_AqT_tns|65Ms_7r1_RTG": [
+    46,
+    9,
+    109,
+    26
+   ],
+   "yhCP_AqT_tns|MtbE_xWT_eMi": [
+    209,
+    35,
+    445,
+    90
+   ],
+   "yhCP_AqT_tns|9QUH_2bb_6Np": [
+    87,
+    16,
+    207,
+    45
+   ],
+   "yhCP_AqT_tns|tF3y_MF9_h5G": [
+    68,
+    10,
+    221,
+    36
+   ],
+   "yhCP_AqT_tns|9hXe_F4g_eTG": [
+    258,
+    50,
+    499,
+    128
+   ],
+   "yhCP_AqT_tns|CaRE_1nn_cSU": [
+    464,
+    68,
+    1192,
+    229
+   ],
+   "yhCP_AqT_tns|CifL_Rzy_Mku": [
+    990,
+    171,
+    2323,
+    538
+   ],
+   "yhCP_AqT_tns|s93u_BEb_sx2": [
+    128,
+    27,
+    273,
+    68
+   ],
+   "yhCP_AqT_tns|zBon_eET_fFU": [
+    144,
+    29,
+    313,
+    63
+   ],
+   "yhCP_AqT_tns|EVVp_h6U_GSZ": [
+    119,
+    15,
+    194,
+    46
+   ],
+   "yhCP_AqT_tns|g5Tt_CAV_zBd": [
+    131,
+    25,
+    268,
+    60
+   ],
+   "yhCP_AqT_tns|NvUF_SP1_1zo": [
+    86,
+    15,
+    215,
+    41
+   ],
+   "yhCP_AqT_tns|G6DV_fKE_Viz": [
+    139,
+    20,
+    250,
+    64
+   ],
+   "yhCP_AqT_tns|zdoY_6u5_Krt": [
+    762,
+    137,
+    1573,
+    376
+   ],
+   "yhCP_AqT_tns|xTCk_nT5_Zjm": [
+    121,
+    30,
+    334,
+    68
+   ],
+   "yhCP_AqT_tns|oLT3_Q9p_3nn": [
+    226,
+    48,
+    462,
+    116
+   ],
+   "Uuf1_GMh_Uvw|": [
+    415,
+    145,
+    1017,
+    269
+   ],
+   "Uuf1_GMh_Uvw|DQZd_uYs_oKb": [
+    2,
+    0,
+    12,
+    1
+   ],
+   "Uuf1_GMh_Uvw|oDpK_oZ2_WYt": [
+    11,
+    2,
+    19,
+    6
+   ],
+   "Uuf1_GMh_Uvw|K8iD_VQv_2BA": [
+    1,
+    0,
+    0,
+    0
+   ],
+   "Uuf1_GMh_Uvw|zupA_8Nt_xcD": [
+    6,
+    1,
+    10,
+    3
+   ],
+   "Uuf1_GMh_Uvw|wjee_qH2_yb6": [
+    10,
+    4,
+    20,
+    8
+   ],
+   "Uuf1_GMh_Uvw|65Ms_7r1_RTG": [
+    1,
+    4,
+    3,
+    5
+   ],
+   "Uuf1_GMh_Uvw|MtbE_xWT_eMi": [
+    27,
+    5,
+    22,
+    7
+   ],
+   "Uuf1_GMh_Uvw|9QUH_2bb_6Np": [
+    5,
+    2,
+    4,
+    3
+   ],
+   "Uuf1_GMh_Uvw|tF3y_MF9_h5G": [
+    2,
+    1,
+    10,
+    1
+   ],
+   "Uuf1_GMh_Uvw|9hXe_F4g_eTG": [
+    10,
+    2,
+    28,
+    5
+   ],
+   "Uuf1_GMh_Uvw|CaRE_1nn_cSU": [
+    45,
+    17,
+    143,
+    39
+   ],
+   "Uuf1_GMh_Uvw|CifL_Rzy_Mku": [
+    173,
+    61,
+    450,
+    105
+   ],
+   "Uuf1_GMh_Uvw|s93u_BEb_sx2": [
+    7,
+    3,
+    12,
+    5
+   ],
+   "Uuf1_GMh_Uvw|zBon_eET_fFU": [
+    21,
+    4,
+    46,
+    10
+   ],
+   "Uuf1_GMh_Uvw|EVVp_h6U_GSZ": [
+    4,
+    0,
+    24,
+    1
+   ],
+   "Uuf1_GMh_Uvw|g5Tt_CAV_zBd": [
+    8,
+    3,
+    12,
+    3
+   ],
+   "Uuf1_GMh_Uvw|NvUF_SP1_1zo": [
+    1,
+    0,
+    9,
+    0
+   ],
+   "Uuf1_GMh_Uvw|G6DV_fKE_Viz": [
+    6,
+    2,
+    20,
+    6
+   ],
+   "Uuf1_GMh_Uvw|zdoY_6u5_Krt": [
+    51,
+    25,
+    115,
+    44
+   ],
+   "Uuf1_GMh_Uvw|xTCk_nT5_Zjm": [
+    7,
+    5,
+    12,
+    8
+   ],
+   "Uuf1_GMh_Uvw|oLT3_Q9p_3nn": [
+    9,
+    4,
+    28,
+    7
+   ],
+   "9puE_nYg_crq|": [
+    970,
+    100,
+    1877,
+    339
+   ],
+   "9puE_nYg_crq|DQZd_uYs_oKb": [
+    9,
+    0,
+    16,
+    5
+   ],
+   "9puE_nYg_crq|oDpK_oZ2_WYt": [
+    13,
+    3,
+    39,
+    11
+   ],
+   "9puE_nYg_crq|K8iD_VQv_2BA": [
+    0,
+    0,
+    26,
+    1
+   ],
+   "9puE_nYg_crq|zupA_8Nt_xcD": [
+    22,
+    0,
+    42,
+    5
+   ],
+   "9puE_nYg_crq|wjee_qH2_yb6": [
+    16,
+    3,
+    36,
+    10
+   ],
+   "9puE_nYg_crq|65Ms_7r1_RTG": [
+    8,
+    0,
+    20,
+    0
+   ],
+   "9puE_nYg_crq|MtbE_xWT_eMi": [
+    30,
+    4,
+    49,
+    13
+   ],
+   "9puE_nYg_crq|9QUH_2bb_6Np": [
+    9,
+    2,
+    37,
+    5
+   ],
+   "9puE_nYg_crq|tF3y_MF9_h5G": [
+    22,
+    2,
+    40,
+    6
+   ],
+   "9puE_nYg_crq|9hXe_F4g_eTG": [
+    19,
+    2,
+    55,
+    5
+   ],
+   "9puE_nYg_crq|CaRE_1nn_cSU": [
+    106,
+    11,
+    183,
+    32
+   ],
+   "9puE_nYg_crq|CifL_Rzy_Mku": [
+    340,
+    37,
+    641,
+    122
+   ],
+   "9puE_nYg_crq|s93u_BEb_sx2": [
+    13,
+    1,
+    25,
+    6
+   ],
+   "9puE_nYg_crq|zBon_eET_fFU": [
+    23,
+    0,
+    73,
+    7
+   ],
+   "9puE_nYg_crq|EVVp_h6U_GSZ": [
+    12,
+    0,
+    27,
+    4
+   ],
+   "9puE_nYg_crq|g5Tt_CAV_zBd": [
+    22,
+    1,
+    30,
+    7
+   ],
+   "9puE_nYg_crq|NvUF_SP1_1zo": [
+    7,
+    2,
+    18,
+    3
+   ],
+   "9puE_nYg_crq|G6DV_fKE_Viz": [
+    29,
+    3,
+    34,
+    5
+   ],
+   "9puE_nYg_crq|zdoY_6u5_Krt": [
+    162,
+    17,
+    293,
+    45
+   ],
+   "9puE_nYg_crq|xTCk_nT5_Zjm": [
+    23,
+    7,
+    30,
+    11
+   ],
+   "9puE_nYg_crq|oLT3_Q9p_3nn": [
+    53,
+    1,
+    65,
+    15
+   ],
+   "bH5L_uXD_ZAX|": [
+    170,
+    50,
+    482,
+    112
+   ],
+   "bH5L_uXD_ZAX|DQZd_uYs_oKb": [
+    9,
+    12,
+    25,
+    20
+   ],
+   "bH5L_uXD_ZAX|oDpK_oZ2_WYt": [
+    2,
+    0,
+    4,
+    2
+   ],
+   "bH5L_uXD_ZAX|K8iD_VQv_2BA": [
+    1,
+    0,
+    2,
+    1
+   ],
+   "bH5L_uXD_ZAX|zupA_8Nt_xcD": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "bH5L_uXD_ZAX|wjee_qH2_yb6": [
+    4,
+    1,
+    44,
+    4
+   ],
+   "bH5L_uXD_ZAX|65Ms_7r1_RTG": [
+    5,
+    2,
+    0,
+    4
+   ],
+   "bH5L_uXD_ZAX|MtbE_xWT_eMi": [
+    2,
+    0,
+    6,
+    0
+   ],
+   "bH5L_uXD_ZAX|9QUH_2bb_6Np": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "bH5L_uXD_ZAX|tF3y_MF9_h5G": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "bH5L_uXD_ZAX|9hXe_F4g_eTG": [
+    28,
+    3,
+    52,
+    11
+   ],
+   "bH5L_uXD_ZAX|CaRE_1nn_cSU": [
+    4,
+    0,
+    8,
+    1
+   ],
+   "bH5L_uXD_ZAX|CifL_Rzy_Mku": [
+    24,
+    5,
+    81,
+    18
+   ],
+   "bH5L_uXD_ZAX|s93u_BEb_sx2": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "bH5L_uXD_ZAX|zBon_eET_fFU": [
+    32,
+    7,
+    74,
+    16
+   ],
+   "bH5L_uXD_ZAX|EVVp_h6U_GSZ": [
+    2,
+    2,
+    5,
+    2
+   ],
+   "bH5L_uXD_ZAX|g5Tt_CAV_zBd": [
+    1,
+    0,
+    4,
+    0
+   ],
+   "bH5L_uXD_ZAX|NvUF_SP1_1zo": [
+    7,
+    0,
+    2,
+    1
+   ],
+   "bH5L_uXD_ZAX|G6DV_fKE_Viz": [
+    1,
+    0,
+    2,
+    0
+   ],
+   "bH5L_uXD_ZAX|zdoY_6u5_Krt": [
+    27,
+    6,
+    131,
+    15
+   ],
+   "bH5L_uXD_ZAX|xTCk_nT5_Zjm": [
+    4,
+    0,
+    36,
+    2
+   ],
+   "bH5L_uXD_ZAX|oLT3_Q9p_3nn": [
+    17,
+    12,
+    6,
+    14
+   ],
+   "VuuL_7CH_adj|": [
+    592,
+    134,
+    1310,
+    278
+   ],
+   "VuuL_7CH_adj|DQZd_uYs_oKb": [
+    4,
+    4,
+    20,
+    8
+   ],
+   "VuuL_7CH_adj|oDpK_oZ2_WYt": [
+    22,
+    3,
+    50,
+    8
+   ],
+   "VuuL_7CH_adj|K8iD_VQv_2BA": [
+    8,
+    0,
+    6,
+    1
+   ],
+   "VuuL_7CH_adj|zupA_8Nt_xcD": [
+    15,
+    2,
+    34,
+    4
+   ],
+   "VuuL_7CH_adj|wjee_qH2_yb6": [
+    20,
+    4,
+    45,
+    10
+   ],
+   "VuuL_7CH_adj|65Ms_7r1_RTG": [
+    12,
+    2,
+    22,
+    5
+   ],
+   "VuuL_7CH_adj|MtbE_xWT_eMi": [
+    15,
+    4,
+    30,
+    4
+   ],
+   "VuuL_7CH_adj|9QUH_2bb_6Np": [
+    12,
+    5,
+    47,
+    7
+   ],
+   "VuuL_7CH_adj|tF3y_MF9_h5G": [
+    19,
+    2,
+    26,
+    10
+   ],
+   "VuuL_7CH_adj|9hXe_F4g_eTG": [
+    15,
+    4,
+    48,
+    9
+   ],
+   "VuuL_7CH_adj|CaRE_1nn_cSU": [
+    90,
+    13,
+    196,
+    29
+   ],
+   "VuuL_7CH_adj|CifL_Rzy_Mku": [
+    109,
+    39,
+    274,
+    64
+   ],
+   "VuuL_7CH_adj|s93u_BEb_sx2": [
+    20,
+    5,
+    40,
+    9
+   ],
+   "VuuL_7CH_adj|zBon_eET_fFU": [
+    30,
+    4,
+    57,
+    10
+   ],
+   "VuuL_7CH_adj|EVVp_h6U_GSZ": [
+    29,
+    3,
+    38,
+    7
+   ],
+   "VuuL_7CH_adj|g5Tt_CAV_zBd": [
+    12,
+    2,
+    70,
+    13
+   ],
+   "VuuL_7CH_adj|NvUF_SP1_1zo": [
+    14,
+    1,
+    44,
+    5
+   ],
+   "VuuL_7CH_adj|G6DV_fKE_Viz": [
+    6,
+    1,
+    15,
+    6
+   ],
+   "VuuL_7CH_adj|zdoY_6u5_Krt": [
+    78,
+    17,
+    132,
+    30
+   ],
+   "VuuL_7CH_adj|xTCk_nT5_Zjm": [
+    14,
+    3,
+    16,
+    4
+   ],
+   "VuuL_7CH_adj|oLT3_Q9p_3nn": [
+    19,
+    5,
+    50,
+    13
+   ],
+   "kJeN_wmw_9wX|": [
+    904,
+    92,
+    1960,
+    302
+   ],
+   "kJeN_wmw_9wX|DQZd_uYs_oKb": [
+    13,
+    3,
+    14,
+    6
+   ],
+   "kJeN_wmw_9wX|oDpK_oZ2_WYt": [
+    12,
+    0,
+    28,
+    6
+   ],
+   "kJeN_wmw_9wX|K8iD_VQv_2BA": [
+    8,
+    0,
+    10,
+    3
+   ],
+   "kJeN_wmw_9wX|zupA_8Nt_xcD": [
+    15,
+    0,
+    24,
+    5
+   ],
+   "kJeN_wmw_9wX|wjee_qH2_yb6": [
+    12,
+    0,
+    24,
+    5
+   ],
+   "kJeN_wmw_9wX|65Ms_7r1_RTG": [
+    5,
+    0,
+    13,
+    7
+   ],
+   "kJeN_wmw_9wX|MtbE_xWT_eMi": [
+    10,
+    0,
+    39,
+    5
+   ],
+   "kJeN_wmw_9wX|9QUH_2bb_6Np": [
+    11,
+    1,
+    18,
+    4
+   ],
+   "kJeN_wmw_9wX|tF3y_MF9_h5G": [
+    8,
+    2,
+    12,
+    4
+   ],
+   "kJeN_wmw_9wX|9hXe_F4g_eTG": [
+    28,
+    3,
+    71,
+    11
+   ],
+   "kJeN_wmw_9wX|CaRE_1nn_cSU": [
+    96,
+    8,
+    205,
+    33
+   ],
+   "kJeN_wmw_9wX|CifL_Rzy_Mku": [
+    191,
+    29,
+    491,
+    72
+   ],
+   "kJeN_wmw_9wX|s93u_BEb_sx2": [
+    26,
+    2,
+    44,
+    5
+   ],
+   "kJeN_wmw_9wX|zBon_eET_fFU": [
+    150,
+    13,
+    265,
+    44
+   ],
+   "kJeN_wmw_9wX|EVVp_h6U_GSZ": [
+    11,
+    0,
+    28,
+    1
+   ],
+   "kJeN_wmw_9wX|g5Tt_CAV_zBd": [
+    52,
+    4,
+    104,
+    20
+   ],
+   "kJeN_wmw_9wX|NvUF_SP1_1zo": [
+    14,
+    0,
+    30,
+    0
+   ],
+   "kJeN_wmw_9wX|G6DV_fKE_Viz": [
+    21,
+    3,
+    53,
+    7
+   ],
+   "kJeN_wmw_9wX|zdoY_6u5_Krt": [
+    130,
+    17,
+    313,
+    41
+   ],
+   "kJeN_wmw_9wX|xTCk_nT5_Zjm": [
+    34,
+    3,
+    35,
+    8
+   ],
+   "kJeN_wmw_9wX|oLT3_Q9p_3nn": [
+    44,
+    2,
+    77,
+    9
+   ],
+   "MVqp_eS8_kDZ|": [
+    8588,
+    821,
+    17868,
+    3126
+   ],
+   "MVqp_eS8_kDZ|DQZd_uYs_oKb": [
+    130,
+    12,
+    132,
+    35
+   ],
+   "MVqp_eS8_kDZ|oDpK_oZ2_WYt": [
+    242,
+    28,
+    475,
+    91
+   ],
+   "MVqp_eS8_kDZ|K8iD_VQv_2BA": [
+    48,
+    6,
+    74,
+    24
+   ],
+   "MVqp_eS8_kDZ|zupA_8Nt_xcD": [
+    240,
+    10,
+    550,
+    75
+   ],
+   "MVqp_eS8_kDZ|wjee_qH2_yb6": [
+    314,
+    22,
+    644,
+    115
+   ],
+   "MVqp_eS8_kDZ|65Ms_7r1_RTG": [
+    142,
+    19,
+    294,
+    66
+   ],
+   "MVqp_eS8_kDZ|MtbE_xWT_eMi": [
+    305,
+    27,
+    647,
+    116
+   ],
+   "MVqp_eS8_kDZ|9QUH_2bb_6Np": [
+    156,
+    12,
+    245,
+    51
+   ],
+   "MVqp_eS8_kDZ|tF3y_MF9_h5G": [
+    194,
+    11,
+    351,
+    83
+   ],
+   "MVqp_eS8_kDZ|9hXe_F4g_eTG": [
+    307,
+    35,
+    781,
+    123
+   ],
+   "MVqp_eS8_kDZ|CaRE_1nn_cSU": [
+    1136,
+    88,
+    2294,
+    386
+   ],
+   "MVqp_eS8_kDZ|CifL_Rzy_Mku": [
+    2088,
+    186,
+    4279,
+    648
+   ],
+   "MVqp_eS8_kDZ|s93u_BEb_sx2": [
+    242,
+    26,
+    420,
+    88
+   ],
+   "MVqp_eS8_kDZ|zBon_eET_fFU": [
+    358,
+    53,
+    611,
+    145
+   ],
+   "MVqp_eS8_kDZ|EVVp_h6U_GSZ": [
+    189,
+    18,
+    446,
+    82
+   ],
+   "MVqp_eS8_kDZ|g5Tt_CAV_zBd": [
+    251,
+    28,
+    514,
+    96
+   ],
+   "MVqp_eS8_kDZ|NvUF_SP1_1zo": [
+    172,
+    18,
+    349,
+    62
+   ],
+   "MVqp_eS8_kDZ|G6DV_fKE_Viz": [
+    157,
+    16,
+    383,
+    63
+   ],
+   "MVqp_eS8_kDZ|zdoY_6u5_Krt": [
+    1333,
+    147,
+    2673,
+    542
+   ],
+   "MVqp_eS8_kDZ|xTCk_nT5_Zjm": [
+    199,
+    14,
+    491,
+    101
+   ],
+   "MVqp_eS8_kDZ|oLT3_Q9p_3nn": [
+    372,
+    44,
+    1014,
+    146
+   ],
+   "whao_Q6A_ScE|": [
+    4033,
+    530,
+    7007,
+    1409
+   ],
+   "whao_Q6A_ScE|DQZd_uYs_oKb": [
+    44,
+    3,
+    90,
+    11
+   ],
+   "whao_Q6A_ScE|oDpK_oZ2_WYt": [
+    81,
+    8,
+    201,
+    34
+   ],
+   "whao_Q6A_ScE|K8iD_VQv_2BA": [
+    14,
+    0,
+    31,
+    1
+   ],
+   "whao_Q6A_ScE|zupA_8Nt_xcD": [
+    31,
+    7,
+    101,
+    13
+   ],
+   "whao_Q6A_ScE|wjee_qH2_yb6": [
+    159,
+    18,
+    205,
+    54
+   ],
+   "whao_Q6A_ScE|65Ms_7r1_RTG": [
+    35,
+    12,
+    87,
+    19
+   ],
+   "whao_Q6A_ScE|MtbE_xWT_eMi": [
+    135,
+    14,
+    175,
+    46
+   ],
+   "whao_Q6A_ScE|9QUH_2bb_6Np": [
+    97,
+    9,
+    146,
+    23
+   ],
+   "whao_Q6A_ScE|tF3y_MF9_h5G": [
+    58,
+    5,
+    115,
+    15
+   ],
+   "whao_Q6A_ScE|9hXe_F4g_eTG": [
+    89,
+    17,
+    250,
+    31
+   ],
+   "whao_Q6A_ScE|CaRE_1nn_cSU": [
+    516,
+    70,
+    803,
+    148
+   ],
+   "whao_Q6A_ScE|CifL_Rzy_Mku": [
+    1447,
+    160,
+    2304,
+    473
+   ],
+   "whao_Q6A_ScE|s93u_BEb_sx2": [
+    73,
+    13,
+    175,
+    34
+   ],
+   "whao_Q6A_ScE|zBon_eET_fFU": [
+    135,
+    20,
+    237,
+    41
+   ],
+   "whao_Q6A_ScE|EVVp_h6U_GSZ": [
+    77,
+    9,
+    105,
+    34
+   ],
+   "whao_Q6A_ScE|g5Tt_CAV_zBd": [
+    96,
+    9,
+    168,
+    22
+   ],
+   "whao_Q6A_ScE|NvUF_SP1_1zo": [
+    44,
+    9,
+    126,
+    13
+   ],
+   "whao_Q6A_ScE|G6DV_fKE_Viz": [
+    99,
+    16,
+    113,
+    46
+   ],
+   "whao_Q6A_ScE|zdoY_6u5_Krt": [
+    486,
+    71,
+    898,
+    184
+   ],
+   "whao_Q6A_ScE|xTCk_nT5_Zjm": [
+    60,
+    7,
+    152,
+    27
+   ],
+   "whao_Q6A_ScE|oLT3_Q9p_3nn": [
+    165,
+    18,
+    291,
+    69
+   ],
+   "E7hm_BLq_fqZ|": [
+    1258,
+    192,
+    2969,
+    538
+   ],
+   "E7hm_BLq_fqZ|DQZd_uYs_oKb": [
+    16,
+    5,
+    57,
+    8
+   ],
+   "E7hm_BLq_fqZ|oDpK_oZ2_WYt": [
+    40,
+    10,
+    97,
+    17
+   ],
+   "E7hm_BLq_fqZ|K8iD_VQv_2BA": [
+    7,
+    2,
+    29,
+    5
+   ],
+   "E7hm_BLq_fqZ|zupA_8Nt_xcD": [
+    36,
+    4,
+    92,
+    11
+   ],
+   "E7hm_BLq_fqZ|wjee_qH2_yb6": [
+    53,
+    4,
+    65,
+    14
+   ],
+   "E7hm_BLq_fqZ|65Ms_7r1_RTG": [
+    13,
+    1,
+    35,
+    1
+   ],
+   "E7hm_BLq_fqZ|MtbE_xWT_eMi": [
+    48,
+    10,
+    77,
+    22
+   ],
+   "E7hm_BLq_fqZ|9QUH_2bb_6Np": [
+    30,
+    1,
+    56,
+    9
+   ],
+   "E7hm_BLq_fqZ|tF3y_MF9_h5G": [
+    16,
+    2,
+    37,
+    14
+   ],
+   "E7hm_BLq_fqZ|9hXe_F4g_eTG": [
+    81,
+    18,
+    139,
+    36
+   ],
+   "E7hm_BLq_fqZ|CaRE_1nn_cSU": [
+    106,
+    8,
+    274,
+    39
+   ],
+   "E7hm_BLq_fqZ|CifL_Rzy_Mku": [
+    334,
+    41,
+    755,
+    133
+   ],
+   "E7hm_BLq_fqZ|s93u_BEb_sx2": [
+    33,
+    4,
+    101,
+    17
+   ],
+   "E7hm_BLq_fqZ|zBon_eET_fFU": [
+    45,
+    10,
+    108,
+    21
+   ],
+   "E7hm_BLq_fqZ|EVVp_h6U_GSZ": [
+    33,
+    4,
+    62,
+    12
+   ],
+   "E7hm_BLq_fqZ|g5Tt_CAV_zBd": [
+    41,
+    8,
+    96,
+    18
+   ],
+   "E7hm_BLq_fqZ|NvUF_SP1_1zo": [
+    38,
+    5,
+    95,
+    17
+   ],
+   "E7hm_BLq_fqZ|G6DV_fKE_Viz": [
+    29,
+    4,
+    66,
+    14
+   ],
+   "E7hm_BLq_fqZ|zdoY_6u5_Krt": [
+    164,
+    26,
+    425,
+    87
+   ],
+   "E7hm_BLq_fqZ|xTCk_nT5_Zjm": [
+    34,
+    3,
+    103,
+    10
+   ],
+   "E7hm_BLq_fqZ|oLT3_Q9p_3nn": [
+    51,
+    16,
+    137,
+    25
+   ],
+   "ASGV_zcE_bWf|": [
+    6216,
+    895,
+    11193,
+    2530
+   ],
+   "ASGV_zcE_bWf|DQZd_uYs_oKb": [
+    43,
+    7,
+    46,
+    22
+   ],
+   "ASGV_zcE_bWf|oDpK_oZ2_WYt": [
+    105,
+    15,
+    129,
+    41
+   ],
+   "ASGV_zcE_bWf|K8iD_VQv_2BA": [
+    32,
+    3,
+    18,
+    12
+   ],
+   "ASGV_zcE_bWf|zupA_8Nt_xcD": [
+    61,
+    8,
+    108,
+    24
+   ],
+   "ASGV_zcE_bWf|wjee_qH2_yb6": [
+    158,
+    14,
+    267,
+    58
+   ],
+   "ASGV_zcE_bWf|65Ms_7r1_RTG": [
+    29,
+    8,
+    54,
+    21
+   ],
+   "ASGV_zcE_bWf|MtbE_xWT_eMi": [
+    435,
+    62,
+    766,
+    160
+   ],
+   "ASGV_zcE_bWf|9QUH_2bb_6Np": [
+    84,
+    8,
+    120,
+    32
+   ],
+   "ASGV_zcE_bWf|tF3y_MF9_h5G": [
+    162,
+    16,
+    363,
+    66
+   ],
+   "ASGV_zcE_bWf|9hXe_F4g_eTG": [
+    185,
+    34,
+    398,
+    79
+   ],
+   "ASGV_zcE_bWf|CaRE_1nn_cSU": [
+    766,
+    120,
+    1535,
+    320
+   ],
+   "ASGV_zcE_bWf|CifL_Rzy_Mku": [
+    1730,
+    245,
+    3165,
+    748
+   ],
+   "ASGV_zcE_bWf|s93u_BEb_sx2": [
+    191,
+    37,
+    265,
+    88
+   ],
+   "ASGV_zcE_bWf|zBon_eET_fFU": [
+    150,
+    22,
+    304,
+    64
+   ],
+   "ASGV_zcE_bWf|EVVp_h6U_GSZ": [
+    60,
+    10,
+    120,
+    27
+   ],
+   "ASGV_zcE_bWf|g5Tt_CAV_zBd": [
+    139,
+    15,
+    213,
+    45
+   ],
+   "ASGV_zcE_bWf|NvUF_SP1_1zo": [
+    75,
+    10,
+    128,
+    30
+   ],
+   "ASGV_zcE_bWf|G6DV_fKE_Viz": [
+    120,
+    21,
+    158,
+    51
+   ],
+   "ASGV_zcE_bWf|zdoY_6u5_Krt": [
+    1107,
+    147,
+    2095,
+    392
+   ],
+   "ASGV_zcE_bWf|xTCk_nT5_Zjm": [
+    221,
+    26,
+    306,
+    63
+   ],
+   "ASGV_zcE_bWf|oLT3_Q9p_3nn": [
+    267,
+    41,
+    347,
+    119
+   ],
+   "GazW_2TU_kJw|": [
+    10263,
+    1299,
+    21465,
+    4135
+   ],
+   "GazW_2TU_kJw|DQZd_uYs_oKb": [
+    124,
+    31,
+    242,
+    66
+   ],
+   "GazW_2TU_kJw|oDpK_oZ2_WYt": [
+    355,
+    49,
+    651,
+    140
+   ],
+   "GazW_2TU_kJw|K8iD_VQv_2BA": [
+    149,
+    18,
+    223,
+    46
+   ],
+   "GazW_2TU_kJw|zupA_8Nt_xcD": [
+    234,
+    42,
+    471,
+    115
+   ],
+   "GazW_2TU_kJw|wjee_qH2_yb6": [
+    274,
+    38,
+    504,
+    116
+   ],
+   "GazW_2TU_kJw|65Ms_7r1_RTG": [
+    147,
+    22,
+    293,
+    64
+   ],
+   "GazW_2TU_kJw|MtbE_xWT_eMi": [
+    396,
+    72,
+    758,
+    182
+   ],
+   "GazW_2TU_kJw|9QUH_2bb_6Np": [
+    223,
+    31,
+    413,
+    84
+   ],
+   "GazW_2TU_kJw|tF3y_MF9_h5G": [
+    166,
+    24,
+    397,
+    67
+   ],
+   "GazW_2TU_kJw|9hXe_F4g_eTG": [
+    313,
+    42,
+    760,
+    145
+   ],
+   "GazW_2TU_kJw|CaRE_1nn_cSU": [
+    1334,
+    167,
+    2519,
+    500
+   ],
+   "GazW_2TU_kJw|CifL_Rzy_Mku": [
+    2232,
+    284,
+    4933,
+    904
+   ],
+   "GazW_2TU_kJw|s93u_BEb_sx2": [
+    258,
+    31,
+    513,
+    114
+   ],
+   "GazW_2TU_kJw|zBon_eET_fFU": [
+    372,
+    71,
+    794,
+    180
+   ],
+   "GazW_2TU_kJw|EVVp_h6U_GSZ": [
+    246,
+    50,
+    522,
+    121
+   ],
+   "GazW_2TU_kJw|g5Tt_CAV_zBd": [
+    359,
+    28,
+    674,
+    124
+   ],
+   "GazW_2TU_kJw|NvUF_SP1_1zo": [
+    268,
+    21,
+    588,
+    105
+   ],
+   "GazW_2TU_kJw|G6DV_fKE_Viz": [
+    254,
+    22,
+    483,
+    84
+   ],
+   "GazW_2TU_kJw|zdoY_6u5_Krt": [
+    1716,
+    164,
+    3931,
+    677
+   ],
+   "GazW_2TU_kJw|xTCk_nT5_Zjm": [
+    348,
+    29,
+    750,
+    127
+   ],
+   "GazW_2TU_kJw|oLT3_Q9p_3nn": [
+    469,
+    60,
+    940,
+    177
+   ],
+   "6Hq3_tKo_V57|": [
+    5541,
+    929,
+    11587,
+    2650
+   ],
+   "6Hq3_tKo_V57|DQZd_uYs_oKb": [
+    140,
+    16,
+    210,
+    48
+   ],
+   "6Hq3_tKo_V57|oDpK_oZ2_WYt": [
+    164,
+    58,
+    333,
+    133
+   ],
+   "6Hq3_tKo_V57|K8iD_VQv_2BA": [
+    5,
+    1,
+    41,
+    2
+   ],
+   "6Hq3_tKo_V57|zupA_8Nt_xcD": [
+    65,
+    12,
+    226,
+    33
+   ],
+   "6Hq3_tKo_V57|wjee_qH2_yb6": [
+    106,
+    10,
+    172,
+    37
+   ],
+   "6Hq3_tKo_V57|65Ms_7r1_RTG": [
+    52,
+    3,
+    115,
+    10
+   ],
+   "6Hq3_tKo_V57|MtbE_xWT_eMi": [
+    197,
+    43,
+    454,
+    102
+   ],
+   "6Hq3_tKo_V57|9QUH_2bb_6Np": [
+    116,
+    17,
+    189,
+    54
+   ],
+   "6Hq3_tKo_V57|tF3y_MF9_h5G": [
+    106,
+    16,
+    294,
+    52
+   ],
+   "6Hq3_tKo_V57|9hXe_F4g_eTG": [
+    194,
+    25,
+    376,
+    100
+   ],
+   "6Hq3_tKo_V57|CaRE_1nn_cSU": [
+    538,
+    86,
+    1099,
+    234
+   ],
+   "6Hq3_tKo_V57|CifL_Rzy_Mku": [
+    1079,
+    186,
+    2100,
+    534
+   ],
+   "6Hq3_tKo_V57|s93u_BEb_sx2": [
+    114,
+    11,
+    231,
+    34
+   ],
+   "6Hq3_tKo_V57|zBon_eET_fFU": [
+    191,
+    19,
+    451,
+    78
+   ],
+   "6Hq3_tKo_V57|EVVp_h6U_GSZ": [
+    119,
+    25,
+    249,
+    81
+   ],
+   "6Hq3_tKo_V57|g5Tt_CAV_zBd": [
+    107,
+    25,
+    297,
+    81
+   ],
+   "6Hq3_tKo_V57|NvUF_SP1_1zo": [
+    123,
+    28,
+    311,
+    70
+   ],
+   "6Hq3_tKo_V57|G6DV_fKE_Viz": [
+    315,
+    49,
+    571,
+    132
+   ],
+   "6Hq3_tKo_V57|zdoY_6u5_Krt": [
+    858,
+    158,
+    1679,
+    423
+   ],
+   "6Hq3_tKo_V57|xTCk_nT5_Zjm": [
+    241,
+    38,
+    482,
+    128
+   ],
+   "6Hq3_tKo_V57|oLT3_Q9p_3nn": [
+    624,
+    98,
+    1327,
+    277
    ]
   }
  }
