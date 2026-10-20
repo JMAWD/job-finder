@@ -1,0 +1,39 @@
+# Counts the Market tab's figures on the 1st of every month, rebuilds the page and commits it, so visitors' browsers
+# never search for market data themselves. To fill the figures straight away, run it by hand from the Actions tab:
+# Monthly market figures → Run workflow.
+name: Monthly market figures
+
+on:
+  schedule:
+    - cron: "17 5 1 * *"   # 05:17 UTC on the 1st: 06:17 in Stockholm in winter, 07:17 in summer
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market
+  cancel-in-progress: false
+
+jobs:
+  market:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Count the month's figures
+        run: python3 market.py
+      - name: Build the page
+        run: python3 build.py
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market.json index.html "Job Finder.html"
+          if git diff --cached --quiet; then echo "Nothing changed"; exit 0; fi
+          git commit -m "Market figures counted on $(date -u +'%-d %B %Y')"
+          git push

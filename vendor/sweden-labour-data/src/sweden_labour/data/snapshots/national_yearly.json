@@ -1,0 +1,68 @@
+{
+ "id": "national_yearly",
+ "title": "Unemployment rate by year",
+ "description": "SCB labour force survey, ages 15 to 74: 2019 to 2025 actuals from SCB's 'Arbetslöshet i Sverige' page. 2026 to 2030 are Konjunkturinstitutet's forecast from its August 2026 update.",
+ "as_of": "2026-10-19",
+ "rows": [
+  {
+   "year": 2019,
+   "value": 6.9,
+   "kind": "actual"
+  },
+  {
+   "year": 2020,
+   "value": 8.5,
+   "kind": "actual"
+  },
+  {
+   "year": 2021,
+   "value": 8.9,
+   "kind": "actual"
+  },
+  {
+   "year": 2022,
+   "value": 7.5,
+   "kind": "actual"
+  },
+  {
+   "year": 2023,
+   "value": 7.7,
+   "kind": "actual"
+  },
+  {
+   "year": 2024,
+   "value": 8.4,
+   "kind": "actual"
+  },
+  {
+   "year": 2025,
+   "value": 8.8,
+   "kind": "actual"
+  },
+  {
+   "year": 2026,
+   "value": 8.6,
+   "kind": "forecast"
+  },
+  {
+   "year": 2027,
+   "value": 7.9,
+   "kind": "forecast"
+  },
+  {
+   "year": 2028,
+   "value": 7.2,
+   "kind": "forecast"
+  },
+  {
+   "year": 2029,
+   "value": 7.1,
+   "kind": "forecast"
+  },
+  {
+   "year": 2030,
+   "value": 7.1,
+   "kind": "forecast"
+  }
+ ]
+}

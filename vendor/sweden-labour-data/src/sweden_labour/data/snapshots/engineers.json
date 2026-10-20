@@ -1,0 +1,190 @@
+{
+ "id": "engineers",
+ "title": "Engineers' job market",
+ "description": "Unemployment among Sveriges Ingenjörer members (members on a-kassa or activity compensation, via Akademikernas a-kassa) and the union's member survey, from its reports and press releases 2022 to 2026 (sverigesingenjorer.se, ingenjoren.se) and Realtid's April 2022 report. The pandemic high of 1.7% covers Jan 2020 to Apr 2023; the union didn't publish the month. All graduates and Everyone are the comparison figures in the June 2026 report.",
+ "as_of": "2026-10-20",
+ "rows": [
+  {
+   "measure": "unemployment",
+   "label": "Nov 2021",
+   "date": "2021-11-30",
+   "value": 1.0,
+   "note": "First of five months at 1.0%"
+  },
+  {
+   "measure": "unemployment",
+   "label": "Apr 2022",
+   "date": "2022-04-30",
+   "value": 0.9,
+   "note": ""
+  },
+  {
+   "measure": "unemployment",
+   "label": "May 2023",
+   "date": "2023-05-31",
+   "value": 0.8,
+   "note": "Record low (0.83%)"
+  },
+  {
+   "measure": "unemployment",
+   "label": "Nov 2023",
+   "date": "2023-11-30",
+   "value": 1.0,
+   "note": ""
+  },
+  {
+   "measure": "unemployment",
+   "label": "Aug 2024",
+   "date": "2024-08-31",
+   "value": 1.33,
+   "note": ""
+  },
+  {
+   "measure": "unemployment",
+   "label": "Nov 2024",
+   "date": "2024-11-30",
+   "value": 1.25,
+   "note": ""
+  },
+  {
+   "measure": "unemployment",
+   "label": "Apr 2025",
+   "date": "2025-04-30",
+   "value": 1.35,
+   "note": ""
+  },
+  {
+   "measure": "unemployment",
+   "label": "Sep 2025",
+   "date": "2025-09-30",
+   "value": 1.8,
+   "note": "Peak, highest in nearly 15 years"
+  },
+  {
+   "measure": "unemployment",
+   "label": "Nov 2025",
+   "date": "2025-11-30",
+   "value": 1.5,
+   "note": ""
+  },
+  {
+   "measure": "unemployment",
+   "label": "Dec 2025",
+   "date": "2025-12-31",
+   "value": 1.5,
+   "note": ""
+  },
+  {
+   "measure": "unemployment",
+   "label": "May 2026",
+   "date": "2026-05-31",
+   "value": 1.5,
+   "note": "Latest"
+  },
+  {
+   "measure": "reference",
+   "label": "Pandemic high",
+   "date": null,
+   "value": 1.7,
+   "note": "Highest level from Jan 2020 to Apr 2023; month not published"
+  },
+  {
+   "measure": "compare_may_2026",
+   "label": "Engineers",
+   "date": "2026-05-31",
+   "value": 1.5,
+   "note": "Sveriges Ingenjörer members"
+  },
+  {
+   "measure": "compare_may_2026",
+   "label": "All graduates",
+   "date": "2026-05-31",
+   "value": 2.1,
+   "note": "Academics, a-kassa measure"
+  },
+  {
+   "measure": "compare_may_2026",
+   "label": "Everyone",
+   "date": "2026-05-31",
+   "value": 6.4,
+   "note": "Arbetsförmedlingen measure"
+  },
+  {
+   "measure": "better_paid_job",
+   "label": "Feb 2022",
+   "date": "2022-02-28",
+   "value": 66,
+   "note": ""
+  },
+  {
+   "measure": "better_paid_job",
+   "label": "Nov 2022",
+   "date": "2022-11-30",
+   "value": 65,
+   "note": ""
+  },
+  {
+   "measure": "better_paid_job",
+   "label": "Nov 2023",
+   "date": "2023-11-30",
+   "value": 59,
+   "note": "Press release words it as the chance of changing employer"
+  },
+  {
+   "measure": "better_paid_job",
+   "label": "Nov 2025",
+   "date": "2025-11-30",
+   "value": 37,
+   "note": "First time more were negative than positive"
+  },
+  {
+   "measure": "better_paid_job",
+   "label": "Jun 2026",
+   "date": "2026-06-30",
+   "value": 44,
+   "note": "First rise after seven surveys in a row of decline"
+  },
+  {
+   "measure": "expect_more_engineers",
+   "label": "Nov 2022",
+   "date": "2022-11-30",
+   "value": 54,
+   "note": ""
+  },
+  {
+   "measure": "expect_more_engineers",
+   "label": "Nov 2023",
+   "date": "2023-11-30",
+   "value": 47,
+   "note": ""
+  },
+  {
+   "measure": "expect_more_engineers",
+   "label": "Jun 2026",
+   "date": "2026-06-30",
+   "value": 40,
+   "note": "Report says just over 40%"
+  },
+  {
+   "measure": "expect_fewer_engineers",
+   "label": "Nov 2022",
+   "date": "2022-11-30",
+   "value": 9,
+   "note": ""
+  },
+  {
+   "measure": "expect_fewer_engineers",
+   "label": "Nov 2023",
+   "date": "2023-11-30",
+   "value": 12,
+   "note": ""
+  },
+  {
+   "measure": "expect_fewer_engineers",
+   "label": "Jun 2026",
+   "date": "2026-06-30",
+   "value": 16,
+   "note": ""
+  }
+ ]
+}

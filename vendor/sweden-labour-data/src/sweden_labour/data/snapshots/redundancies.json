@@ -1,0 +1,473 @@
+{
+ "id": "redundancies",
+ "title": "Redundancy notices (AF)",
+ "description": "People given redundancy notice each month, January 2019 to September 2026, raw and seasonally adjusted trend. Arbetsförmedlingen via Macrobond, as published by Ekonomifakta.",
+ "as_of": "2026-10-19",
+ "rows": [
+  {
+   "month": "2019-01",
+   "notices": 4624,
+   "notices_trend": 3629
+  },
+  {
+   "month": "2019-02",
+   "notices": 8013,
+   "notices_trend": 3572
+  },
+  {
+   "month": "2019-03",
+   "notices": 3292,
+   "notices_trend": 3496
+  },
+  {
+   "month": "2019-04",
+   "notices": 3695,
+   "notices_trend": 3457
+  },
+  {
+   "month": "2019-05",
+   "notices": 4879,
+   "notices_trend": 3462
+  },
+  {
+   "month": "2019-06",
+   "notices": 3490,
+   "notices_trend": 3512
+  },
+  {
+   "month": "2019-07",
+   "notices": 2588,
+   "notices_trend": 3538
+  },
+  {
+   "month": "2019-08",
+   "notices": 1839,
+   "notices_trend": 3523
+  },
+  {
+   "month": "2019-09",
+   "notices": 3917,
+   "notices_trend": 3634
+  },
+  {
+   "month": "2019-10",
+   "notices": 4746,
+   "notices_trend": 4100
+  },
+  {
+   "month": "2019-11",
+   "notices": 5576,
+   "notices_trend": 5274
+  },
+  {
+   "month": "2019-12",
+   "notices": 3449,
+   "notices_trend": 7059
+  },
+  {
+   "month": "2020-01",
+   "notices": 3304,
+   "notices_trend": 9122
+  },
+  {
+   "month": "2020-02",
+   "notices": 3180,
+   "notices_trend": 10944
+  },
+  {
+   "month": "2020-03",
+   "notices": 42420,
+   "notices_trend": 11957
+  },
+  {
+   "month": "2020-04",
+   "notices": 26793,
+   "notices_trend": 11927
+  },
+  {
+   "month": "2020-05",
+   "notices": 8586,
+   "notices_trend": 10918
+  },
+  {
+   "month": "2020-06",
+   "notices": 11346,
+   "notices_trend": 9350
+  },
+  {
+   "month": "2020-07",
+   "notices": 3622,
+   "notices_trend": 7758
+  },
+  {
+   "month": "2020-08",
+   "notices": 3802,
+   "notices_trend": 6541
+  },
+  {
+   "month": "2020-09",
+   "notices": 6119,
+   "notices_trend": 5724
+  },
+  {
+   "month": "2020-10",
+   "notices": 6006,
+   "notices_trend": 5139
+  },
+  {
+   "month": "2020-11",
+   "notices": 5514,
+   "notices_trend": 4581
+  },
+  {
+   "month": "2020-12",
+   "notices": 2867,
+   "notices_trend": 3950
+  },
+  {
+   "month": "2021-01",
+   "notices": 3410,
+   "notices_trend": 3364
+  },
+  {
+   "month": "2021-02",
+   "notices": 2505,
+   "notices_trend": 2800
+  },
+  {
+   "month": "2021-03",
+   "notices": 2932,
+   "notices_trend": 2418
+  },
+  {
+   "month": "2021-04",
+   "notices": 3244,
+   "notices_trend": 2221
+  },
+  {
+   "month": "2021-05",
+   "notices": 2296,
+   "notices_trend": 2173
+  },
+  {
+   "month": "2021-06",
+   "notices": 2164,
+   "notices_trend": 2225
+  },
+  {
+   "month": "2021-07",
+   "notices": 1212,
+   "notices_trend": 2288
+  },
+  {
+   "month": "2021-08",
+   "notices": 1901,
+   "notices_trend": 2307
+  },
+  {
+   "month": "2021-09",
+   "notices": 1946,
+   "notices_trend": 2241
+  },
+  {
+   "month": "2021-10",
+   "notices": 2830,
+   "notices_trend": 2096
+  },
+  {
+   "month": "2021-11",
+   "notices": 1884,
+   "notices_trend": 1895
+  },
+  {
+   "month": "2021-12",
+   "notices": 1306,
+   "notices_trend": 1682
+  },
+  {
+   "month": "2022-01",
+   "notices": 1436,
+   "notices_trend": 1543
+  },
+  {
+   "month": "2022-02",
+   "notices": 1257,
+   "notices_trend": 1514
+  },
+  {
+   "month": "2022-03",
+   "notices": 2398,
+   "notices_trend": 1599
+  },
+  {
+   "month": "2022-04",
+   "notices": 1830,
+   "notices_trend": 1713
+  },
+  {
+   "month": "2022-05",
+   "notices": 2072,
+   "notices_trend": 1823
+  },
+  {
+   "month": "2022-06",
+   "notices": 2556,
+   "notices_trend": 1973
+  },
+  {
+   "month": "2022-07",
+   "notices": 1176,
+   "notices_trend": 2191
+  },
+  {
+   "month": "2022-08",
+   "notices": 2995,
+   "notices_trend": 2495
+  },
+  {
+   "month": "2022-09",
+   "notices": 1893,
+   "notices_trend": 2937
+  },
+  {
+   "month": "2022-10",
+   "notices": 4939,
+   "notices_trend": 3491
+  },
+  {
+   "month": "2022-11",
+   "notices": 5778,
+   "notices_trend": 4085
+  },
+  {
+   "month": "2022-12",
+   "notices": 2604,
+   "notices_trend": 4625
+  },
+  {
+   "month": "2023-01",
+   "notices": 5505,
+   "notices_trend": 5014
+  },
+  {
+   "month": "2023-02",
+   "notices": 15720,
+   "notices_trend": 5219
+  },
+  {
+   "month": "2023-03",
+   "notices": 4662,
+   "notices_trend": 5265
+  },
+  {
+   "month": "2023-04",
+   "notices": 3733,
+   "notices_trend": 5246
+  },
+  {
+   "month": "2023-05",
+   "notices": 5371,
+   "notices_trend": 5235
+  },
+  {
+   "month": "2023-06",
+   "notices": 5374,
+   "notices_trend": 5257
+  },
+  {
+   "month": "2023-07",
+   "notices": 3482,
+   "notices_trend": 5382
+  },
+  {
+   "month": "2023-08",
+   "notices": 3428,
+   "notices_trend": 5598
+  },
+  {
+   "month": "2023-09",
+   "notices": 6570,
+   "notices_trend": 5801
+  },
+  {
+   "month": "2023-10",
+   "notices": 6756,
+   "notices_trend": 5905
+  },
+  {
+   "month": "2023-11",
+   "notices": 7690,
+   "notices_trend": 5871
+  },
+  {
+   "month": "2023-12",
+   "notices": 4456,
+   "notices_trend": 5782
+  },
+  {
+   "month": "2024-01",
+   "notices": 4995,
+   "notices_trend": 5697
+  },
+  {
+   "month": "2024-02",
+   "notices": 5822,
+   "notices_trend": 5670
+  },
+  {
+   "month": "2024-03",
+   "notices": 6144,
+   "notices_trend": 5739
+  },
+  {
+   "month": "2024-04",
+   "notices": 6910,
+   "notices_trend": 5942
+  },
+  {
+   "month": "2024-05",
+   "notices": 8366,
+   "notices_trend": 6197
+  },
+  {
+   "month": "2024-06",
+   "notices": 4555,
+   "notices_trend": 6379
+  },
+  {
+   "month": "2024-07",
+   "notices": 5093,
+   "notices_trend": 6387
+  },
+  {
+   "month": "2024-08",
+   "notices": 4164,
+   "notices_trend": 6237
+  },
+  {
+   "month": "2024-09",
+   "notices": 7586,
+   "notices_trend": 6006
+  },
+  {
+   "month": "2024-10",
+   "notices": 5670,
+   "notices_trend": 5731
+  },
+  {
+   "month": "2024-11",
+   "notices": 5783,
+   "notices_trend": 5463
+  },
+  {
+   "month": "2024-12",
+   "notices": 4280,
+   "notices_trend": 5212
+  },
+  {
+   "month": "2025-01",
+   "notices": 5312,
+   "notices_trend": 5005
+  },
+  {
+   "month": "2025-02",
+   "notices": 4912,
+   "notices_trend": 4942
+  },
+  {
+   "month": "2025-03",
+   "notices": 5415,
+   "notices_trend": 4952
+  },
+  {
+   "month": "2025-04",
+   "notices": 5267,
+   "notices_trend": 4962
+  },
+  {
+   "month": "2025-05",
+   "notices": 10607,
+   "notices_trend": 4964
+  },
+  {
+   "month": "2025-06",
+   "notices": 4606,
+   "notices_trend": 4966
+  },
+  {
+   "month": "2025-07",
+   "notices": 4330,
+   "notices_trend": 4875
+  },
+  {
+   "month": "2025-08",
+   "notices": 2457,
+   "notices_trend": 4690
+  },
+  {
+   "month": "2025-09",
+   "notices": 5057,
+   "notices_trend": 4484
+  },
+  {
+   "month": "2025-10",
+   "notices": 6174,
+   "notices_trend": 4360
+  },
+  {
+   "month": "2025-11",
+   "notices": 4089,
+   "notices_trend": 4364
+  },
+  {
+   "month": "2025-12",
+   "notices": 2887,
+   "notices_trend": 4433
+  },
+  {
+   "month": "2026-01",
+   "notices": 6260,
+   "notices_trend": 4453
+  },
+  {
+   "month": "2026-02",
+   "notices": 4217,
+   "notices_trend": 4326
+  },
+  {
+   "month": "2026-03",
+   "notices": 5697,
+   "notices_trend": 4068
+  },
+  {
+   "month": "2026-04",
+   "notices": 3688,
+   "notices_trend": 3817
+  },
+  {
+   "month": "2026-05",
+   "notices": 3536,
+   "notices_trend": 3651
+  },
+  {
+   "month": "2026-06",
+   "notices": 2857,
+   "notices_trend": 3647
+  },
+  {
+   "month": "2026-07",
+   "notices": 2947,
+   "notices_trend": 3801
+  },
+  {
+   "month": "2026-08",
+   "notices": 2925,
+   "notices_trend": 4031
+  },
+  {
+   "month": "2026-09",
+   "notices": 5487,
+   "notices_trend": 4250
+  }
+ ]
+}

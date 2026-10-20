@@ -1,29 +1,27 @@
 /* ---------- Market: how the job market looks for your field ----------
-   The figures for Sweden come from the sweden-labour-data package (SCB, Arbetsförmedlingen, Konjunkturinstitutet,
-   ManpowerGroup, Sveriges Ingenjörer, Cinode). build.py puts them in the page with the date each was compiled.
-   The figures for your field are counted live from Platsbanken. Platsbanken's ad archive covers some years much more fully
-   than others, so raw counts can't be compared across years. Instead the app compares the field's count with the count
-   for all ads, this year and a year earlier, which cancels out the archive's coverage, and applies that to
-   Arbetsförmedlingen's official change in new job postings. Ads still open are counted from the live ads, since they only
-   reach the archive once they close. No AI, nothing about the person leaves the browser.
-   After a few rejections, a pop-up says what the figures mean for them and points to the Mentor. */
+   Everything here comes from data/market.json, which market.py fills on the 1st of every month and build.py puts in the
+   page, so the tab makes no requests of its own. The figures for Sweden come from the sweden-labour-data package (SCB,
+   Arbetsförmedlingen, Konjunkturinstitutet, ManpowerGroup, Sveriges Ingenjörer, Cinode), each with the date it was compiled.
+   The figures for each field and county are Platsbanken ad counts: ads published in the three full months before the 1st,
+   against the same months a year earlier. Platsbanken's archive covers some years much more fully than others, so raw
+   counts can't be compared across years. Instead a field's change is divided by the change for all ads, which cancels out
+   the archive's coverage, and applied to Arbetsförmedlingen's official change in new job postings. No AI.
+   After a few rejections, a pop-up says what the figures mean for the person and points to the Mentor. */
 const MK = /*__MARKET__*/;
 const MK_FIELDS = /*__FIELDS__*/;   // [Swedish label, JobTech id] for all 21 occupation fields, from the package
 
 Object.assign(I18N, {
   "tab.market": ["Market", "Marknad"],
   "mk.eyebrow": ["Market analysis · open data", "Marknadsanalys · öppna data"], "mk.h1": ["How's the job market?", "Hur ser jobbmarknaden ut?"],
-  "mk.lede": ["See how many employers are advertising in your field compared with a year ago, and what the latest figures for Sweden say. Worked out from Platsbanken and official statistics, with no AI.",
-    "Se hur många arbetsgivare som annonserar inom ditt yrkesområde jämfört med för ett år sedan, och vad de senaste siffrorna för Sverige säger. Räknat fram ur Platsbanken och officiell statistik, utan AI."],
+  "mk.lede": ["See how many employers are advertising in your field compared with a year ago, and what the latest figures for Sweden say. Worked out from Platsbanken and official statistics on the 1st of every month, with no AI.",
+    "Se hur många arbetsgivare som annonserar inom ditt yrkesområde jämfört med för ett år sedan, och vad de senaste siffrorna för Sverige säger. Räknat fram ur Platsbanken och officiell statistik den 1:a varje månad, utan AI."],
   "mk.field": ["Your field", "Ditt yrkesområde"], "mk.allfields": ["All fields", "Alla yrkesområden"], "mk.where": ["Where", "Var"], "mk.sweden": ["All of Sweden", "Hela Sverige"],
   "mk.guessed": ["Picked from your searches and applications. Change it if it isn't right.", "Valt utifrån dina sökningar och ansökningar. Ändra om det inte stämmer."],
   "mk.choose": ["Pick your field to see how it compares with the rest of the job market.", "Välj ditt yrkesområde för att se hur det står sig mot resten av jobbmarknaden."],
   "mk.mood.tough": ["A tough market", "En tuff marknad"], "mk.mood.slow": ["Slower than last year", "Lugnare än i fjol"],
   "mk.mood.steady": ["About the same as last year", "Ungefär som i fjol"], "mk.mood.busy": ["Busier than last year", "Fler jobb än i fjol"],
-  "mk.checking": ["Counting ads on Platsbanken…", "Räknar annonser i Platsbanken…"],
-  "mk.fail": ["Platsbanken couldn't be reached just now, so the figures for your field are missing. The figures for Sweden below still apply.",
-    "Platsbanken gick inte att nå just nu, så siffrorna för ditt yrkesområde saknas. Siffrorna för Sverige nedan gäller ändå."],
-  "mk.retry": ["Try again", "Försök igen"],
+  "mk.nocounts": ["The figures for each field are counted on Platsbanken on the 1st of every month and aren't in yet.", "Siffrorna för varje yrkesområde räknas i Platsbanken den 1:a varje månad och har inte kommit in än."],
+  "mk.last3": ["the last three full months", "de tre senaste hela månaderna"],
   "mk.in": ["in {place}", "i {place}"],
   "mk.s.down.f": ["There were about {p} fewer {field} ads {where} from {months} than a year earlier.", "Det kom ungefär {p} färre annonser inom {field} {where} under {months} än ett år tidigare."],
   "mk.s.up.f": ["There were about {p} more {field} ads {where} from {months} than a year earlier.", "Det kom ungefär {p} fler annonser inom {field} {where} under {months} än ett år tidigare."],
@@ -41,7 +39,7 @@ Object.assign(I18N, {
   "mk.small.ads": ["ads", "annonser"], "mk.small.fads": ["{field} ads", "annonser inom {field}"],
   "mk.wider.f": ["{field} in all of Sweden", "{field} i hela Sverige"], "mk.wider.nat": ["the figures for all of Sweden", "siffrorna för hela Sverige"],
   "mk.wider.place": ["all job ads in {place}", "alla jobbannonser i {place}"],
-  "mk.t.open": ["Open ads right now", "Lediga jobb just nu"], "mk.t.change": ["Ads compared with a year earlier", "Annonser jämfört med ett år tidigare"],
+  "mk.t.open": ["Open ads on {date}", "Lediga jobb den {date}"], "mk.t.change": ["Ads compared with a year earlier", "Annonser jämfört med ett år tidigare"],
   "mk.t.about": ["About, {months}", "Ungefär, {months}"], "mk.t.share": ["Share of all job ads", "Andel av alla jobbannonser"],
   "mk.t.share.sub": ["{prev} a year earlier", "{prev} ett år tidigare"], "mk.t.na": ["Not enough ads to tell", "För få annonser för att säga"],
   "mk.cmp.title": ["Compared with a year earlier", "Jämfört med ett år tidigare"],
@@ -79,8 +77,8 @@ Object.assign(I18N, {
   "mk.do.find": ["Search Find jobs in a wider area, or with a related job title, to find more openings.", "Sök i Hitta jobb i ett större område, eller på en närliggande yrkestitel, för att hitta fler lediga jobb."],
   "mk.how": ["How these numbers are made", "Så tas siffrorna fram"],
   "mk.how.field": ["Your field", "Ditt yrkesområde"],
-  "mk.how.field.d": ["Counted live from Platsbanken: ads published from {months}, both those still open and those in the archive, against the same months a year earlier. The archive covers some years more fully than others, so the app compares your field with all ads rather than raw counts, and applies the difference to Arbetsförmedlingen's official change in new postings.",
-    "Räknat direkt i Platsbanken: annonser publicerade under {months}, både de som är öppna och de i arkivet, mot samma månader ett år tidigare. Arkivet täcker vissa år bättre än andra, så appen jämför ditt yrkesområde med alla annonser i stället för med råa antal, och tillämpar skillnaden på Arbetsförmedlingens officiella förändring i nya lediga jobb."],
+  "mk.how.field.d": ["Counted on Platsbanken on the 1st of every month: ads published from {months}, both those still open and those in the archive, against the same months a year earlier. The archive covers some years more fully than others, so the app compares your field with all ads rather than raw counts, and applies the difference to Arbetsförmedlingen's official change in new postings.",
+    "Räknat i Platsbanken den 1:a varje månad: annonser publicerade under {months}, både de som är öppna och de i arkivet, mot samma månader ett år tidigare. Arkivet täcker vissa år bättre än andra, så appen jämför ditt yrkesområde med alla annonser i stället för med råa antal, och tillämpar skillnaden på Arbetsförmedlingens officiella förändring i nya lediga jobb."],
   "mk.how.sweden": ["Sweden", "Sverige"],
   "mk.how.sweden.d": ["The latest releases from SCB, Arbetsförmedlingen, Konjunkturinstitutet, ManpowerGroup, Sveriges Ingenjörer and Cinode, each with the date it was compiled.", "De senaste siffrorna från SCB, Arbetsförmedlingen, Konjunkturinstitutet, ManpowerGroup, Sveriges Ingenjörer och Cinode, med datum för när de sammanställdes."],
   "mk.how.you": ["Your data", "Dina uppgifter"],
@@ -96,8 +94,8 @@ Object.assign(I18N, {
   "mk.s.consulting": ["Cinode's reports on listed Nordic consultancies", "Cinodes rapporter om börsnoterade nordiska konsultbolag"],
   "mk.s.tech_employment": ["SCB, people employed by industry", "SCB, sysselsatta per bransch"],
   "mk.s.job_openings": ["SCB, job openings", "SCB, lediga jobb"],
-  "foot.market": ["<b>Market.</b> The Market tab counts job ads in your field on Platsbanken and compares them with a year earlier, next to the latest official figures for Sweden. It goes by your searches to pick your field, and nothing about you is sent anywhere.",
-    "<b>Marknaden.</b> Fliken Marknaden räknar jobbannonser inom ditt yrkesområde i Platsbanken och jämför med ett år tidigare, bredvid de senaste officiella siffrorna för Sverige. Den utgår från dina sökningar för att välja yrkesområde, och inget om dig skickas någonstans."],
+  "foot.market": ["<b>Market.</b> The Market tab shows how many job ads there were in your field compared with a year earlier, next to the latest official figures for Sweden. The ads are counted on Platsbanken on the 1st of every month and built into the page, so the tab sends nothing anywhere. It goes by your searches to pick your field.",
+    "<b>Marknaden.</b> Fliken Marknaden visar hur många jobbannonser det fanns inom ditt yrkesområde jämfört med ett år tidigare, bredvid de senaste officiella siffrorna för Sverige. Annonserna räknas i Platsbanken den 1:a varje månad och byggs in i sidan, så fliken skickar ingenting någonstans. Den utgår från dina sökningar för att välja yrkesområde."],
 
   // The pop-up after a few rejections
   "ng.eyebrow": ["A word on the market", "Ett ord om marknaden"],
@@ -165,14 +163,12 @@ const mkQuarter = s => { const m = /^(\d{4}) Q([1-4])$/.exec(s || ""); return !m
 const mkRows = id => MK?.[id]?.rows || [];
 const mkDate = d => fmtDate(String(d || "").slice(0, 10));
 
-/* ---------- The window: the last three full months, and the same months a year earlier ---------- */
-function mkWindow(now = new Date()) {
-  const end = new Date(now.getFullYear(), now.getMonth(), 0), start = new Date(end.getFullYear(), end.getMonth() - 2, 1);
-  const prevEnd = new Date(end.getFullYear() - 1, end.getMonth() + 1, 0), prevStart = new Date(start.getFullYear() - 1, start.getMonth(), 1);
-  const name = d => MK_MONTHS[L()][d.getMonth()];
+/* ---------- The months the counts cover: the three full months before the 1st they were counted, and a year earlier ---------- */
+function mkWin(w) {
+  const d = x => new Date(x + "T12:00:00"), start = d(w.from), end = d(w.to), name = x => MK_MONTHS[L()][x.getMonth()];
   const label = () => start.getFullYear() === end.getFullYear() ? (L() ? `${name(start)}–${name(end)} ${end.getFullYear()}` : `${name(start)} to ${name(end)} ${end.getFullYear()}`)
     : (L() ? `${name(start)} ${start.getFullYear()}–${name(end)} ${end.getFullYear()}` : `${name(start)} ${start.getFullYear()} to ${name(end)} ${end.getFullYear()}`);
-  return { from: localDay(start), to: localDay(end), fromPrev: localDay(prevStart), toPrev: localDay(prevEnd), label };
+  return { ...w, label };
 }
 
 /* ---------- The official national figures from the package ---------- */
@@ -183,45 +179,33 @@ function mkNational() {
   return { post, unemp, reg, notice, change: post && post.year_ago ? post.value / post.year_ago - 1 : null, month: post?.period || "", forecast: fc || null };
 }
 
-/* ---------- Counting ads on Platsbanken ---------- */
+/* ---------- This month's counts, made on the 1st by market.py ---------- */
 const MK_SMALL_NOW = 100, MK_SMALL_PREV = 150;   // below these the year-on-year comparison is too noisy to show
-const mkCache = new Map(Object.entries(store.get("jf-mk-counts", {})));   // query -> { at, n }
-const mkQ = (field, region, from, to) => [from && `published-after=${from}T00:00:00`, to && `published-before=${to}T23:59:59`,
-  field && `occupation-field=${encodeURIComponent(field)}`, region && `region=${encodeURIComponent(region)}`].filter(Boolean).join("&");
-async function mkCount(api, q, hours) {
-  const key = api + "?" + q, c = mkCache.get(key);
-  if (c && Date.now() - new Date(c.at) < hours * 36e5) return c.n;
-  const timeout = new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 20000));
-  const j = await Promise.race([getJSON(`${api}/search?${q}${q ? "&" : ""}limit=0`, 2), timeout]);
-  const n = +(j.total?.value ?? j.total) || 0;
-  mkCache.set(key, { at: new Date().toISOString(), n });
-  store.set("jf-mk-counts", Object.fromEntries([...mkCache.entries()].slice(-120)));
-  return n;
-}
-// Counts the field in the place, the wider slices around it and all of Sweden. Each slice's change on a year earlier is
-// its own change divided by the change for all of Sweden (which cancels out the archive's coverage), times the official change.
-async function mkSummary(field, region) {
-  const w = mkWindow(), nat = mkNational(), slices = [];
+const MK_REGIONS = MK?.regions || [];   // [county, JobTech id] for the 21 counties counted with every field
+const mkRegionName = id => (MK_REGIONS.find(r => r[1] === id) || [])[0] || "";
+// The field in the place, the wider slices around it and all of Sweden. Each slice's change on a year earlier is its own
+// change divided by the change for all of Sweden (which cancels out the archive's coverage), times the official change.
+function mkSummary(field, region) {
+  const c = MK?.counts; if (!c || !c.n || !c.window) return null;
+  const nat = mkNational(), slices = [];
   for (const [f, r] of [[field, region], [field, ""], ["", region], ["", ""]]) if (!slices.some(s => s.field === f && s.region === r)) slices.push({ field: f, region: r });
-  const jobs = [];
-  for (const s of slices) jobs.push(
-    [s, "hist", HS_API, mkQ(s.field, s.region, w.from, w.to), 24],      // closed ads reach the archive every day
-    [s, "live", JS_API, mkQ(s.field, s.region, w.from, w.to), 6],       // ads still open
-    [s, "prev", HS_API, mkQ(s.field, s.region, w.fromPrev, w.toPrev), 24 * 30]);
-  jobs.push([slices[0], "open", JS_API, mkQ(field, region), 3]);
-  await pool(jobs, 4, async ([s, k, api, q, h]) => { s[k] = await mkCount(api, q, h); });
-  for (const s of slices) s.now = s.hist + s.live;
-  const all = slices[slices.length - 1], allRatio = all.prev ? all.now / all.prev : 0;
   for (const s of slices) {
-    s.small = s.now < MK_SMALL_NOW || s.prev < MK_SMALL_PREV || !allRatio;
+    const v = c.n[s.field + "|" + s.region] || [];
+    [s.hist, s.live, s.prev, s.open] = v;   // closed ads in the archive, ads still open, the same months a year earlier, all open ads on the 1st
+    s.known = v.length === 4 && v.slice(0, 3).every(x => x != null);
+    s.now = s.known ? s.hist + s.live : null;
+  }
+  const all = slices[slices.length - 1], allRatio = all.known && all.prev ? all.now / all.prev : 0;
+  for (const s of slices) {
+    s.small = !s.known || s.now < MK_SMALL_NOW || s.prev < MK_SMALL_PREV || !allRatio;
     s.rel = s.small ? null : (s.now / s.prev) / allRatio;
     s.est = s.rel == null || nat.change == null ? null : (1 + nat.change) * s.rel - 1;
-    s.share = all.now ? s.now / all.now : null; s.sharePrev = all.prev ? s.prev / all.prev : null;
+    s.share = s.known && all.now ? s.now / all.now : null; s.sharePrev = s.known && all.prev ? s.prev / all.prev : null;
   }
   all.est = nat.change;   // all of Sweden is the official figure itself
   // The figure the verdict goes by: the slice asked for, or the nearest wider one with enough ads
   const basis = slices.find(s => s.est != null) || null;
-  return { key: field + "|" + region, field, region, w, slices, main: slices[0], basis, all, nat, at: new Date().toISOString() };
+  return { field, region, w: mkWin(c.window), on: c.on, slices, main: slices[0], basis, all, nat };
 }
 const mkMood = e => e == null ? null : e <= -0.15 ? "tough" : e <= -0.05 ? "slow" : e < 0.05 ? "steady" : "busy";
 
@@ -234,42 +218,32 @@ function mkGuess(only) {
   if (fromApps.length) return mode(fromApps);
   return only ? "" : mode((results?.ads || []).map(mkFieldOf).filter(Boolean)) || "";
 }
-// The county of the last search, as a place to look at
-function mkCounty() {
-  const g = results?.geo; if (!g || !g.regionId) return null;
-  let short = "";
-  if (g.mode === "county") short = (Object.entries(COUNTY_FULL).find(([, f]) => f === g.label) || [])[0] || "";
-  else short = (MUNIS.find(([m]) => fold(m) === fold(g.muni || g.label)) || [])[1] || "";
-  return short ? { id: g.regionId, short, label: COUNTY_FULL[short] || short } : null;
+// A county's short name ("Västra Götaland"), for ManpowerGroup's regions
+const mkShort = label => (Object.entries(COUNTY_FULL).find(([, f]) => f === label) || [])[0] || "";
+// The county of the last search, short name
+function mkSearchCounty() {
+  const g = results?.geo; if (!g) return "";
+  return g.mode === "county" ? mkShort(g.label) : (MUNIS.find(([m]) => fold(m) === fold(g.muni || g.label)) || [])[1] || "";
 }
 function mkSel() {
-  const county = mkCounty(), guess = mkGuess();
+  const guess = mkGuess();
   const field = mkPick.field !== undefined && (mkPick.field === "" || MK_FIELD_IDS.has(mkPick.field)) ? mkPick.field : guess;
-  const region = mkPick.region && county && mkPick.region === county.id ? mkPick.region : "";
-  return { field, region, county, guessed: mkPick.field === undefined && !!guess };
+  const region = mkPick.region && MK_REGIONS.some(r => r[1] === mkPick.region) ? mkPick.region : "";
+  return { field, region, guessed: mkPick.field === undefined && !!guess };
 }
-const mkPlaceName = (region, county) => region && county ? county.label : t("mk.sweden");
+const mkPlaceName = region => region ? mkRegionName(region) : t("mk.sweden");
+const mkCurrent = () => { const { field, region } = mkSel(); return mkSummary(field, region); };
 
 /* ---------- The tab ---------- */
-const mk = { sum: null, busy: false, failed: false, seq: 0 };
-async function mkLoad(force) {
-  const { field, region } = mkSel(), key = field + "|" + region;
-  if (!force && (mk.busy && mk.key === key || (mk.sum?.key === key && Date.now() - new Date(mk.sum.at) < 36e5 && !mk.failed))) return;
-  const seq = ++mk.seq; mk.key = key; mk.busy = true; mk.failed = false; renderMarket();
-  try { const s = await mkSummary(field, region); if (seq === mk.seq) mk.sum = s; }
-  catch (e) { console.warn("Market figures could not be counted", e); if (seq === mk.seq) mk.failed = true; }
-  if (seq !== mk.seq) return;
-  mk.busy = false; renderMarket();
-  const live = $("mk-live"); if (live) live.textContent = $("mk-verdict-h")?.textContent || "";
-}
-function showMarket() { mkFillControls(); renderMarket(); mkLoad(); }
+function showMarket() { mkFillControls(); renderMarket(); }
 function mkFillControls() {
   const fs = $("mk-field"), ps = $("mk-place"); if (!fs || !ps) return;
-  const { field, region, county } = mkSel();
+  const { field, region } = mkSel();
   fs.innerHTML = `<option value="">${esc(t("mk.allfields"))}</option>` + MK_FIELDS.map(([, id]) => [id, fieldName(id)]).sort((a, b) => a[1].localeCompare(b[1], lang))
     .map(([id, n]) => `<option value="${esc(id)}"${id === field ? " selected" : ""}>${esc(n)}</option>`).join("");
-  ps.innerHTML = `<option value="">${esc(t("mk.sweden"))}</option>` + (county ? `<option value="${esc(county.id)}"${region === county.id ? " selected" : ""}>${esc(county.label)}</option>` : "");
-  ps.disabled = !county;
+  ps.innerHTML = `<option value="">${esc(t("mk.sweden"))}</option>` + [...MK_REGIONS].sort((a, b) => a[0].localeCompare(b[0], "sv"))
+    .map(([n, id]) => `<option value="${esc(id)}"${id === region ? " selected" : ""}>${esc(n)}</option>`).join("");
+  ps.disabled = !MK_REGIONS.length || !MK?.counts;
 }
 function mkTile(label, value, sub) {
   return `<div class="mk-tile"><span class="label">${esc(label)}</span><b>${esc(value)}</b>${sub ? `<span class="mk-sub">${esc(cap(sub))}</span>` : ""}</div>`;
@@ -295,7 +269,7 @@ function mkTable(head, rows) {
 function mkSentence(s, sum) {
   const nat = sum.nat;
   if (!s.field && !s.region) return nat.change == null ? "" : t(nat.change < 0 ? "mk.s.nat.down" : "mk.s.nat.up", { p: mkPct(nat.change), month: mkMonth(nat.month) });
-  const where = t("mk.in", { place: s.region ? mkCounty()?.label || "" : L() ? "Sverige" : "Sweden" });
+  const where = t("mk.in", { place: s.region ? mkRegionName(s.region) : L() ? "Sverige" : "Sweden" });
   const kind = Math.abs(s.est) < 0.03 ? "same" : s.est < 0 ? "down" : "up";
   return t(`mk.s.${kind}.${s.field ? "f" : "a"}`, { p: mkPct(s.est), field: fieldName(s.field), where, months: sum.w.label() });
 }
@@ -305,51 +279,48 @@ function mkVersus(s, sum) {
   const k = s.rel <= 0.95 ? "worse" : s.rel >= 1.05 ? "better" : "same";
   return t("mk.vs." + k, { chg: t(nat.change < 0 ? "mk.fell" : "mk.rose", { p: mkPct(nat.change) }), month: mkMonth(nat.month) });
 }
-// The figures to show: those for the current choice, or while new ones are counted, the previous ones faded
-function mkShown() { const { field, region } = mkSel(); return mk.sum && (mk.sum.key === field + "|" + region || mk.busy) ? mk.sum : null; }
 function mkVerdictHtml() {
-  const { county } = mkSel(), sum = mkShown(), nat = mkNational();
-  if (!sum) {
+  const sum = mkCurrent(), nat = mkNational();
+  if (!sum) {   // before the first monthly count: the figures for Sweden only
     const natMood = mkMood(nat.change);
-    return `<section class="mk-verdict${mk.busy ? " mk-busy" : ""}" aria-labelledby="mk-verdict-h">
+    return `<section class="mk-verdict" aria-labelledby="mk-verdict-h">
       ${natMood ? `<span class="mk-mood m-${natMood}">${esc(t("mk.sweden"))}</span>` : ""}
-      <h2 id="mk-verdict-h">${esc(mk.busy ? t("mk.checking") : natMood ? t("mk.mood." + natMood) : t("mk.checking"))}</h2>
+      <h2 id="mk-verdict-h">${esc(natMood ? t("mk.mood." + natMood) : t("mk.t.na"))}</h2>
       ${nat.change != null ? `<p>${esc(t(nat.change < 0 ? "mk.s.nat.down" : "mk.s.nat.up", { p: mkPct(nat.change), month: mkMonth(nat.month) }))}</p>` : ""}
-      ${mk.failed ? `<p class="mk-err" role="alert">${esc(t("mk.fail"))} <button class="linkbtn" type="button" data-mk="retry">${esc(t("mk.retry"))}</button></p>` : ""}
+      <p class="mk-sub">${esc(t("mk.nocounts"))}</p>
     </section>`;
   }
-  const s = sum.main, b = sum.basis, mood = mkMood(b?.est), place = mkPlaceName(sum.region, county);
+  const s = sum.main, b = sum.basis, mood = mkMood(b?.est), place = mkPlaceName(sum.region);
   const lines = [];
   if (s.est != null || (!s.field && !s.region)) { lines.push(mkSentence(s, sum)); lines.push(mkVersus(s, sum)); }
   else if (b) {
-    const wider = b.field ? t("mk.wider.f", { field: fieldName(b.field) }) : b.region ? t("mk.wider.place", { place: county?.label || "" }) : t("mk.wider.nat");
+    const wider = b.field ? t("mk.wider.f", { field: fieldName(b.field) }) : b.region ? t("mk.wider.place", { place: mkRegionName(b.region) }) : t("mk.wider.nat");
     lines.push(t("mk.small", { what: s.field ? t("mk.small.fads", { field: fieldName(s.field) }) : t("mk.small.ads"), where: t("mk.in", { place }), wider }));
     lines.push(mkSentence(b, sum));
   }
-  const tiles = [mkTile(t("mk.t.open"), mkNum(s.open || 0), [s.field ? fieldName(s.field) : t("mk.allfields"), s.region ? place : t("allswe")].join(", "))];
+  const tiles = [mkTile(t("mk.t.open", { date: mkDate(sum.on) }), s.open != null ? mkNum(s.open) : "–", [s.field ? fieldName(s.field) : t("mk.allfields"), s.region ? place : t("allswe")].join(", "))];
   if (s.field || s.region) {
     tiles.push(mkTile(t("mk.t.change"), s.est != null ? mkPct(s.est, true) : "–", s.est != null ? t("mk.t.about", { months: sum.w.label() }) : t("mk.t.na")));
     if (s.share != null && s.sharePrev != null && !s.small) tiles.push(mkTile(t("mk.t.share"), mkRate(s.share * 100), t("mk.t.share.sub", { prev: mkRate(s.sharePrev * 100) })));
   } else if (nat.change != null) tiles.push(mkTile(t("mk.n.postings"), mkPct(nat.change, true), t("mk.n.postings.sub", { month: mkMonth(nat.month) })));
-  return `<section class="mk-verdict${mk.busy ? " mk-busy" : ""}" aria-labelledby="mk-verdict-h">
+  return `<section class="mk-verdict" aria-labelledby="mk-verdict-h">
     <span class="mk-mood${mood ? " m-" + mood : ""}">${esc([s.field ? fieldName(s.field) : t("mk.allfields"), place].join(" · "))}</span>
     <h2 id="mk-verdict-h">${esc(mood ? t("mk.mood." + mood) : t("mk.t.na"))}</h2>
     ${lines.filter(Boolean).map(l => `<p>${esc(l)}</p>`).join("")}
-    ${mk.failed ? `<p class="mk-err" role="alert">${esc(t("mk.fail"))} <button class="linkbtn" type="button" data-mk="retry">${esc(t("mk.retry"))}</button></p>` : ""}
     <div class="mk-tiles">${tiles.join("")}</div>
   </section>`;
 }
 function mkCompareHtml() {
-  const sum = mkShown(), { county } = mkSel(); if (!sum || !sum.main.field && !sum.main.region) return "";
+  const sum = mkCurrent(); if (!sum || !sum.main.field && !sum.main.region) return "";
   const nat = sum.nat, rows = [];
   for (const s of sum.slices) {
     if (s.est == null) continue;
-    const place = s.region ? county?.label || "" : t("allswe");
+    const place = s.region ? mkRegionName(s.region) : t("allswe");
     if (!s.field && !s.region) rows.push({ label: t("mk.cmp.sweden"), v: s.est });
     else rows.push({ label: s.field ? `${fieldName(s.field)}, ${place}` : t("mk.cmp.all", { place }), v: s.est, main: s === sum.main });
   }
   if (rows.length < 2) return "";
-  return `<section class="mk-card${mk.busy ? " mk-busy" : ""}" aria-labelledby="mk-cmp-h"><h3 id="mk-cmp-h">${esc(t("mk.cmp.title"))}</h3>
+  return `<section class="mk-card" aria-labelledby="mk-cmp-h"><h3 id="mk-cmp-h">${esc(t("mk.cmp.title"))}</h3>
     <p class="mk-sub">${esc(t("mk.cmp.sub", { months: sum.w.label(), month: mkMonth(nat.month) }))}</p>${mkBars(rows, v => mkPct(v, true))}</section>`;
 }
 // Unemployment by year, the forecast years lighter
@@ -394,7 +365,7 @@ function mkNoticeChart() {
 }
 function mkOutlookHtml() {
   const d = MK?.hiring_outlook, rows = d?.rows || []; if (!rows.length) return "";
-  const { field, county } = mkSel(), link = MK_LINKS[field] || {}, region = county && MK_OUTLOOK_REGION[county.short];
+  const { field, region: rid } = mkSel(), link = MK_LINKS[field] || {}, region = MK_OUTLOOK_REGION[rid ? mkShort(mkRegionName(rid)) : mkSearchCounty()];
   const mine = new Set([link.outlook, region].filter(Boolean)); if (!mine.size) mine.add("All employers");
   const q = mkQuarter(d.period), plans = mkRows("hiring_plans").filter(r => r.sector === "All businesses"), kiNow = plans[plans.length - 1], kiPrev = plans[0];
   const bars = rows.map(r => ({ label: mkName(r.group), v: r.value, main: mine.has(r.group), note: r.previous != null ? t("mk.c.prev", { v: mkSigned(r.previous) }) : "" }));
@@ -443,7 +414,7 @@ function mkSectorHtml() {
     <ul class="mk-notes">${notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul></section>`;
 }
 function mkDoHtml() {
-  const mood = mkMood(mkShown()?.basis?.est ?? mkNational().change), tough = mood === "tough" || mood === "slow";
+  const mood = mkMood(mkCurrent()?.basis?.est ?? mkNational().change), tough = mood === "tough" || mood === "slow";
   const items = [];
   if (ABOUT.tailor) items.push(`<li><span>${esc(t("mk.do.mentor"))}</span><button class="btn sm" type="button" data-mk="mentor">${esc(t("empty.mentor.go"))}</button></li>`);
   if (ABOUT.tailor) items.push(`<li><span>${esc(t("mk.do.tailor"))}</span></li>`);
@@ -451,11 +422,11 @@ function mkDoHtml() {
   return `<section class="mk-do" aria-labelledby="mk-do-h"><h2 id="mk-do-h">${esc(t("mk.do.title"))}</h2><p>${esc(t(tough ? "mk.do.tough" : "mk.do.ok"))}</p><ul>${items.join("")}</ul></section>`;
 }
 function mkHowHtml() {
-  const w = mkWindow(), srcs = ["national_now", "national_yearly", "redundancies", "job_openings", "hiring_outlook", "hiring_plans", "tech_employment", "engineers", "consulting"].filter(id => MK?.[id]);
+  const sum = mkCurrent(), srcs = ["national_now", "national_yearly", "redundancies", "job_openings", "hiring_outlook", "hiring_plans", "tech_employment", "engineers", "consulting"].filter(id => MK?.[id]);
   return `<section class="mt-how" aria-labelledby="mk-how-h"><h2 id="mk-how-h">${esc(t("mk.how"))}</h2>
-    <dl>${[["field", { months: w.label() }], ["sweden", {}], ["you", {}]].map(([k, v]) => `<div><dt>${esc(t("mk.how." + k))}</dt><dd>${esc(t("mk.how." + k + ".d", v))}</dd></div>`).join("")}</dl>
+    <dl>${[["field", { months: sum ? sum.w.label() : t("mk.last3") }], ["sweden", {}], ["you", {}]].map(([k, v]) => `<div><dt>${esc(t("mk.how." + k))}</dt><dd>${esc(t("mk.how." + k + ".d", v))}</dd></div>`).join("")}</dl>
     <h3 class="mk-src-h">${esc(t("mk.src"))}</h3>
-    <ul class="mk-src"><li>${esc(t("mk.s.live"))}, ${esc(t("mk.counted", { date: mkDate(mk.sum?.at || new Date().toISOString()) }))}</li>
+    <ul class="mk-src">${sum ? `<li>${esc(t("mk.s.live"))}, ${esc(t("mk.counted", { date: mkDate(sum.on) }))}</li>` : ""}
       ${srcs.map(id => `<li>${esc(t("mk.s." + id))}, ${esc(t("mk.compiled", { date: mkDate(MK[id].as_of) }))}</li>`).join("")}</ul></section>`;
 }
 function marketLang() { mkFillControls(); renderMarket(); drawNudge(); }
@@ -495,11 +466,9 @@ function maybeNudge() {
   store.set("jf-nudge", { n, on: today() });
   openNudge(n);
 }
-async function openNudge(n) {
+function openNudge(n) {
   const field = mkGuess("Rejected") || mkSel().field;
-  ng = { n, field, sum: null };
-  try { ng.sum = await Promise.race([mkSummary(field, ""), new Promise(r => setTimeout(() => r(null), 6000))]); }
-  catch (e) { console.warn("Market figures could not be counted", e); }
+  ng = { n, field, sum: mkSummary(field, "") };
   const d = $("nudge"); if (!d || d.open) return;
   drawNudge(); d.showModal();
   d.querySelector(".ng-go")?.focus();
@@ -539,12 +508,12 @@ function initMarket() {
     if (e.target.id === "mk-field") mkPick.field = e.target.value;
     else if (e.target.id === "mk-place") mkPick.region = e.target.value;
     else return;
-    store.set("jf-market", mkPick); renderMarket(); mkLoad();
+    store.set("jf-market", mkPick); renderMarket();
+    const live = $("mk-live"); if (live) live.textContent = $("mk-verdict-h")?.textContent || "";
   });
   m.addEventListener("click", e => {
     const b = e.target.closest("[data-mk]"); if (!b) return;
-    if (b.dataset.mk === "retry") mkLoad(true);
-    else if (b.dataset.mk === "mentor") { selectTab("mentor", true); }
+    if (b.dataset.mk === "mentor") { selectTab("mentor", true); }
     else if (b.dataset.mk === "find") { selectTab("res"); $("place").focus(); }
   });
   m.addEventListener("pointerover", e => { const h = e.target.closest(".mk-hit"); if (h) mkTipAt(h); });

@@ -1,0 +1,39 @@
+{
+  "version": "2.0",
+  "class": "dataset",
+  "label": "Job openings, total economy, seasonally adjusted by NACE rev2 and quarter",
+  "note": ["Synthetic test payload shaped like an SCB PxWebApi v2 json-stat2 answer. Only A-S 2026K2 is a real figure."],
+  "source": "Statistics Sweden",
+  "updated": "2026-08-28T06:00:00Z",
+  "id": ["LedJobbTyp", "SNI2007Naring", "ContentsCode", "Tid"],
+  "size": [1, 2, 1, 2],
+  "dimension": {
+    "LedJobbTyp": {
+      "label": "type of job openings",
+      "category": {"index": {"LJtot": 0}, "label": {"LJtot": "job openings, total"}}
+    },
+    "SNI2007Naring": {
+      "label": "industrial classification (NACE Rev. 2)",
+      "category": {
+        "index": {"A-S": 0, "J": 1},
+        "label": {"A-S": "A–S total", "J": "J information and communication companies"}
+      }
+    },
+    "ContentsCode": {
+      "label": "observations",
+      "category": {
+        "index": {"000007J4": 0},
+        "label": {"000007J4": "number of, seasonally adjusted"},
+        "unit": {"000007J4": {"base": "number", "decimals": 0}}
+      }
+    },
+    "Tid": {
+      "label": "quarter",
+      "category": {"index": {"2026K1": 0, "2026K2": 1}, "label": {"2026K1": "2026K1", "2026K2": "2026K2"}}
+    }
+  },
+  "role": {"time": ["Tid"], "metric": ["ContentsCode"]},
+  "value": [141000.0, 139600.0, 9100.0, null],
+  "status": {"3": ".."},
+  "extension": {"px": {"tableid": "TAB6406", "language": "en"}}
+}

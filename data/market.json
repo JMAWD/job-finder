@@ -1,0 +1,1049 @@
+{
+ "fields": [
+  [
+   "Administration, ekonomi, juridik",
+   "X82t_awd_Qyc"
+  ],
+  [
+   "Bygg och anläggning",
+   "j7Cq_ZJe_GkT"
+  ],
+  [
+   "Chefer och verksamhetsledare",
+   "bh3H_Y3h_5eD"
+  ],
+  [
+   "Data/IT",
+   "apaJ_2ja_LuF"
+  ],
+  [
+   "Försäljning, inköp, marknadsföring",
+   "RPTn_bxG_ExZ"
+  ],
+  [
+   "Hantverk",
+   "PaxQ_o1G_wWH"
+  ],
+  [
+   "Hotell, restaurang, storhushåll",
+   "ScKy_FHB_7wT"
+  ],
+  [
+   "Hälso- och sjukvård",
+   "NYW6_mP6_vwf"
+  ],
+  [
+   "Industriell tillverkning",
+   "wTEr_CBC_bqh"
+  ],
+  [
+   "Installation, drift, underhåll",
+   "yhCP_AqT_tns"
+  ],
+  [
+   "Kropps- och skönhetsvård",
+   "Uuf1_GMh_Uvw"
+  ],
+  [
+   "Kultur, media, design",
+   "9puE_nYg_crq"
+  ],
+  [
+   "Militära yrken",
+   "bH5L_uXD_ZAX"
+  ],
+  [
+   "Naturbruk",
+   "VuuL_7CH_adj"
+  ],
+  [
+   "Naturvetenskap",
+   "kJeN_wmw_9wX"
+  ],
+  [
+   "Pedagogik",
+   "MVqp_eS8_kDZ"
+  ],
+  [
+   "Sanering och renhållning",
+   "whao_Q6A_ScE"
+  ],
+  [
+   "Säkerhet och bevakning",
+   "E7hm_BLq_fqZ"
+  ],
+  [
+   "Transport, distribution, lager",
+   "ASGV_zcE_bWf"
+  ],
+  [
+   "Yrken med social inriktning",
+   "GazW_2TU_kJw"
+  ],
+  [
+   "Yrken med teknisk inriktning",
+   "6Hq3_tKo_V57"
+  ]
+ ],
+ "regions": [
+  [
+   "Blekinge län",
+   "DQZd_uYs_oKb"
+  ],
+  [
+   "Dalarnas län",
+   "oDpK_oZ2_WYt"
+  ],
+  [
+   "Gotlands län",
+   "K8iD_VQv_2BA"
+  ],
+  [
+   "Gävleborgs län",
+   "zupA_8Nt_xcD"
+  ],
+  [
+   "Hallands län",
+   "wjee_qH2_yb6"
+  ],
+  [
+   "Jämtlands län",
+   "65Ms_7r1_RTG"
+  ],
+  [
+   "Jönköpings län",
+   "MtbE_xWT_eMi"
+  ],
+  [
+   "Kalmar län",
+   "9QUH_2bb_6Np"
+  ],
+  [
+   "Kronobergs län",
+   "tF3y_MF9_h5G"
+  ],
+  [
+   "Norrbottens län",
+   "9hXe_F4g_eTG"
+  ],
+  [
+   "Skåne län",
+   "CaRE_1nn_cSU"
+  ],
+  [
+   "Stockholms län",
+   "CifL_Rzy_Mku"
+  ],
+  [
+   "Södermanlands län",
+   "s93u_BEb_sx2"
+  ],
+  [
+   "Uppsala län",
+   "zBon_eET_fFU"
+  ],
+  [
+   "Värmlands län",
+   "EVVp_h6U_GSZ"
+  ],
+  [
+   "Västerbottens län",
+   "g5Tt_CAV_zBd"
+  ],
+  [
+   "Västernorrlands län",
+   "NvUF_SP1_1zo"
+  ],
+  [
+   "Västmanlands län",
+   "G6DV_fKE_Viz"
+  ],
+  [
+   "Västra Götalands län",
+   "zdoY_6u5_Krt"
+  ],
+  [
+   "Örebro län",
+   "xTCk_nT5_Zjm"
+  ],
+  [
+   "Östergötlands län",
+   "oLT3_Q9p_3nn"
+  ]
+ ],
+ "counts": null,
+ "datasets": {
+  "national_now": {
+   "as_of": "2026-10-19",
+   "stale": false,
+   "rows": [
+    {
+     "metric": "Unemployment, seasonally adjusted",
+     "period": "Sep 2026",
+     "value": 8.6,
+     "year_ago": null,
+     "unit": "percent",
+     "note": "SCB survey; 8.1% before seasonal adjustment"
+    },
+    {
+     "metric": "Registered unemployed",
+     "period": "Sep 2026",
+     "value": 6.4,
+     "year_ago": 6.9,
+     "unit": "percent",
+     "note": "Arbetsförmedlingen, share of the labour force"
+    },
+    {
+     "metric": "New job postings",
+     "period": "Sep 2026",
+     "value": 65000,
+     "year_ago": 78000,
+     "unit": "count",
+     "note": "Arbetsförmedlingen"
+    },
+    {
+     "metric": "Redundancy notices",
+     "period": "Sep 2026",
+     "value": 5487,
+     "year_ago": 5057,
+     "unit": "count",
+     "note": "Arbetsförmedlingen"
+    }
+   ]
+  },
+  "national_yearly": {
+   "as_of": "2026-10-19",
+   "stale": false,
+   "rows": [
+    {
+     "year": 2019,
+     "value": 6.9,
+     "kind": "actual"
+    },
+    {
+     "year": 2020,
+     "value": 8.5,
+     "kind": "actual"
+    },
+    {
+     "year": 2021,
+     "value": 8.9,
+     "kind": "actual"
+    },
+    {
+     "year": 2022,
+     "value": 7.5,
+     "kind": "actual"
+    },
+    {
+     "year": 2023,
+     "value": 7.7,
+     "kind": "actual"
+    },
+    {
+     "year": 2024,
+     "value": 8.4,
+     "kind": "actual"
+    },
+    {
+     "year": 2025,
+     "value": 8.8,
+     "kind": "actual"
+    },
+    {
+     "year": 2026,
+     "value": 8.6,
+     "kind": "forecast"
+    },
+    {
+     "year": 2027,
+     "value": 7.9,
+     "kind": "forecast"
+    },
+    {
+     "year": 2028,
+     "value": 7.2,
+     "kind": "forecast"
+    },
+    {
+     "year": 2029,
+     "value": 7.1,
+     "kind": "forecast"
+    },
+    {
+     "year": 2030,
+     "value": 7.1,
+     "kind": "forecast"
+    }
+   ]
+  },
+  "hiring_outlook": {
+   "as_of": "2026-10-19",
+   "stale": false,
+   "rows": [
+    {
+     "group": "IT and tech",
+     "kind": "industry",
+     "value": 41,
+     "previous": 27
+    },
+    {
+     "group": "Services and consulting",
+     "kind": "industry",
+     "value": 44,
+     "previous": null
+    },
+    {
+     "group": "Manufacturing, automotive and defence",
+     "kind": "industry",
+     "value": 31,
+     "previous": null
+    },
+    {
+     "group": "All employers",
+     "kind": "total",
+     "value": 39,
+     "previous": null
+    },
+    {
+     "group": "Stockholm and Uppsala",
+     "kind": "region",
+     "value": 45,
+     "previous": null
+    },
+    {
+     "group": "Västra Götaland",
+     "kind": "region",
+     "value": 37,
+     "previous": 39
+    },
+    {
+     "group": "Skåne and Blekinge",
+     "kind": "region",
+     "value": 31,
+     "previous": null
+    }
+   ],
+   "period": "2026 Q4"
+  },
+  "hiring_plans": {
+   "as_of": "2026-10-19",
+   "stale": false,
+   "rows": [
+    {
+     "month": "2025-09",
+     "sector": "All businesses",
+     "net_balance": 2
+    },
+    {
+     "month": "2025-10",
+     "sector": "All businesses",
+     "net_balance": 3
+    },
+    {
+     "month": "2025-11",
+     "sector": "All businesses",
+     "net_balance": 6
+    },
+    {
+     "month": "2025-12",
+     "sector": "All businesses",
+     "net_balance": 6
+    },
+    {
+     "month": "2026-01",
+     "sector": "All businesses",
+     "net_balance": 6
+    },
+    {
+     "month": "2026-02",
+     "sector": "All businesses",
+     "net_balance": 4
+    },
+    {
+     "month": "2026-03",
+     "sector": "All businesses",
+     "net_balance": 4
+    },
+    {
+     "month": "2026-04",
+     "sector": "All businesses",
+     "net_balance": 3
+    },
+    {
+     "month": "2026-05",
+     "sector": "All businesses",
+     "net_balance": 1
+    },
+    {
+     "month": "2026-06",
+     "sector": "All businesses",
+     "net_balance": 1
+    },
+    {
+     "month": "2026-07",
+     "sector": "All businesses",
+     "net_balance": 4
+    },
+    {
+     "month": "2026-08",
+     "sector": "All businesses",
+     "net_balance": 6
+    },
+    {
+     "month": "2026-09",
+     "sector": "All businesses",
+     "net_balance": 7
+    },
+    {
+     "month": "2025-09",
+     "sector": "Manufacturing",
+     "net_balance": -8
+    },
+    {
+     "month": "2025-10",
+     "sector": "Manufacturing",
+     "net_balance": -4
+    },
+    {
+     "month": "2025-11",
+     "sector": "Manufacturing",
+     "net_balance": -7
+    },
+    {
+     "month": "2025-12",
+     "sector": "Manufacturing",
+     "net_balance": -11
+    },
+    {
+     "month": "2026-01",
+     "sector": "Manufacturing",
+     "net_balance": 1
+    },
+    {
+     "month": "2026-02",
+     "sector": "Manufacturing",
+     "net_balance": -4
+    },
+    {
+     "month": "2026-03",
+     "sector": "Manufacturing",
+     "net_balance": -3
+    },
+    {
+     "month": "2026-04",
+     "sector": "Manufacturing",
+     "net_balance": -4
+    },
+    {
+     "month": "2026-05",
+     "sector": "Manufacturing",
+     "net_balance": 1
+    },
+    {
+     "month": "2026-06",
+     "sector": "Manufacturing",
+     "net_balance": 3
+    },
+    {
+     "month": "2026-07",
+     "sector": "Manufacturing",
+     "net_balance": 2
+    },
+    {
+     "month": "2026-08",
+     "sector": "Manufacturing",
+     "net_balance": -1
+    },
+    {
+     "month": "2026-09",
+     "sector": "Manufacturing",
+     "net_balance": 5
+    },
+    {
+     "month": "2025-09",
+     "sector": "Services",
+     "net_balance": 5
+    },
+    {
+     "month": "2025-10",
+     "sector": "Services",
+     "net_balance": 7
+    },
+    {
+     "month": "2025-11",
+     "sector": "Services",
+     "net_balance": 8
+    },
+    {
+     "month": "2025-12",
+     "sector": "Services",
+     "net_balance": 11
+    },
+    {
+     "month": "2026-01",
+     "sector": "Services",
+     "net_balance": 9
+    },
+    {
+     "month": "2026-02",
+     "sector": "Services",
+     "net_balance": 8
+    },
+    {
+     "month": "2026-03",
+     "sector": "Services",
+     "net_balance": 4
+    },
+    {
+     "month": "2026-04",
+     "sector": "Services",
+     "net_balance": 4
+    },
+    {
+     "month": "2026-05",
+     "sector": "Services",
+     "net_balance": -1
+    },
+    {
+     "month": "2026-06",
+     "sector": "Services",
+     "net_balance": 1
+    },
+    {
+     "month": "2026-07",
+     "sector": "Services",
+     "net_balance": 4
+    },
+    {
+     "month": "2026-08",
+     "sector": "Services",
+     "net_balance": 6
+    },
+    {
+     "month": "2026-09",
+     "sector": "Services",
+     "net_balance": 5
+    }
+   ]
+  },
+  "redundancies": {
+   "as_of": "2026-10-19",
+   "stale": false,
+   "rows": [
+    {
+     "month": "2024-09",
+     "notices": 7586,
+     "notices_trend": 6006
+    },
+    {
+     "month": "2024-10",
+     "notices": 5670,
+     "notices_trend": 5731
+    },
+    {
+     "month": "2024-11",
+     "notices": 5783,
+     "notices_trend": 5463
+    },
+    {
+     "month": "2024-12",
+     "notices": 4280,
+     "notices_trend": 5212
+    },
+    {
+     "month": "2025-01",
+     "notices": 5312,
+     "notices_trend": 5005
+    },
+    {
+     "month": "2025-02",
+     "notices": 4912,
+     "notices_trend": 4942
+    },
+    {
+     "month": "2025-03",
+     "notices": 5415,
+     "notices_trend": 4952
+    },
+    {
+     "month": "2025-04",
+     "notices": 5267,
+     "notices_trend": 4962
+    },
+    {
+     "month": "2025-05",
+     "notices": 10607,
+     "notices_trend": 4964
+    },
+    {
+     "month": "2025-06",
+     "notices": 4606,
+     "notices_trend": 4966
+    },
+    {
+     "month": "2025-07",
+     "notices": 4330,
+     "notices_trend": 4875
+    },
+    {
+     "month": "2025-08",
+     "notices": 2457,
+     "notices_trend": 4690
+    },
+    {
+     "month": "2025-09",
+     "notices": 5057,
+     "notices_trend": 4484
+    },
+    {
+     "month": "2025-10",
+     "notices": 6174,
+     "notices_trend": 4360
+    },
+    {
+     "month": "2025-11",
+     "notices": 4089,
+     "notices_trend": 4364
+    },
+    {
+     "month": "2025-12",
+     "notices": 2887,
+     "notices_trend": 4433
+    },
+    {
+     "month": "2026-01",
+     "notices": 6260,
+     "notices_trend": 4453
+    },
+    {
+     "month": "2026-02",
+     "notices": 4217,
+     "notices_trend": 4326
+    },
+    {
+     "month": "2026-03",
+     "notices": 5697,
+     "notices_trend": 4068
+    },
+    {
+     "month": "2026-04",
+     "notices": 3688,
+     "notices_trend": 3817
+    },
+    {
+     "month": "2026-05",
+     "notices": 3536,
+     "notices_trend": 3651
+    },
+    {
+     "month": "2026-06",
+     "notices": 2857,
+     "notices_trend": 3647
+    },
+    {
+     "month": "2026-07",
+     "notices": 2947,
+     "notices_trend": 3801
+    },
+    {
+     "month": "2026-08",
+     "notices": 2925,
+     "notices_trend": 4031
+    },
+    {
+     "month": "2026-09",
+     "notices": 5487,
+     "notices_trend": 4250
+    }
+   ]
+  },
+  "engineers": {
+   "as_of": "2026-10-20",
+   "stale": false,
+   "rows": [
+    {
+     "measure": "unemployment",
+     "label": "Nov 2021",
+     "date": "2021-11-30",
+     "value": 1.0,
+     "note": "First of five months at 1.0%"
+    },
+    {
+     "measure": "unemployment",
+     "label": "Apr 2022",
+     "date": "2022-04-30",
+     "value": 0.9,
+     "note": ""
+    },
+    {
+     "measure": "unemployment",
+     "label": "May 2023",
+     "date": "2023-05-31",
+     "value": 0.8,
+     "note": "Record low (0.83%)"
+    },
+    {
+     "measure": "unemployment",
+     "label": "Nov 2023",
+     "date": "2023-11-30",
+     "value": 1.0,
+     "note": ""
+    },
+    {
+     "measure": "unemployment",
+     "label": "Aug 2024",
+     "date": "2024-08-31",
+     "value": 1.33,
+     "note": ""
+    },
+    {
+     "measure": "unemployment",
+     "label": "Nov 2024",
+     "date": "2024-11-30",
+     "value": 1.25,
+     "note": ""
+    },
+    {
+     "measure": "unemployment",
+     "label": "Apr 2025",
+     "date": "2025-04-30",
+     "value": 1.35,
+     "note": ""
+    },
+    {
+     "measure": "unemployment",
+     "label": "Sep 2025",
+     "date": "2025-09-30",
+     "value": 1.8,
+     "note": "Peak, highest in nearly 15 years"
+    },
+    {
+     "measure": "unemployment",
+     "label": "Nov 2025",
+     "date": "2025-11-30",
+     "value": 1.5,
+     "note": ""
+    },
+    {
+     "measure": "unemployment",
+     "label": "Dec 2025",
+     "date": "2025-12-31",
+     "value": 1.5,
+     "note": ""
+    },
+    {
+     "measure": "unemployment",
+     "label": "May 2026",
+     "date": "2026-05-31",
+     "value": 1.5,
+     "note": "Latest"
+    },
+    {
+     "measure": "reference",
+     "label": "Pandemic high",
+     "date": null,
+     "value": 1.7,
+     "note": "Highest level from Jan 2020 to Apr 2023; month not published"
+    },
+    {
+     "measure": "compare_may_2026",
+     "label": "Engineers",
+     "date": "2026-05-31",
+     "value": 1.5,
+     "note": "Sveriges Ingenjörer members"
+    },
+    {
+     "measure": "compare_may_2026",
+     "label": "All graduates",
+     "date": "2026-05-31",
+     "value": 2.1,
+     "note": "Academics, a-kassa measure"
+    },
+    {
+     "measure": "compare_may_2026",
+     "label": "Everyone",
+     "date": "2026-05-31",
+     "value": 6.4,
+     "note": "Arbetsförmedlingen measure"
+    },
+    {
+     "measure": "better_paid_job",
+     "label": "Feb 2022",
+     "date": "2022-02-28",
+     "value": 66,
+     "note": ""
+    },
+    {
+     "measure": "better_paid_job",
+     "label": "Nov 2022",
+     "date": "2022-11-30",
+     "value": 65,
+     "note": ""
+    },
+    {
+     "measure": "better_paid_job",
+     "label": "Nov 2023",
+     "date": "2023-11-30",
+     "value": 59,
+     "note": "Press release words it as the chance of changing employer"
+    },
+    {
+     "measure": "better_paid_job",
+     "label": "Nov 2025",
+     "date": "2025-11-30",
+     "value": 37,
+     "note": "First time more were negative than positive"
+    },
+    {
+     "measure": "better_paid_job",
+     "label": "Jun 2026",
+     "date": "2026-06-30",
+     "value": 44,
+     "note": "First rise after seven surveys in a row of decline"
+    },
+    {
+     "measure": "expect_more_engineers",
+     "label": "Nov 2022",
+     "date": "2022-11-30",
+     "value": 54,
+     "note": ""
+    },
+    {
+     "measure": "expect_more_engineers",
+     "label": "Nov 2023",
+     "date": "2023-11-30",
+     "value": 47,
+     "note": ""
+    },
+    {
+     "measure": "expect_more_engineers",
+     "label": "Jun 2026",
+     "date": "2026-06-30",
+     "value": 40,
+     "note": "Report says just over 40%"
+    },
+    {
+     "measure": "expect_fewer_engineers",
+     "label": "Nov 2022",
+     "date": "2022-11-30",
+     "value": 9,
+     "note": ""
+    },
+    {
+     "measure": "expect_fewer_engineers",
+     "label": "Nov 2023",
+     "date": "2023-11-30",
+     "value": 12,
+     "note": ""
+    },
+    {
+     "measure": "expect_fewer_engineers",
+     "label": "Jun 2026",
+     "date": "2026-06-30",
+     "value": 16,
+     "note": ""
+    }
+   ]
+  },
+  "consulting": {
+   "as_of": "2026-10-19",
+   "stale": false,
+   "rows": [
+    {
+     "quarter": "Q3 2025",
+     "median_growth": 0.9,
+     "avg_growth": -1.6,
+     "firms_adding_staff": null,
+     "adding_staff_text": "More than half",
+     "headcount_change": null,
+     "headcount_change_excl_divestments": null
+    },
+    {
+     "quarter": "Q4 2025",
+     "median_growth": -0.8,
+     "avg_growth": -1.6,
+     "firms_adding_staff": null,
+     "adding_staff_text": "More than half",
+     "headcount_change": null,
+     "headcount_change_excl_divestments": null
+    },
+    {
+     "quarter": "Q1 2026",
+     "median_growth": -1.1,
+     "avg_growth": -0.4,
+     "firms_adding_staff": 7,
+     "adding_staff_text": "7 of 25",
+     "headcount_change": null,
+     "headcount_change_excl_divestments": null
+    },
+    {
+     "quarter": "Q2 2026",
+     "median_growth": -0.7,
+     "avg_growth": 0.8,
+     "firms_adding_staff": 5,
+     "adding_staff_text": "5 of 25",
+     "headcount_change": -1126,
+     "headcount_change_excl_divestments": -740
+    }
+   ]
+  },
+  "tech_employment": {
+   "as_of": "2026-10-19",
+   "stale": true,
+   "rows": [
+    {
+     "quarter": "2025 Q2",
+     "date": "2025-06-30",
+     "sector": "All jobs",
+     "thousands": 5443.7
+    },
+    {
+     "quarter": "2025 Q3",
+     "date": "2025-09-30",
+     "sector": "All jobs",
+     "thousands": 5446.0
+    },
+    {
+     "quarter": "2025 Q4",
+     "date": "2025-12-31",
+     "sector": "All jobs",
+     "thousands": 5453.3
+    },
+    {
+     "quarter": "2026 Q1",
+     "date": "2026-03-31",
+     "sector": "All jobs",
+     "thousands": 5460.1
+    },
+    {
+     "quarter": "2026 Q2",
+     "date": "2026-06-30",
+     "sector": "All jobs",
+     "thousands": 5467.3
+    },
+    {
+     "quarter": "2025 Q2",
+     "date": "2025-06-30",
+     "sector": "Information and communication",
+     "thousands": 243.3
+    },
+    {
+     "quarter": "2025 Q3",
+     "date": "2025-09-30",
+     "sector": "Information and communication",
+     "thousands": 242.8
+    },
+    {
+     "quarter": "2025 Q4",
+     "date": "2025-12-31",
+     "sector": "Information and communication",
+     "thousands": 242.0
+    },
+    {
+     "quarter": "2026 Q1",
+     "date": "2026-03-31",
+     "sector": "Information and communication",
+     "thousands": 241.2
+    },
+    {
+     "quarter": "2026 Q2",
+     "date": "2026-06-30",
+     "sector": "Information and communication",
+     "thousands": 240.6
+    },
+    {
+     "quarter": "2025 Q2",
+     "date": "2025-06-30",
+     "sector": "Manufacturing",
+     "thousands": 567.7
+    },
+    {
+     "quarter": "2025 Q3",
+     "date": "2025-09-30",
+     "sector": "Manufacturing",
+     "thousands": 563.1
+    },
+    {
+     "quarter": "2025 Q4",
+     "date": "2025-12-31",
+     "sector": "Manufacturing",
+     "thousands": 562.3
+    },
+    {
+     "quarter": "2026 Q1",
+     "date": "2026-03-31",
+     "sector": "Manufacturing",
+     "thousands": 561.8
+    },
+    {
+     "quarter": "2026 Q2",
+     "date": "2026-06-30",
+     "sector": "Manufacturing",
+     "thousands": 560.6
+    },
+    {
+     "quarter": "2025 Q2",
+     "date": "2025-06-30",
+     "sector": "Professional and technical services",
+     "thousands": 646.3
+    },
+    {
+     "quarter": "2025 Q3",
+     "date": "2025-09-30",
+     "sector": "Professional and technical services",
+     "thousands": 649.4
+    },
+    {
+     "quarter": "2025 Q4",
+     "date": "2025-12-31",
+     "sector": "Professional and technical services",
+     "thousands": 651.8
+    },
+    {
+     "quarter": "2026 Q1",
+     "date": "2026-03-31",
+     "sector": "Professional and technical services",
+     "thousands": 650.8
+    },
+    {
+     "quarter": "2026 Q2",
+     "date": "2026-06-30",
+     "sector": "Professional and technical services",
+     "thousands": 652.0
+    }
+   ]
+  },
+  "job_openings": {
+   "as_of": "2026-10-19",
+   "stale": true,
+   "rows": [
+    {
+     "quarter": "2025 Q2",
+     "date": "2025-06-30",
+     "openings_sa": 129100
+    },
+    {
+     "quarter": "2025 Q3",
+     "date": "2025-09-30",
+     "openings_sa": 129500
+    },
+    {
+     "quarter": "2025 Q4",
+     "date": "2025-12-31",
+     "openings_sa": 130800
+    },
+    {
+     "quarter": "2026 Q1",
+     "date": "2026-03-31",
+     "openings_sa": 127200
+    },
+    {
+     "quarter": "2026 Q2",
+     "date": "2026-06-30",
+     "openings_sa": 139600
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,218 @@
+{
+ "id": "redundancies_industry",
+ "title": "Redundancy notices by industry",
+ "description": "Nationwide notices per industry for the months Newsworthy reported from Arbetsförmedlingen's data (articles from Feb to Aug 2026). June and August 2025 weren't available. From August 2026 the industry codes changed, so later months are left out.",
+ "as_of": "2026-10-19",
+ "rows": [
+  {
+   "month": "2025-01",
+   "industry": "Information and communication",
+   "notices": 740
+  },
+  {
+   "month": "2025-02",
+   "industry": "Information and communication",
+   "notices": 369
+  },
+  {
+   "month": "2025-03",
+   "industry": "Information and communication",
+   "notices": 249
+  },
+  {
+   "month": "2025-04",
+   "industry": "Information and communication",
+   "notices": 405
+  },
+  {
+   "month": "2025-05",
+   "industry": "Information and communication",
+   "notices": 250
+  },
+  {
+   "month": "2025-07",
+   "industry": "Information and communication",
+   "notices": 382
+  },
+  {
+   "month": "2025-12",
+   "industry": "Information and communication",
+   "notices": 152
+  },
+  {
+   "month": "2026-01",
+   "industry": "Information and communication",
+   "notices": 1972
+  },
+  {
+   "month": "2026-02",
+   "industry": "Information and communication",
+   "notices": 625
+  },
+  {
+   "month": "2026-03",
+   "industry": "Information and communication",
+   "notices": 580
+  },
+  {
+   "month": "2026-04",
+   "industry": "Information and communication",
+   "notices": 265
+  },
+  {
+   "month": "2026-05",
+   "industry": "Information and communication",
+   "notices": 258
+  },
+  {
+   "month": "2026-06",
+   "industry": "Information and communication",
+   "notices": 290
+  },
+  {
+   "month": "2026-07",
+   "industry": "Information and communication",
+   "notices": 1230
+  },
+  {
+   "month": "2025-01",
+   "industry": "Manufacturing",
+   "notices": 766
+  },
+  {
+   "month": "2025-02",
+   "industry": "Manufacturing",
+   "notices": 779
+  },
+  {
+   "month": "2025-03",
+   "industry": "Manufacturing",
+   "notices": 752
+  },
+  {
+   "month": "2025-04",
+   "industry": "Manufacturing",
+   "notices": 888
+  },
+  {
+   "month": "2025-05",
+   "industry": "Manufacturing",
+   "notices": 5276
+  },
+  {
+   "month": "2025-07",
+   "industry": "Manufacturing",
+   "notices": 643
+  },
+  {
+   "month": "2025-12",
+   "industry": "Manufacturing",
+   "notices": 424
+  },
+  {
+   "month": "2026-01",
+   "industry": "Manufacturing",
+   "notices": 992
+  },
+  {
+   "month": "2026-02",
+   "industry": "Manufacturing",
+   "notices": 437
+  },
+  {
+   "month": "2026-03",
+   "industry": "Manufacturing",
+   "notices": 652
+  },
+  {
+   "month": "2026-04",
+   "industry": "Manufacturing",
+   "notices": 779
+  },
+  {
+   "month": "2026-05",
+   "industry": "Manufacturing",
+   "notices": 778
+  },
+  {
+   "month": "2026-06",
+   "industry": "Manufacturing",
+   "notices": 469
+  },
+  {
+   "month": "2026-07",
+   "industry": "Manufacturing",
+   "notices": 184
+  },
+  {
+   "month": "2025-01",
+   "industry": "Professional and technical services",
+   "notices": 436
+  },
+  {
+   "month": "2025-02",
+   "industry": "Professional and technical services",
+   "notices": 155
+  },
+  {
+   "month": "2025-03",
+   "industry": "Professional and technical services",
+   "notices": 249
+  },
+  {
+   "month": "2025-04",
+   "industry": "Professional and technical services",
+   "notices": 318
+  },
+  {
+   "month": "2025-05",
+   "industry": "Professional and technical services",
+   "notices": 1431
+  },
+  {
+   "month": "2025-07",
+   "industry": "Professional and technical services",
+   "notices": 301
+  },
+  {
+   "month": "2025-12",
+   "industry": "Professional and technical services",
+   "notices": 279
+  },
+  {
+   "month": "2026-01",
+   "industry": "Professional and technical services",
+   "notices": 323
+  },
+  {
+   "month": "2026-02",
+   "industry": "Professional and technical services",
+   "notices": 197
+  },
+  {
+   "month": "2026-03",
+   "industry": "Professional and technical services",
+   "notices": 551
+  },
+  {
+   "month": "2026-04",
+   "industry": "Professional and technical services",
+   "notices": 183
+  },
+  {
+   "month": "2026-05",
+   "industry": "Professional and technical services",
+   "notices": 269
+  },
+  {
+   "month": "2026-06",
+   "industry": "Professional and technical services",
+   "notices": 291
+  },
+  {
+   "month": "2026-07",
+   "industry": "Professional and technical services",
+   "notices": 290
+  }
+ ]
+}

@@ -1,48 +1,48 @@
-"""End-to-end tests for the Market tab and the pop-up after a few rejections, with simulated Platsbanken counts.
+"""End-to-end tests for the Market tab and the pop-up after a few rejections.
 
     python3 build.py && python3 tests/test_market.py
 
-Platsbanken's counts are answered from a fixed table. The IT figures are the real counts for July to September 2026
+The page reads its ad counts from data/market.json, which market.py fills on the 1st of every month. These tests put a
+fixed set of counts in a copy of the built page instead. The IT figures are the real counts for July to September 2026
 (6,251 closed and 947 open IT ads against 14,495 a year earlier; 114,236 and 13,922 for all ads against 233,853), so the
 expected answer is the real one: IT down about 24% while new postings across Sweden fell about 17%."""
-import asyncio, json, pathlib, sys
+import asyncio, json, pathlib, sys, tempfile
 from datetime import date, datetime, timedelta
 from urllib.parse import urlparse, parse_qs
 from playwright.async_api import async_playwright
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
-from test_app import jobsearch, joblinks, history, ok, check, passed
+from test_app import jobsearch, joblinks, history, check, passed
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-PAGE = (ROOT / 'index.html').as_uri()
 SHOTS = ROOT / 'docs' / 'screenshots'
 IT, HEALTH, MILITARY = 'apaJ_2ja_LuF', 'NYW6_mP6_vwf', 'bH5L_uXD_ZAX'
-# (field, region) -> closed ads in the archive this window, ads still open this window, the same months a year earlier, all open ads now
-COUNTS = {('', ''): (114236, 13922, 233853, 41000), (IT, ''): (6251, 947, 14495, 2310), ('', 'rVG'): (20000, 2500, 40000, 7900),
-          (IT, 'rVG'): (1100, 160, 2600, 410), (HEALTH, ''): (12000, 1800, 19000, 3900), (MILITARY, ''): (30, 5, 60, 12), (MILITARY, 'rVG'): (4, 1, 9, 2)}
-STATE, COUNTED = {'offline': False}, []
+# "field|county" -> closed ads in the archive, ads still open, the same months a year earlier, all open ads on the 1st
+COUNTS = {'on': '2026-10-01', 'window': {'from': '2026-07-01', 'to': '2026-09-30', 'from_prev': '2025-07-01', 'to_prev': '2025-09-30'},
+          'n': {'|': [114236, 13922, 233853, 41000], f'{IT}|': [6251, 947, 14495, 2310], '|rVG': [20000, 2500, 40000, 7900], f'{IT}|rVG': [1100, 160, 2600, 410],
+                f'{HEALTH}|': [12000, 1800, 19000, 3900], f'{MILITARY}|': [30, 5, 60, 12], f'{MILITARY}|rVG': [4, 1, 9, 2]}}
+REGIONS = [['Skåne län', 'rSK'], ['Västra Götalands län', 'rVG'], ['Stockholms län', 'rST']]
+tmp = pathlib.Path(tempfile.mkdtemp())
 
-def counts_for(q, api):
-    key = (q.get('occupation-field', [''])[0], q.get('region', [''])[0])
-    COUNTED.append((api, key, q.get('published-after', [''])[0][:10]))
-    hist, live, prev, open_now = COUNTS.get(key, (0, 0, 0, 0))
-    after = q.get('published-after', [''])[0]
-    if not after: return open_now
-    year_ago = date.fromisoformat(after[:10]) < date.today() - timedelta(days=200)
-    return (prev if year_ago else hist) if api == 'hist' else (0 if year_ago else live)
+def page_with(counts):
+    """A copy of the built page with these counts in place of this month's"""
+    lines = (ROOT / 'index.html').read_text(encoding='utf-8').split('\n')
+    i = next(i for i, l in enumerate(lines) if l.startswith('const MK = '))
+    mk = json.loads(lines[i][len('const MK = '):].rstrip(';'))
+    mk['counts'], mk['regions'] = counts, REGIONS if counts else mk['regions']
+    lines[i] = 'const MK = ' + json.dumps(mk, ensure_ascii=False) + ';'
+    path = tmp / (f'market-{len(list(tmp.iterdir()))}.html')
+    path.write_text('\n'.join(lines), encoding='utf-8')
+    return path.as_uri()
 
-def is_count(q): return q.get('limit') == ['0'] and 'q' not in q and ('occupation-field' in q or 'published-before' in q or 'region' in q or not q.get('published-after'))
+# The browser must never count market figures itself: they come with the page
+MARKET_CALLS = []
+def is_count(q): return 'q' not in q and q.get('limit') == ['0']
 async def market_search(route):
-    q = parse_qs(urlparse(route.request.url).query)
-    if is_count(q):
-        if STATE['offline']: return await route.abort()
-        return await route.fulfill(**ok({"total": {"value": counts_for(q, 'live')}, "hits": []}))
+    if is_count(parse_qs(urlparse(route.request.url).query)): MARKET_CALLS.append(route.request.url)
     await jobsearch(route)
 async def market_history(route):
-    q = parse_qs(urlparse(route.request.url).query)
-    if is_count(q):
-        if STATE['offline']: return await route.abort()
-        return await route.fulfill(**ok({"total": {"value": counts_for(q, 'hist')}, "hits": []}))
+    if is_count(parse_qs(urlparse(route.request.url).query)): MARKET_CALLS.append(route.request.url)
     await history(route)
 
 def snap(title, field='Data/IT', field_id='f'):
@@ -57,33 +57,31 @@ async def main():
         await ctx.route('https://historical.api.jobtechdev.se/**', market_history)
         pg = await ctx.new_page(); errors = []; pg.on('pageerror', lambda e: errors.append(str(e)))
         mkt, verdict = pg.locator('#market'), pg.locator('#market .mk-verdict')
-        settled = "!document.querySelector('#market .mk-busy') && !!document.querySelector('#market .mk-verdict h2')"
+        PAGE = page_with(COUNTS)
         async def pick(sel, value):
-            await pg.select_option(sel, value); await pg.wait_for_function(settled, timeout=15000)
+            await pg.select_option(sel, value)
 
         # A search in Göteborg for software engineers: the Market tab picks IT and offers Västra Götaland
         await pg.goto(PAGE)
         await pg.fill('#place', 'Göteborg'); await pg.fill('#kw-input', 'software engineer'); await pg.press('#kw-input', 'Enter')
         await pg.click('#go'); await pg.wait_for_function("document.getElementById('msg').textContent.startsWith('Found')", timeout=20000)
-        await pg.click('#tab-market'); await pg.wait_for_function(settled, timeout=15000)
+        await pg.click('#tab-market')
         check('market tab sits between My applications and the Mentor', (await pg.locator('.topbar [role=tab]:visible').all_inner_texts())[2:] == ['Market', 'Mentor'])
         check('field picked from the search', await pg.locator('#mk-field').input_value() == IT and 'Picked from your searches' in await pg.locator('#mk-hint').inner_text())
-        check('the county of the search is offered', await pg.locator('#mk-place option').all_inner_texts() == ['All of Sweden', 'Västra Götalands län'])
+        check('every county that was counted is offered', await pg.locator('#mk-place option').all_inner_texts() == ['All of Sweden', 'Skåne län', 'Stockholms län', 'Västra Götalands län'])
         txt = await verdict.inner_text()
-        check('verdict for IT in Sweden', 'A tough market' in txt and 'There were about 24% fewer IT ads in Sweden from ' in txt and 'than a year earlier.' in txt, txt)
+        check('verdict for IT in Sweden', 'A tough market' in txt and 'There were about 24% fewer IT ads in Sweden from July to September 2026 than a year earlier.' in txt, txt)
         check('compared with the market as a whole', "That's weaker than the job market as a whole, where new postings fell 17% in September 2026." in txt, txt)
         tiles = await verdict.locator('.mk-tile').all_inner_texts()
-        check('open ads, the change and the share', len(tiles) == 3 and '2,310' in tiles[0] and '−24%' in tiles[1] and '5.6%' in tiles[2] and '6.2% a year earlier' in tiles[2], tiles)
+        check('open ads, the change and the share', len(tiles) == 3 and 'OPEN ADS ON 1 OCT 2026' in tiles[0] and '2,310' in tiles[0] and '−24%' in tiles[1] and '5.6%' in tiles[2] and '6.2% a year earlier' in tiles[2], tiles)
         bars = await mkt.locator('.mk-bar').first.locator('xpath=..').locator('.mk-bar').all_inner_texts()
         check('bars: IT against all of Sweden', len(bars) == 2 and bars[0].startswith('IT, all of Sweden') and '−24%' in bars[0] and '−17%' in bars[1], bars)
-        hist_calls = [c for c in COUNTED if c[0] == 'hist' and c[1] == (IT, '')]
-        check('counts this window and a year earlier from the archive, by field', len({c[2][:4] for c in hist_calls}) == 2, hist_calls)
         txt = await mkt.inner_text()
         check('figures for Sweden from the package', all(x in txt for x in ('65,000', '8.6%', '5,487', '139,600', 'Unemployment by year', 'Redundancy notices each month', "Employers' hiring plans for Q4 2026")), txt[:400])
         check('industry figures for IT', 'More on IT' in txt and 'people work in information and communication' in txt and "hiring outlook for IT and tech is +41 for Q4 2026, against +27" in txt and 'listed Nordic consultancies' in txt)
         main = await mkt.locator('.mk-card', has_text='hiring plans').locator('.mk-bar.main .mk-bar-label').all_inner_texts()
         check('outlook highlights your industry and region', [m.split(' ')[0] for m in main] == ['IT', 'Västra'], main)
-        check('sources with dates', 'compiled 19 Oct 2026' in txt and 'Platsbanken, through JobTech' in txt)
+        check('sources with dates', 'compiled 19 Oct 2026' in txt and "Platsbanken, through JobTech's open APIs, counted 1 Oct 2026" in txt)
         await pg.hover('#market .mk-chart .mk-hit >> nth=0')
         check('hovering a column shows its value', '6.9%' in await pg.locator('#mk-tip').inner_text() and await pg.locator('#mk-tip').is_visible())
         await pg.focus('#market .mk-chart >> nth=1'); await pg.keyboard.press('End')
@@ -105,7 +103,7 @@ async def main():
         await pick('#mk-field', '')
         txt = await verdict.inner_text()
         check('all fields in Sweden is the official figure', 'Arbetsförmedlingen got 17% fewer new job postings in September 2026' in txt and await mkt.locator('.mk-bars').count() == 1, txt)
-        await pg.reload(); await pg.wait_for_function(settled, timeout=15000)
+        await pg.reload()
         check('the choice is kept', await pg.locator('#mk-field').input_value() == '' and await pg.locator('#tab-market').get_attribute('aria-selected') == 'true')
 
         await pg.click('.lang button[data-lang=sv]'); await pick('#mk-field', IT)
@@ -118,12 +116,12 @@ async def main():
         await pg.screenshot(path=str(SHOTS / 'market-phone-sv.png'), full_page=True)
         await pg.set_viewport_size({'width': 1280, 'height': 1000}); await pg.click('.lang button[data-lang=en]')
 
-        STATE['offline'] = True; await pg.evaluate("localStorage.removeItem('jf-mk-counts')"); await pg.reload()
-        await pg.wait_for_function("document.querySelector('#market .mk-err')", timeout=20000)
+        # Before the first count on the 1st: the figures for Sweden, and a note that the fields aren't in yet
+        await pg.goto(page_with(None))
         txt = await verdict.inner_text()
-        check('offline: says so and still shows Sweden', "Platsbanken couldn't be reached just now" in txt and 'Arbetsförmedlingen got 17% fewer' in txt and '8.6%' in await mkt.inner_text(), txt)
-        STATE['offline'] = False; await pg.click('#market [data-mk=retry]'); await pg.wait_for_function(settled + " && !document.querySelector('#market .mk-err')", timeout=15000)
-        check('try again', 'about 24% fewer IT ads' in await verdict.inner_text())
+        check('before the first count', "counted on Platsbanken on the 1st of every month and aren't in yet" in txt and 'Arbetsförmedlingen got 17% fewer' in txt
+              and '8.6%' in await mkt.inner_text() and await pg.locator('#mk-place').is_disabled() and await mkt.locator('.mk-bars').count() == 1, txt)
+        await pg.goto(PAGE)
 
         # Chart colours: the highlight and the grey both stand out from the card in every theme, light and dark
         def lum(rgb):
@@ -188,6 +186,7 @@ async def main():
         await pg.wait_for_timeout(300)
         check('rejecting again soon after gives no pop-up', not await dlg.is_visible())
 
+        check('the browser never counts market figures itself', not MARKET_CALLS, MARKET_CALLS)
         check('no script errors', not errors, errors)
         await browser.close()
     print(f'{len(passed)} checks passed')
