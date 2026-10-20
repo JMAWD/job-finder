@@ -31,7 +31,7 @@ const I18N = {
   "s.co": ["employers", "arbetsgivare"], "s.op": ["matching roles", "matchande jobb"], "s.new": ["new since your last search", "nya sedan din senaste sökning"], "s.app": ["roles you're tracking", "jobb du följer"],
   "tabs.label": ["Views", "Vyer"], "tab.res": ["Find jobs", "Hitta jobb"], "tab.app": ["My applications", "Mina ansökningar"], "tab.mentor": ["Mentor", "Mentor"],
   "app.eyebrow": ["Saved in this browser", "Sparat i den här webbläsaren"], "app.h1": ["My applications", "Mina ansökningar"],
-  "app.lede": ["Every role you've saved or applied for, with your notes. They stay here when you search for something else.", "Alla jobb du har sparat eller sökt, med dina anteckningar. De ligger kvar här när du söker efter något annat."],
+  "app.lede": ["Every role you've saved or applied for, with your notes. They stay here when you search for something else. They're stored only in this browser on this device, so keep a copy.", "Alla jobb du har sparat eller sökt, med dina anteckningar. De ligger kvar här när du söker efter något annat. De sparas bara i den här webbläsaren på den här enheten, så spara en kopia."],
   "filters.label": ["Filter the results", "Filtrera resultaten"], "filter": ["Filter", "Filtrera"], "filter.ph": ["Employer, role, place or contact", "Arbetsgivare, jobb, ort eller kontakt"],
   "field": ["Field", "Yrkesområde"], "allfields": ["All fields", "Alla yrkesområden"], "employment": ["Employment", "Anställning"], "any": ["Any", "Alla"], "perm": ["Permanent", "Tillsvidare"], "temp": ["Temporary", "Tidsbegränsad"],
   "sort": ["Sort", "Sortera"], "sort.roles": ["Most matching roles", "Flest matchande jobb"], "sort.newest": ["Newest ad", "Nyaste annonsen"], "sort.deadline": ["Closing soonest", "Sista ansökningsdag först"], "sort.name": ["A–Z", "A–Ö"],
@@ -49,6 +49,7 @@ const I18N = {
   "foot.data": ["<b>Your data.</b> Saved roles, statuses, notes and contacts you add stay in the browser you use. Nobody else sees them and they aren't sent anywhere. Download a copy now and then to keep them safe.",
     "<b>Dina uppgifter.</b> Sparade jobb, statusar, anteckningar och kontakter du lägger till stannar i webbläsaren du använder. Ingen annan ser dem och de skickas ingenstans. Ladda ner en kopia ibland så att de inte försvinner."],
   "foot.backup": ["Back up or restore your saved data", "Säkerhetskopiera eller läs in dina sparade uppgifter"],
+  "tab.res.s": ["Jobs", "Jobb"], "tab.app.s": ["Applications", "Ansökningar"],
   "about": ["About Job Finder", "Om Job Finder"],
   "about.indep": ["Job Finder is a free, independent tool. It is not made by, affiliated with or endorsed by Arbetsförmedlingen. Job ads come from Arbetsförmedlingen's open data, published through <a href=\"https://jobtechdev.se\" target=\"_blank\" rel=\"noopener\">JobTech Dev</a>. Always check the original ad before you apply.",
     "Job Finder är ett gratis och fristående verktyg. Det är inte gjort av, kopplat till eller godkänt av Arbetsförmedlingen. Annonserna kommer från Arbetsförmedlingens öppna data, som publiceras via <a href=\"https://jobtechdev.se\" target=\"_blank\" rel=\"noopener\">JobTech Dev</a>. Kontrollera alltid originalannonsen innan du söker."],
@@ -87,7 +88,6 @@ const I18N = {
   "tl.applyon": ["Apply on {site}", "Sök på {site}"],
   "tl.markq": ["Sent your application?", "Har du skickat ansökan?"], "tl.mark": ["Mark as applied", "Markera som sökt"],
   "tl.marked": ["Marked as applied. You'll find it under My applications.", "Markerad som sökt. Du hittar den under Mina ansökningar."],
-  "tl.check": ["Read it through before you use it. The AI is told never to invent anything, but it can still get details wrong.", "Läs igenom innan du använder det. AI:n är instruerad att aldrig hitta på något, men den kan ändå få detaljer fel."],
   "tl.privacy": ["When you press Generate, your CV, the ad and your wishes are sent to the Job Finder server and on to an AI model hosted by Scaleway in Paris. The server keeps no copy. Your CV and the answers are saved only in this browser.",
     "När du trycker på Skapa skickas ditt CV, annonsen och dina önskemål till Job Finders server och vidare till en AI-modell hos Scaleway i Paris. Servern sparar ingen kopia. Ditt CV och svaren sparas bara i den här webbläsaren."],
   "tl.e.nocode": ["Enter your access code first.", "Skriv in din åtkomstkod först."],
@@ -172,8 +172,8 @@ const I18N = {
   "mt.r.horizon": ["It takes {d} before it pays off. That's long for the time frame you gave.", "Det tar {d} innan det lönar sig. Det är långt med tanke på tidshorisonten du angav."],
   "mt.r.free": ["Costs {c}, and you asked for free options only.", "Kostar {c}, och du bad bara om gratisalternativ."],
   "mt.r.selfpay": ["{c} is a lot to pay yourself. Worth asking your employer.", "{c} är mycket att betala själv. Fråga gärna din arbetsgivare."],
-  "mt.check": ["Treat this as a starting point. The AI is told to build only on your CV, but it can still get course details wrong, so check prices and dates with the provider.",
-    "Se det här som en utgångspunkt. AI:n är instruerad att bara bygga på ditt CV, men den kan ändå få kursdetaljer fel, så kontrollera priser och datum hos utbildaren."],
+  "mt.check": ["Before you sign up for anything, check the price, the dates and that the course is still offered with the provider.",
+    "Innan du anmäler dig till något, kontrollera pris, datum och att kursen fortfarande ges hos utbildaren."],
   "mt.how": ["How this advice is built", "Så tas råden fram"],
   "mt.how.cv": ["From the CV", "Från CV:t"], "mt.how.cv.d": ["Years of experience, roles and seniority, skills, certificates and education.", "År i arbetslivet, roller och senioritet, kunskaper, certifikat och utbildning."],
   "mt.how.ans": ["From your answers", "Från dina svar"], "mt.how.ans.d": ["Time frame, direction, weekly learning time and who pays.", "Tidshorisont, riktning, tid att lära dig per vecka och vem som betalar."],
@@ -200,6 +200,62 @@ const I18N = {
   "wb.noted": ["Noted. I'll leave this one for two weeks.", "Noterat. Jag tar inte upp det här jobbet igen på två veckor."], "wb.snoozed": ["I'll remind you in a week.", "Jag påminner dig om en vecka."],
   "wb.moreapps": ["+{n} more in My applications", "+{n} till i Mina ansökningar"],
   "app.applied": ["Applied {date}", "Sökt {date}"], "app.followed": ["Followed up {date}", "Följde upp {date}"],
+
+  // Trust: what the AI is and isn't, shown before and above everything it writes
+  "ai.label": ["Written by AI", "Skrivet av AI"], "ai.title": ["A draft for you to check", "Ett utkast som du behöver granska"], "ai.title.mt": ["Suggestions, not decisions", "Förslag, inte beslut"],
+  "ai.before": ["You'll get a draft to read and change, not a finished text. The AI is told never to add anything that isn't in your CV, but it can still make mistakes.",
+    "Du får ett utkast att läsa och ändra i, inte en färdig text. AI:n är instruerad att aldrig lägga till något som inte står i ditt CV, men den kan ändå göra fel."],
+  "ai.write": ["The AI only has your CV and the ad to go on, and it can still get things wrong: a skill you don't have, a title or date that's off, or a claim bigger than what you actually did. Read every line before you use it. If you couldn't explain something in an interview, take it out.",
+    "AI:n har bara ditt CV och annonsen att gå på, och den kan ändå få saker fel: en kunskap du inte har, en titel eller ett datum som inte stämmer, eller något som låter större än det du faktiskt gjorde. Läs varje rad innan du använder texten. Om du inte skulle kunna förklara något på en intervju, ta bort det."],
+  "ai.match": ["This is an estimate from the words in your CV and the ad. It can miss experience your CV doesn't spell out, and it can't know what the employer cares about most. Use it to see what to bring out, not to decide whether you're good enough.",
+    "Det här är en uppskattning utifrån orden i ditt CV och annonsen. Den kan missa erfarenhet som inte står uttryckligen i CV:t, och den vet inte vad arbetsgivaren tycker är viktigast. Använd den för att se vad du ska lyfta fram, inte för att avgöra om du är bra nog."],
+  "ai.interview": ["These are likely questions, not the employer's own. The points for your answers come from your CV, so check that each one is true and say it in your own words. Don't learn anything by heart that you can't back up.",
+    "Det här är troliga frågor, inte arbetsgivarens egna. Stödpunkterna bygger på ditt CV, så kontrollera att varje punkt stämmer och säg det med dina egna ord. Lär dig inget utantill som du inte kan stå för."],
+  "ai.mentor": ["These suggestions come from an AI that has only read your CV and your four answers. It doesn't know your whole situation, and course names, prices and dates can be wrong or out of date. The match figures are rough estimates. Take what's useful and leave the rest.",
+    "Förslagen kommer från en AI som bara har läst ditt CV och dina fyra svar. Den känner inte till hela din situation, och kursnamn, priser och datum kan vara fel eller inaktuella. Matchningssiffrorna är grova uppskattningar. Ta det som är användbart och låt resten vara."],
+  "ai.report": ["Something wrong in this answer? Tell me", "Något fel i svaret? Berätta"],
+  "foot.ai": ["<b>AI.</b> Step 2 and the Mentor use an AI model hosted in the EU. It's told to build only on your CV, never to invent experience and never to use your age, but it can still get things wrong. Everything it writes is a draft for you to check, and you decide what to send.",
+    "<b>AI.</b> Steg 2 och Mentorn använder en AI-modell som körs inom EU. Den är instruerad att bara bygga på ditt CV, aldrig hitta på erfarenhet och aldrig använda din ålder, men den kan ändå få saker fel. Allt den skriver är ett utkast som du granskar, och det är du som bestämmer vad som skickas."],
+
+  // When the job ad services don't answer, and how old the results are
+  "err.title": ["The search didn't go through", "Sökningen gick inte igenom"], "err.retry": ["Try again", "Försök igen"],
+  "err.kept": ["The new search didn't go through, so these are the results fetched {ago}.", "Den nya sökningen gick inte igenom, så det här är resultaten som hämtades {ago}."],
+  "err.still": ["Still not working? Tell me", "Fungerar det fortfarande inte? Berätta"],
+  "checked": ["Last checked {ago}.", "Senast kollat {ago}."],
+  "stale": ["These results were fetched {ago}. Some ads may have closed since, and new ones may have come in.", "Resultaten hämtades {ago}. Några annonser kan ha stängt sedan dess och nya kan ha kommit till."],
+  "refresh": ["Search again", "Sök igen"],
+  "links.failbar": ["Other job sites couldn't be read in this search, so only Platsbanken's ads are shown.", "Andra jobbsajter gick inte att läsa i den här sökningen, så bara Platsbankens annonser visas."],
+  "ago.now": ["just now", "nyss"], "ago.min": ["{n} min ago", "för {n} min sedan"], "ago.h1": ["1 hour ago", "för 1 timme sedan"], "ago.hN": ["{n} hours ago", "för {n} timmar sedan"],
+  "ago.yday": ["yesterday", "i går"], "ago.dN": ["{n} days ago", "för {n} dagar sedan"],
+  "hist.retry": ["Try again", "Försök igen"],
+  "tl.ad.fail": ["Couldn't fetch the full ad from Platsbanken just now, so only a short extract is shown. Fetch it again, or open the ad and paste the full text here.",
+    "Kunde inte hämta hela annonsen från Platsbanken just nu, så bara ett kort utdrag visas. Hämta den igen, eller öppna annonsen och klistra in hela texten här."],
+  "tl.ad.retry": ["Fetch the ad again", "Hämta annonsen igen"],
+  "mt.countfail": ["Couldn't count open ads right now.", "Kunde inte räkna lediga jobb just nu."], "mt.counted": ["counted {ago}", "räknat {ago}"],
+
+  // Feedback during the beta, as public GitHub issues
+  "fb.title": ["Tell me what's wrong", "Berätta vad som är fel"],
+  "fb.text": ["Job Finder is in beta. If something breaks, looks wrong or could be better, I want to hear about it. Reports go to GitHub, where they're public and you need a free account, so leave out your CV, names and contact details.",
+    "Job Finder är i beta. Om något går sönder, ser fel ut eller kan bli bättre vill jag veta det. Rapporterna hamnar på GitHub, där de är offentliga och du behöver ett gratiskonto, så skriv inte med ditt CV, namn eller kontaktuppgifter."],
+  "fb.bug": ["Something isn't working", "Något fungerar inte"], "fb.ads": ["Ads are wrong or missing", "Annonser är fel eller saknas"], "fb.ai": ["An AI answer was wrong", "Ett AI-svar blev fel"],
+  "fb.idea": ["An idea or a wish", "En idé eller ett önskemål"], "fb.other": ["Something else", "Något annat"],
+  "fb.q.what": ["What happened?", "Vad hände?"], "fb.q.expect": ["What did you expect?", "Vad hade du väntat dig?"],
+  "fb.q.ads": ["Which search, and which ad? A link to the ad helps.", "Vilken sökning och vilken annons? En länk till annonsen hjälper."],
+  "fb.q.ai": ["What was wrong? Describe it rather than pasting your CV or the answer.", "Vad blev fel? Beskriv det i stället för att klistra in ditt CV eller svaret."],
+  "fb.q.idea": ["What would you like Job Finder to do?", "Vad skulle du vilja att Job Finder gjorde?"],
+  "fb.public": ["This report is public. Please leave out your CV, names and contact details.", "Rapporten är offentlig. Skriv inte med ditt CV, namn eller kontaktuppgifter."],
+  "fb.part": ["Part: {p}", "Del: {p}"], "fb.err": ["Message shown: {m}", "Meddelandet som visades: {m}"],
+
+  // Backup reminders: the tracker, the CV and the Mentor's advice live only in this browser
+  "bk.first": ["Your first saved job. It's stored only in this browser, so if you clear your browsing data or switch device, it's gone. Download a copy now and then to keep it safe.",
+    "Ditt första sparade jobb. Det sparas bara i den här webbläsaren, så om du rensar webbläsardata eller byter enhet försvinner det. Ladda ner en kopia ibland så att det finns kvar."],
+  "bk.first.n": ["Your saved jobs are stored only in this browser, so if you clear your browsing data or switch device, they're gone. Download a copy now and then to keep them safe.",
+    "Dina sparade jobb sparas bara i den här webbläsaren, så om du rensar webbläsardata eller byter enhet försvinner de. Ladda ner en kopia ibland så att de finns kvar."],
+  "bk.copy": ["Download a copy", "Ladda ner en kopia"], "bk.notnow": ["Not now", "Inte nu"],
+  "bk.done": ["Copy downloaded. You can restore it under My applications.", "Kopian är nedladdad. Du kan läsa in den under Mina ansökningar."],
+  "bk.only": ["Saved only in this browser", "Sparat bara i den här webbläsaren"],
+  "bk.since1": ["{n} change since your last copy.", "{n} ändring sedan din senaste kopia."], "bk.sinceN": ["{n} changes since your last copy.", "{n} ändringar sedan din senaste kopia."],
+  "mt.bk": ["Your CV and this advice are stored only in this browser.", "Ditt CV och de här råden sparas bara i den här webbläsaren."],
 
   // Search messages
   "need.input": ["Add at least one keyword or a place, otherwise the search covers every job ad in the country.", "Lägg till minst ett sökord eller en ort, annars blir det alla jobbannonser i hela landet."],
@@ -243,7 +299,7 @@ const I18N = {
   "hist.first": ["First ad of this kind from them in 2 yrs", "Deras första annons av det här slaget på 2 år"],
   "howapply": ["How to apply", "Så söker du"], "readad": ["Read the ad", "Läs annonsen"], "status": ["Status", "Status"], "notracked": ["No status", "Ingen status"],
   "note.ph": ["Notes: who you talked to, what you sent, next step…", "Anteckningar: vem du pratade med, vad du skickade, nästa steg…"], "note.aria": ["Notes for {title}", "Anteckningar för {title}"],
-  "saved": ["Saved in this browser", "Sparat i den här webbläsaren"], "blocked": ["Your browser blocked saving.", "Webbläsaren blockerade sparandet."],
+  "saved": ["Saved only in this browser", "Sparat bara i den här webbläsaren"], "blocked": ["Your browser blocked saving.", "Webbläsaren blockerade sparandet."],
   "contactin": ["Contact in this ad:", "Kontakt i annonsen:"], "recruiter.lc": ["recruiter", "rekryterare"],
   "contacts": ["Contacts", "Kontakter"], "nocontacts": ["No contact person is named in these ads.", "Ingen kontaktperson nämns i de här annonserna."],
   "li.company": ["Find people at {name} on LinkedIn", "Hitta anställda hos {name} på LinkedIn"], "li.find": ["Find on LinkedIn", "Hitta på LinkedIn"], "li.add": ["Add link", "Lägg till länk"], "li.change": ["Change", "Ändra"], "li.profile": ["LinkedIn profile", "LinkedIn-profil"],
@@ -349,6 +405,15 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
 };
+// How long ago, in words: "just now", "12 min ago", "3 hours ago", "yesterday", "4 days ago"
+function agoText(iso) {
+  const mins = Math.max(0, Math.round((Date.now() - new Date(iso)) / 60000));
+  if (mins < 2) return t("ago.now");
+  if (mins < 60) return t("ago.min", { n: mins });
+  const h = Math.round(mins / 60), d = -daysTo(localDay(new Date(iso)));
+  if (h < 24 && d < 1) return tn(h, "ago.h1", "ago.hN");
+  return d <= 1 ? t("ago.yday") : t("ago.dN", { n: d });
+}
 const median = a => { const s = a.slice().sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)] : null; };
 const mode = a => { const m = new Map(); let best = null, n = 0; for (const x of a) { const c = (m.get(x) || 0) + 1; m.set(x, c); if (c > n) { n = c; best = x; } } return best; };
 
@@ -363,6 +428,8 @@ const hist = new Map(Object.entries(store.get("jf-hist", {})));
 const histLoading = new Set();
 const addingFor = new Set(), editingLi = new Set(), noteTimers = new Map();
 let terms = [], excludes = [], searching = false, companies = [], backupMsg = null;
+let searchFail = null;   // the last search that didn't reach the job ad services: { text, params }
+let bkFirst = null;      // the role showing the one-time backup reminder: { id, done }
 const alts = {};   // keyword -> the Swedish words searched with it, see swedishFor
 
 /* ---------- Static text in the chosen language ---------- */
@@ -384,6 +451,7 @@ function applyLang() {
   if (out.length) parts.push(out.join(" · "));
   if (ABOUT.version) parts.push(esc(t("version", { v: ABOUT.version })));
   $("credit").innerHTML = parts.join(" · ");
+  renderFeedback();
   kwBox.draw(); exBox.draw(); showHint(kwHint);
 }
 document.querySelector(".lang").addEventListener("click", e => {
@@ -783,11 +851,15 @@ async function runSearch() {
       + (capped.length ? t("capped", { max: MAX_PER_TERM, list: capped.join(", ") }) : "")
       + (saved ? "" : t("nosave"));
     openIds = new Set([...openIds].filter(k => list.some(a => companyKey(a) === k)));
+    searchFail = null;
     render();
     checkPhrases(p.terms);   // catches phrases that came from a saved search or the Mentor rather than the box
   } catch (e) {
     console.error(e);
     $("msg").textContent = searchError(e) + (results ? t("unchanged") : ""); $("msg").className = "msg err";
+    // A place that doesn't exist is the person's to fix in the form. Anything else is the services not answering, which the results area explains.
+    searchFail = e instanceof PlaceError ? null : { text: searchError(e), params: p };
+    render();
   } finally {
     searching = false; $("go").disabled = false; progress("");
   }
@@ -959,7 +1031,7 @@ function sideHtml(c) {
   const facts = [];
   if (c.org) facts.push(`<div>${esc(t("orgnr"))} <span class="mono">${esc(fmtOrg(c.org))}</span></div>`);
   if (c.site) facts.push(`<div><a href="${esc(c.site)}" target="_blank" rel="noopener">${esc(c.site.replace(/^https?:\/\//, "").replace(/\/$/, ""))}</a></div>`);
-  if (c.org) facts.push(`<div>${histLoading.has(c.org) ? esc(t("hist.loading")) : h && !h.failed ? t("hist.total", { n: +h.total || 0 }) : h && h.failed ? esc(t("hist.failed")) : esc(t("hist.later"))}</div>`);
+  if (c.org) facts.push(`<div>${histLoading.has(c.org) ? esc(t("hist.loading")) : h && !h.failed ? t("hist.total", { n: +h.total || 0 }) : h && h.failed ? `${esc(t("hist.failed"))} <button class="linkbtn" type="button" data-act="hist-retry">${esc(t("hist.retry"))}</button>` : esc(t("hist.later"))}</div>`);
   if (c.agency) facts.push(`<div>${esc(t("agency.fact"))}</div>`);
   return `<aside class="side">
     <section class="card" aria-label="${esc(t("contacts"))}">
@@ -1022,6 +1094,7 @@ function roleHtml(c, a) {
         ${applyHref ? `<a class="btn ghost sm" href="${esc(applyHref)}" target="_blank" rel="noopener">${esc(t("howapply"))}</a>` : ""}
         <a class="btn ghost sm" href="${esc(a.url || adUrl(a.id))}" target="_blank" rel="noopener">${esc(t("readad"))}</a>${tailorBtn(a.id)}</div>
       ${app.status || app.note ? noteHtml(a.id, a.title, app.note) : ""}
+      ${bkPromptHtml(a.id)}
     </div>
     ${contacts.length ? `<div class="role-contact">${esc(t("contactin"))} ${contacts.map(p => { const li = p.li || ln[contactKey(p)]; const role = p.t ? `, ${esc(p.t.toLowerCase())}` : p.kind === "recruiter" ? `, ${esc(t("recruiter.lc"))}` : ""; return `${li ? `<a href="${esc(li)}" target="_blank" rel="noopener"><b>${esc(p.n)}</b></a>` : `<b>${esc(p.n)}</b>`}${role}`; }).join("; ")}</div>` : ""}
   </article>`;
@@ -1075,21 +1148,48 @@ function render() {
   fillFields();
   const vis = renderStats() || [];
   if (!results) {
-    $("list").innerHTML = `<div class="empty"><strong>${esc(t("empty.title"))}</strong>${esc(t("empty.text"))}${ABOUT.tailor ? `
+    $("list").innerHTML = searchFail ? `<div class="empty err-panel"><strong>${esc(t("err.title"))}</strong><p>${esc(searchFail.text)}</p>
+      <div class="row"><button class="btn sm" type="button" data-act="retry">${esc(t("err.retry"))}</button>${fbLink("bug", t("err.still"), t("fb.err", { m: searchFail.text }))}</div></div>`
+      : `<div class="empty"><strong>${esc(t("empty.title"))}</strong>${esc(t("empty.text"))}${ABOUT.tailor ? `
       <div class="empty-mentor"><span>${esc(t("empty.mentor"))}</span><button class="btn ghost sm" type="button" data-act="goto-mentor">${esc(t("empty.mentor.go"))}</button></div>` : ""}</div>`;
-    $("count").textContent = ""; $("note-bar").textContent = "";
+    $("count").textContent = ""; renderNoteBar();
   } else {
     $("list").innerHTML = vis.length ? vis.map(companyHtml).join("") : `<div class="empty"><strong>${esc(t("nomatch.title"))}</strong>${esc(t("nomatch.text"))}</div>`;
     const total = companies.filter(c => $("f-hidden").checked || !hidden.has(c.key)).length;
     $("count").textContent = vis.length === total ? tn(vis.length, "count.all", "count.allN") : t("count.some", { v: vis.length, n: total });
-    const p = results.params, g = results.geo;
-    $("note-bar").textContent = t("note", { terms: p.terms.length ? p.terms.map(x => termText(p, x)).join(", ") : t("note.all"), place: placeLabel(g),
-      radius: hasRadius(g, p) ? ` + ${p.radius} km` : "", ex: p.excludes.length ? t("note.ex", { ex: p.excludes.join(", ") }) : "" });
+    renderNoteBar();
   }
   $("expand-all").textContent = t(vis.length && vis.every(c => openIds.has(c.key)) ? "collapse" : "expand");
   renderApps();
   for (const c of vis) if (openIds.has(c.key) && c.org && !hist.has(c.org)) loadHistory(c.org);
 }
+// The bar above the results: what was searched and when it was last checked. When results are a day old it suggests searching
+// again, and when the latest search didn't reach the job ad services it says so and keeps the earlier results with a way to try again.
+const STALE_AFTER = 24 * 36e5;
+function renderNoteBar() {
+  const bar = $("note-bar");
+  if (!results) { bar.innerHTML = ""; return; }
+  const p = results.params, g = results.geo, ago = agoText(results.at), old = Date.now() - new Date(results.at) > STALE_AFTER;
+  const what = t("note", { terms: p.terms.length ? p.terms.map(x => termText(p, x)).join(", ") : t("note.all"), place: placeLabel(g),
+    radius: hasRadius(g, p) ? ` + ${p.radius} km` : "", ex: p.excludes.length ? t("note.ex", { ex: p.excludes.join(", ") }) : "" });
+  const parts = [`<p class="nb-line">${esc(what)} <span class="nb-ago">${esc(t("checked", { ago }))}</span>${searchFail || old ? "" : ` <button class="linkbtn" type="button" data-act="refresh">${esc(t("refresh"))}</button>`}</p>`];
+  if (searchFail) parts.push(`<div class="nb-warn"><p>${esc(t("err.kept", { ago }))} ${esc(searchFail.text)}</p>
+    <div class="row"><button class="btn sm" type="button" data-act="retry">${esc(t("err.retry"))}</button>${fbLink("bug", t("err.still"), t("fb.err", { m: searchFail.text }))}</div></div>`);
+  else if (old) parts.push(`<div class="nb-warn"><p>${esc(t("stale", { ago }))}</p><div class="row"><button class="btn sm" type="button" data-act="refresh">${esc(t("refresh"))}</button></div></div>`);
+  if (!searchFail && p.links && results.linksOk === false) parts.push(`<p class="nb-info">${esc(t("links.failbar"))} <button class="linkbtn" type="button" data-act="refresh">${esc(t("err.retry"))}</button></p>`);
+  bar.innerHTML = parts.join("");
+}
+// Try again runs the search that failed; Search again runs the search the results came from, whatever is in the form now
+async function retrySearch(act) {
+  const p = act === "retry" && searchFail ? searchFail.params : results?.params;
+  if (p) fillForm(p);
+  await runSearch();
+  if (document.activeElement === document.body || !document.activeElement) ($("note-bar").querySelector("button") || $("go")).focus();
+}
+$("note-bar").addEventListener("click", e => { const b = e.target.closest("button[data-act]"); if (b && ["retry", "refresh"].includes(b.dataset.act)) retrySearch(b.dataset.act); });
+// Keeps "Last checked" current while the page is open, without redrawing under someone using the bar
+setInterval(() => { const s = $("note-bar").querySelector(".nb-ago"); if (s && results) s.textContent = t("checked", { ago: agoText(results.at) }); }, 60000);
+
 // Redraws one employer. Keeps whatever the person was typing or had focused, since history can arrive mid-typing.
 function rerenderCompany(key, focusSel) {
   if (!key) return;
@@ -1129,13 +1229,17 @@ function snapOf(a) {
 function backupHtml() {
   const at = store.get("jf-backup-at", null);
   const msg = backupMsg ? `<p class="${backupMsg.ok ? "ok" : "err"}" role="status">${esc(backupMsg.text)}</p>` : "";
-  return `<section class="backup" id="backup" aria-labelledby="bk-title">
+  // Changes since the copy: roles saved or updated after it was downloaded (copies from before the exact time was kept go by the day)
+  const atTime = store.get("jf-backup-time", null);
+  const changed = Object.values(apps).filter(x => x.status && (!at || (atTime ? (x.updatedAt || "") > atTime : localDay(new Date(x.updatedAt || 0)) > at))).length;
+  const warn = changed > 0 && (!at || -daysTo(at) >= 14);
+  return `<section class="backup${warn ? " warn" : ""}" id="backup" aria-labelledby="bk-title">
     <h3 id="bk-title">${esc(t("bk.title"))}</h3>
     <p>${esc(t("bk.text"))}</p>
     <div class="row"><button class="btn sm" type="button" id="bk-down">${esc(t("bk.download"))}</button>
       <button class="btn ghost sm" type="button" id="bk-up">${esc(t("bk.restore"))}</button>
       <input type="file" id="bk-file" accept=".json,application/json" hidden></div>
-    <p>${esc(at ? t("bk.last", { date: fmtDate(at) }) : t("bk.never"))}</p>${msg}
+    <p>${esc(at ? t("bk.last", { date: fmtDate(at) }) : t("bk.never"))}${at && changed ? " " + esc(tn(changed, "bk.since1", "bk.sinceN")) : ""}</p>${msg}
   </section>`;
 }
 function renderApps() {
@@ -1151,7 +1255,7 @@ function renderApps() {
         <div class="role-meta"><b>${esc(sn.company || "")}</b>${sn.muni ? `<span>${esc(sn.muni)}</span>` : ""}${sn.deadline ? deadlineHtml(sn.deadline, ["Rejected", "Not interested"].includes(s)) : ""}${x.appliedAt && SENT.has(s) ? `<span>${esc(t("app.applied", { date: fmtDate(localDay(new Date(x.appliedAt))) }))}</span>` : ""}${x.followedUp && SENT.has(s) ? `<span>${esc(t("app.followed", { date: fmtDate(x.followedUp) }))}</span>` : ""}<span>${esc(t("updated", { date: fmtDate(localDay(new Date(x.updatedAt || Date.now()))) }))}</span>${live ? "" : `<span>${esc(t("notlive"))}</span>`}</div>
         ${(sn.contacts || []).length ? `<div class="role-contact">${esc(t("contact"))} ${sn.contacts.map(p => `<b>${esc(p.n)}</b>${p.e ? ` <a href="mailto:${esc(p.e)}">${esc(p.e)}</a>` : ""}`).join("; ")}</div>` : ""}
         <div class="track"><div class="row">${statusSelect(id, s)}${sn.apply ? `<a class="btn ghost sm" href="${esc(sn.apply)}" target="_blank" rel="noopener">${esc(t("howapply"))}</a>` : ""}${tailorBtn(id)}</div>
-          ${noteHtml(id, sn.title || t("role"), x.note)}</div>
+          ${noteHtml(id, sn.title || t("role"), x.note)}${bkPromptHtml(id)}</div>
       </div>`; }).join("")}</div></div>`;
   }).join("") : `<div class="empty"><strong>${esc(t("apps.empty.title"))}</strong>${esc(t("apps.empty.text"))}</div>`;
   $("apps").innerHTML = backupHtml() + groups;
@@ -1165,7 +1269,27 @@ function setStatus(id, status) {
   if (!status && !prev.note) delete apps[id];
   else apps[id] = { ...prev, status, updatedAt: now, snap: a ? snapOf(a) : prev.snap, ...(fresh ? { appliedAt: now, followedUp: undefined, nudgeAfter: undefined } : {}) };
   store.set("jf-apps", apps);
+  if (status && !bkFirst && !store.get("jf-backup-at", null) && !store.get("jf-bk-first", null)) bkFirst = { id, done: false };
 }
+// The one-time reminder to keep a copy, after the first saved job. Shown once: downloading or Not now puts it away for good.
+function bkPromptHtml(id) {
+  if (!bkFirst || bkFirst.id !== id) return "";
+  if (bkFirst.done) return `<p class="bk-prompt bk-ok" role="status" tabindex="-1">${esc(t("bk.done"))}</p>`;
+  const n = Object.values(apps).filter(x => x.status).length;
+  return `<div class="bk-prompt" role="status"><p>${esc(t(n > 1 ? "bk.first.n" : "bk.first"))}</p>
+    <div class="row"><button class="btn sm" type="button" data-bk="down">${esc(t("bk.copy"))}</button><button class="btn ghost sm" type="button" data-bk="later">${esc(t("bk.notnow"))}</button></div></div>`;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-bk]"); if (!b || !bkFirst) return;
+  const id = bkFirst.id, inApps = !!b.closest("#apps");
+  store.set("jf-bk-first", today());
+  if (b.dataset.bk === "down") { bkFirst.done = true; downloadBackup(); } else bkFirst = null;
+  const art = document.querySelector(`#list article.role[data-ad="${CSS.escape(id)}"]`)?.closest("article.co");
+  if (art) rerenderCompany(art.dataset.id);
+  renderApps();
+  const where = inApps ? $("apps") : art ? document.querySelector(`#list article.role[data-ad="${CSS.escape(id)}"]`) : null;
+  (where?.querySelector(`.bk-ok`) || where?.querySelector(`select[data-ad="${CSS.escape(id)}"]`))?.focus();
+});
 function downloadBlob(text, name, type) {
   const url = URL.createObjectURL(new Blob([text], { type })), link = document.createElement("a");
   link.href = url; link.download = name; document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
@@ -1174,7 +1298,7 @@ function downloadBackup() {
   const data = { apps, hidden: [...hidden], people, links, search: store.get("jf-search", null), seen: store.get("jf-seen", {}), prefs: store.get("jf-prefs", {}), lang, cv: store.get("jf-cv", ""), tailor: tailorStore,
     mentor: store.get("jf-mentor", null), mentorAnswers: mtAns };
   downloadBlob(JSON.stringify({ app: "job-finder", version: 1, exported: new Date().toISOString(), data }, null, 1), `job-finder-backup-${today()}.json`, "application/json");
-  store.set("jf-backup-at", today()); backupMsg = null; renderApps();
+  store.set("jf-backup-at", today()); store.set("jf-backup-time", new Date().toISOString()); backupMsg = null; renderApps();
 }
 function restoreBackup(file) {
   const reader = new FileReader();
@@ -1207,6 +1331,7 @@ function restoreBackup(file) {
     if (validMentor(d.mentor) && !mentor) { mentor = { at: String(d.mentor.at || ""), lang: d.mentor.lang === "en" ? "en" : "sv", cvHash: String(d.mentor.cvHash || ""), data: d.mentor.data, counts: null }; store.set("jf-mentor", mentor); }
     if (isObj(d.mentorAnswers) && !store.get("jf-mentor-ans", null)) { for (const [k, opts] of MT_Q) if (opts.includes(d.mentorAnswers[k])) mtAns[k] = d.mentorAnswers[k]; store.set("jf-mentor-ans", mtAns); }
     const ok = [store.set("jf-apps", apps), store.set("jf-hidden", [...hidden]), store.set("jf-people", people), store.set("jf-links", links)].every(Boolean);
+    store.set("jf-bk-first", today()); bkFirst = null;   // someone restoring a copy doesn't need the reminder to make one
     backupMsg = { ok, text: ok ? t("bk.ok", { apps: tn(nApps, "bk.apps1", "bk.appsN"), contacts: tn(nPeople, "bk.ppl1", "bk.pplN"), hidden: tn(nHidden, "bk.hid1", "bk.hidN") }) : t("bk.nostore") };
     render(); renderMentor();
   };
@@ -1231,6 +1356,8 @@ $("list").addEventListener("click", e => {
   const el = e.target.closest("[data-act]"); if (!el || e.target.closest("a")) return;
   const art = el.closest("article.co"), key = art?.dataset.id, act = el.dataset.act;
   if (act === "goto-mentor") { selectTab("mentor"); window.scrollTo(0, 0); $("tab-mentor").focus(); }
+  else if (act === "retry" || act === "refresh") retrySearch(act);
+  else if (act === "hist-retry") { const c = companies.find(x => x.key === key); if (c?.org) { hist.delete(c.org); loadHistory(c.org); rerenderCompany(key, 'button[data-act="hide"]'); } }
   else if (act === "toggle") setOpen(key, !openIds.has(key));
   else if (act === "copy") copyText(el.dataset.copy, el);
   else if (act === "add-person") { addingFor.add(key); rerenderCompany(key, 'input[name="n"]'); }
@@ -1267,11 +1394,13 @@ $("list").addEventListener("submit", e => {
 });
 function onStatus(e) {
   const el = e.target; if (el.dataset.role !== "status") return;
-  const was = apps[el.dataset.ad]?.status || "";
+  const was = apps[el.dataset.ad]?.status || "", inApps = !!el.closest("#apps");
   setStatus(el.dataset.ad, el.value);
   const art = el.closest("article.co");
   if (art) rerenderCompany(art.dataset.id, el.value ? `textarea[data-ad="${CSS.escape(el.dataset.ad)}"]` : `select[data-ad="${CSS.escape(el.dataset.ad)}"]`);
   renderStats(); renderApps(); renderWelcome();
+  if (inApps) $("apps").querySelector(`select[data-ad="${CSS.escape(el.dataset.ad)}"]`)?.focus();
+  if (el.value) document.querySelectorAll(`[data-saved="${CSS.escape(el.dataset.ad)}"]`).forEach(s => s.textContent = t("saved"));
   if (el.value === "Rejected" && was !== "Rejected") maybeNudge();   // after a few rejections, a word on the market (src/market.js)
 }
 function flushNote(el) {
@@ -1340,6 +1469,36 @@ $("export").addEventListener("click", () => {
   }
   downloadBlob("﻿" + rows.map(r => r.map(csvCell).join(",")).join("\r\n"), `job-finder-${today()}.csv`, "text/csv;charset=utf-8");
 });
+
+/* ---------- Feedback during the beta ---------- */
+// Each category opens a new GitHub issue with the category in the title and the app version, language, tab and browser filled in.
+// Nothing from the person's searches, CV or saved data is added. Issues are public, and the text next to the links says so.
+const FB = { bug: "Bug", ads: "Ads", ai: "AI", idea: "Idea", other: "Other" };
+const FB_QUESTIONS = { bug: ["fb.q.what", "fb.q.expect"], ads: ["fb.q.ads", "fb.q.what"], ai: ["fb.q.ai"], idea: ["fb.q.idea"], other: ["fb.q.what"] };
+function browserName() {
+  const u = navigator.userAgent, m = (re, name) => { const x = u.match(re); return x ? `${name} ${x[1]}` : ""; };
+  const b = m(/Edg\/(\d+)/, "Edge") || m(/Firefox\/(\d+)/, "Firefox") || m(/(?:Chrome|CriOS)\/(\d+)/, "Chrome") || m(/Version\/(\d+)[\d.]* .*Safari/, "Safari");
+  const os = /Android/.test(u) ? "Android" : /iPhone|iPad|iPod/.test(u) ? "iOS" : /Windows/.test(u) ? "Windows" : /Mac OS X/.test(u) ? "Mac" : /Linux/.test(u) ? "Linux" : "";
+  return [b, os].filter(Boolean).join(" · ");
+}
+// line: one line of context put first in the report, such as which part of the app or the error message shown
+function feedbackUrl(kind, line) {
+  const view = { res: "tab.res", app: "tab.app", market: "tab.market", mentor: "tab.mentor" }[currentView];
+  const ctx = [`Job Finder ${ABOUT.version || ""}`.trim(), lang === "sv" ? "Svenska" : "English", I18N[view][0], browserName()].filter(Boolean).join(" · ");
+  const body = [...(line ? [line] : []), ...(FB_QUESTIONS[kind] || FB_QUESTIONS.other).map(k => `**${t(k)}**\n\n`), "---", ctx, `_${t("fb.public")}_`].join("\n\n");
+  return `${ABOUT.repo.replace(/\/$/, "")}/issues/new?title=${encodeURIComponent(`[${FB[kind] || FB.other}] `)}&body=${encodeURIComponent(body)}`;
+}
+// The link's address is filled in again just before it's followed, so it names the tab the person is on at that moment
+function fbLink(kind, label, line) {
+  if (!ABOUT.repo) return "";
+  return `<a class="fb-link" href="${esc(feedbackUrl(kind, line))}" target="_blank" rel="noopener" data-fb="${esc(kind)}"${line ? ` data-line="${esc(line)}"` : ""}>${esc(label)}</a>`;
+}
+for (const ev of ["pointerdown", "focusin"]) document.addEventListener(ev, e => { const a = e.target.closest?.("a[data-fb]"); if (a) a.href = feedbackUrl(a.dataset.fb, a.dataset.line); }, true);
+function renderFeedback() {
+  const box = $("feedback"); if (!box) return;
+  box.hidden = !ABOUT.repo;
+  $("fb-list").innerHTML = ["bug", "ads", ...(ABOUT.tailor ? ["ai"] : []), "idea", "other"].map(k => `<li>${fbLink(k, t("fb." + k))}</li>`).join("");
+}
 
 /* ---------- Welcome back: news since the last visit ---------- */
 // A visit counts as a return when it starts at least 6 hours after the page was last open. It's greeted with what has changed:
@@ -1458,6 +1617,7 @@ function initWelcome() {
 
 /* ---------- Start ---------- */
 if (ABOUT.tailor) document.querySelector('[data-th="about.privacy"]').dataset.th = "about.privacy.ai";
+document.querySelector('[data-th="foot.ai"]').hidden = !ABOUT.tailor;
 $("tab-mentor").hidden = !ABOUT.tailor;
 initTailor();
 initMentor();

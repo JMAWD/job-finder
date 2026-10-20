@@ -84,6 +84,138 @@ async def search(pg):
     await pg.click('#go'); await pg.wait_for_function("document.getElementById('msg').textContent.length > 0", timeout=20000)
     return await pg.locator('#msg').inner_text()
 
+# Which element draws the focus ring (the element, or the box around it for keyword chips, colour circles and the Mentor's answers),
+# and the contrast of that ring against what's behind it. WCAG asks for 3:1.
+RING = """el => {
+  const rgb = c => { const m = c.match(/[\\d.]+/g); return m ? m.slice(0, 4).map(Number) : null; };
+  const lum = ([r, g, b]) => { const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }; return .2126 * f(r) + .7152 * f(g) + .0722 * f(b); };
+  const holder = el.closest('.chips-in') || el.closest('.pal') || (el.matches('.mt-in') ? el.nextElementSibling : null);
+  let ringEl = el, s = getComputedStyle(el);
+  if (s.outlineStyle === 'none' && holder) { ringEl = holder; s = getComputedStyle(holder); }
+  const name = el.tagName + (el.id ? '#' + el.id : '') + (typeof el.className === 'string' && el.className ? '.' + el.className.split(' ')[0] : '');
+  if (s.outlineStyle === 'none' || !parseFloat(s.outlineWidth)) return name + ' has no ring';
+  let b = ringEl.parentElement, bg = [255, 255, 255];
+  while (b) { const c = rgb(getComputedStyle(b).backgroundColor); if (c && (c.length < 4 || c[3] > .9)) { bg = c; break; } b = b.parentElement; }
+  const [x, y] = [lum(rgb(s.outlineColor)), lum(bg)].sort((p, q) => q - p), r = (x + .05) / (y + .05);
+  return r < 3 ? name + ' ring ' + r.toFixed(2) + ':1' : '';
+}"""
+async def weak_rings(pg, presses=110):
+    weak = []
+    await pg.evaluate("document.activeElement && document.activeElement.blur()")
+    for _ in range(presses):
+        await pg.keyboard.press('Tab')
+        r = await pg.evaluate(f"(() => {{ const el = document.activeElement; return !el || el === document.body ? '' : ({RING})(el); }})()")
+        if r: weak.append(r)
+    return sorted(set(weak))
+
+async def beta_checks(browser, errors):
+    """What a beta tester meets when things go wrong: failed searches, old results, feedback, backups. Then phone tabs, focus rings and zoom."""
+    ctx = await browser.new_context(locale='en-US', viewport={'width': 1280, 'height': 1000}, accept_downloads=True)
+    down = {'links': False, 'hist': True}
+    async def links_or_fail(route): return await (route.abort() if down['links'] else joblinks(route))
+    async def hist_or_fail(route): return await (route.abort() if down['hist'] else history(route))
+    await ctx.route('https://jobsearch.api.jobtechdev.se/**', jobsearch)
+    await ctx.route('https://links.api.jobtechdev.se/**', links_or_fail)
+    await ctx.route('https://historical.api.jobtechdev.se/**', hist_or_fail)
+    pg = await ctx.new_page(); pg.on('pageerror', lambda e: errors.append(str(e)))
+    await pg.goto(PAGE)
+
+    # The first search fails: the results area says why, with a way to try again and to report it
+    await pg.fill('#place', 'Göteborg'); await pg.fill('#kw-input', 'software engineer'); await pg.press('#kw-input', 'Enter')
+    STATE['offline'] = True; await search(pg)
+    panel = await pg.locator('#list').inner_text()
+    check('a failed first search is explained in the results area', "The search didn't go through" in panel and "couldn't reach Platsbanken" in panel and 'Start with a search' not in panel, panel)
+    fb = await pg.locator('#list a[data-fb=bug]').get_attribute('href')
+    check('with a link to report it on GitHub', fb.startswith('https://github.com/JMAWD/job-finder/issues/new?title=%5BBug%5D%20') and 'Message%20shown' in fb, fb)
+    STATE['offline'] = False; down['links'] = True
+    await pg.click('#list [data-act=retry]')
+    await pg.wait_for_function("document.getElementById('msg').textContent.startsWith('Found')", timeout=20000)
+    bar = await pg.locator('#note-bar').inner_text()
+    n = await pg.locator('article.co').count(); check('try again runs the search', n > 0, n)
+    check('the bar says when the results were last checked', 'Last checked just now.' in bar, bar)
+    check('and that other job sites could not be read', "Other job sites couldn't be read in this search, so only Platsbanken's ads are shown." in bar, bar)
+    down['links'] = False
+
+    # Hiring history that didn't load can be fetched again
+    acme = pg.locator('article.co', has_text='Acme Robotics'); await acme.locator('button.exp').click()
+    await pg.wait_for_selector('article.co [data-act=hist-retry]', timeout=15000)
+    down['hist'] = False
+    await acme.locator('[data-act=hist-retry]').click()
+    await pg.wait_for_function("document.querySelector('article.co .facts').textContent.includes('Platsbanken ads in 2 yrs')", timeout=10000)
+    check('hiring history: try again after a failure', '3 Platsbanken ads in 2 yrs' in await acme.locator('.facts').inner_text())
+
+    # The first saved job brings a one-time reminder to keep a copy, in its tracker
+    role = acme.locator('article.role').first
+    await role.locator('select[data-role=status]').select_option('Saved')
+    track = await role.locator('.track').inner_text()
+    check('the tracker says where it is saved', 'Saved only in this browser' in track, track)
+    check('the first saved job asks for a copy', 'Your first saved job. It\'s stored only in this browser' in track, track)
+    await role.locator('[data-bk=later]').click()
+    check('Not now puts the reminder away', await pg.locator('.bk-prompt').count() == 0 and await pg.evaluate("!!localStorage.getItem('jf-bk-first')")
+          and await pg.evaluate("document.activeElement.dataset.ad") == '101')
+    await acme.locator('article.role').nth(1).locator('select[data-role=status]').select_option('Saved')
+    check('and it does not come back', await pg.locator('.bk-prompt').count() == 0)
+    await pg.click('#tab-app')
+    check('My applications says where the data lives', 'stored only in this browser on this device' in await pg.locator('#view-app .lede').inner_text())
+    check('the backup card stands out when there is no copy', await pg.locator('#backup.warn').count() == 1)
+    async with pg.expect_download(): await pg.click('#bk-down')
+    check('and calms down after a copy', await pg.locator('#backup.warn').count() == 0 and 'Last copy downloaded' in await pg.locator('#backup').inner_text())
+    await pg.locator('#apps select[data-ad="101"]').select_option('Applied')
+    check('changes since the copy are counted', '1 change since your last copy.' in await pg.locator('#backup').inner_text(), await pg.locator('#backup').inner_text())
+    check('focus follows the role when its status changes', await pg.evaluate("document.activeElement.dataset.ad") == '101')
+
+    # Old results say so and offer a fresh search; a search that fails on top of them keeps them and says why
+    await pg.click('#tab-res')
+    await pg.evaluate("() => { const r = JSON.parse(localStorage.getItem('jf-results')); r.at = new Date(Date.now() - 3 * 864e5).toISOString(); localStorage.setItem('jf-results', JSON.stringify(r)); }")
+    await pg.reload()
+    bar = await pg.locator('#note-bar').inner_text()
+    check('results three days old say so', 'Last checked 3 days ago.' in bar and 'These results were fetched 3 days ago. Some ads may have closed since' in bar, bar)
+    STATE['offline'] = True
+    await pg.locator('#note-bar .nb-warn [data-act=refresh]').click()
+    await pg.wait_for_function("document.getElementById('msg').classList.contains('err')", timeout=20000)
+    bar = await pg.locator('#note-bar').inner_text()
+    check('a failed search keeps the earlier results and says so', "The new search didn't go through, so these are the results fetched 3 days ago." in bar and await pg.locator('article.co').count() > 0, bar)
+    STATE['offline'] = False
+    await pg.locator('#note-bar [data-act=retry]').click()
+    await pg.wait_for_function("document.getElementById('msg').textContent.startsWith('Found')", timeout=20000)
+    bar = await pg.locator('#note-bar').inner_text()
+    check('and try again brings them up to date', 'Last checked just now.' in bar and "didn't go through" not in bar and 'fetched' not in bar, bar)
+
+    # Feedback: one link per kind of problem, with nothing from the person's search in the report
+    links = pg.locator('#fb-list a')
+    titles = [parse_qs(urlparse(await links.nth(i).get_attribute('href')).query)['title'][0] for i in range(await links.count())]
+    check('feedback links for each kind of report', titles == ['[Bug] ', '[Ads] ', '[AI] ', '[Idea] ', '[Other] '], titles)
+    await pg.click('#tab-app'); await links.first.focus()
+    body = parse_qs(urlparse(await links.first.get_attribute('href')).query)['body'][0]
+    check('the report names the version, language and tab, and says it is public', 'Job Finder 1.' in body and 'English · My applications' in body and 'This report is public' in body, body)
+    check('and leaves out the search', 'software engineer' not in body and 'Göteborg' not in body, body)
+    await pg.click('#tab-res')
+
+    # Phone: every part of the suite fits across the top, labels on one line, in Swedish at 320 px too
+    await pg.click('.lang button[data-lang=sv]')
+    for w in (320, 375):
+        await pg.set_viewport_size({'width': w, 'height': 700})
+        fit = await pg.evaluate(f"[...document.querySelectorAll('.tab')].filter(t => !t.hidden).map(t => {{ const r = t.getBoundingClientRect(), s = t.querySelector('.tab-s') || t.querySelector('span[data-t]'); return r.left >= 0 && r.right <= {w} && s.offsetHeight < 20 && s.scrollWidth <= t.clientWidth; }})")
+        check(f'all four tabs fit on a {w} px phone', fit == [True] * 4 and await pg.evaluate('document.documentElement.scrollWidth') <= w, fit)
+    await pg.set_viewport_size({'width': 1280, 'height': 1000}); await pg.click('.lang button[data-lang=en]')
+
+    # Focus rings: every stop when tabbing through each view has a ring with 3:1 contrast, light and dark
+    for scheme in ('light', 'dark'):
+        await pg.emulate_media(color_scheme=scheme)
+        for view in ('res', 'app', 'market', 'mentor'):
+            await pg.click(f'#tab-{view}')
+            weak = await weak_rings(pg)
+            check(f'focus rings show in {view}, {scheme}', not weak, weak)
+    await pg.emulate_media(color_scheme='light')
+
+    # Zoom: 200% and 400% of a 1280 x 720 window, nothing wider than the screen
+    for w, h in ((640, 360), (320, 256)):
+        await pg.set_viewport_size({'width': w, 'height': h})
+        for view in ('res', 'app', 'market', 'mentor'):
+            await pg.click(f'#tab-{view}')
+            check(f'no sideways scroll in {view} at {1280 // w * 100}% zoom', await pg.evaluate('document.documentElement.scrollWidth') <= w)
+    await ctx.close()
+
 async def main():
     SHOTS.mkdir(parents=True, exist_ok=True)
     async with async_playwright() as p:
@@ -291,6 +423,7 @@ async def main():
         await pg.fill('#kw-input', ''); await pg.dispatch_event('#kw-input', 'input')
         check('the hint goes away when the box is cleared', await pg.locator('#kw-hint').inner_text() == '')
 
+        await beta_checks(browser, errors)
         check('no script errors', not errors, errors)
         await browser.close()
     print(f'{len(passed)} checks passed')

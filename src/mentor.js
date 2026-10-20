@@ -199,6 +199,7 @@ function mtGoCard() {
     ${mt.error ? `<p class="tl-err" role="alert">${esc(mt.error)}</p>` : ""}
     ${has ? `<p class="tl-hint">${esc(t("mt.made", { date: fmtDate(localDay(new Date(mentor.at))) }))}</p>` : ""}
     ${has && mentor.lang !== lang ? `<p class="mt-flag">${esc(t("mt.otherlang"))}</p>` : ""}
+    ${has && (store.get("jf-backup-time", "") || (store.get("jf-backup-at", "") ? store.get("jf-backup-at") + "T23:59:59" : "")) < mentor.at ? `<p class="tl-hint">${esc(t("mt.bk"))} <button class="linkbtn" type="button" data-mt="backup">${esc(t("bk.copy"))}</button></p>` : ""}
     <p class="tl-hint">${esc(t("mt.privacy"))}</p>
   </section>`;
 }
@@ -248,14 +249,17 @@ function mtMainHtml() {
   const d = mentor.data, r = mtRoles(d), cs = mtCourses(d), place = mtPlace();
   const adjust = [t("mt.hl." + mtAns.horizon), mtAns.time === "t1" ? t("mt.tl.t1") : "", mtAns.budget !== "employer" ? t("mt.bl." + mtAns.budget) : ""].filter(Boolean).join(" ");
   const note = [d.opener, mtAns.dir === "any" ? t("mt.dl.any") : d.notes[mtAns.dir]].filter(Boolean).join(" ");
-  const where = mt.counting && !mtCountsHere() ? t("mt.counting") : mtCountsHere() ? t("mt.where", { place: place.label }) : "";
+  const counts = mtCountsHere(), failed = !counts && !mt.counting && mt.countFailedFor === place.loc;
+  const where = mt.counting && !counts ? esc(t("mt.counting")) : counts ? esc(`${t("mt.where", { place: place.label })} · ${t("mt.counted", { ago: agoText(counts.at) })}`)
+    : failed ? `${esc(t("mt.countfail"))} <button class="linkbtn" type="button" data-mt="recount">${esc(t("err.retry"))}</button>` : "";
   return `<section class="mt-note" aria-labelledby="mt-you">
       <div class="mt-note-head"><span class="mt-mark" aria-hidden="true">M</span><div><div class="mt-you" id="mt-you">${esc(t("mt.you"))}</div><div class="mt-sub">${esc(d.name ? t("mt.for", { name: d.name }) : t("mt.foryou"))}</div></div></div>
       <p class="mt-note-text">${esc(note)}</p>
       <p class="mt-adjust"><b>${esc(t("mt.adjusted"))}</b> ${esc(adjust)}</p>
     </section>
+    ${aiNoteHtml("ai.mentor", t("tab.mentor"), "ai.title.mt")}
     <section aria-labelledby="mt-roles-h">
-      <div class="mt-block-head"><h2 id="mt-roles-h">${esc(t("mt.roles.title"))}</h2><p>${esc(where)}</p></div>
+      <div class="mt-block-head"><h2 id="mt-roles-h" tabindex="-1">${esc(t("mt.roles.title"))}</h2><p>${where}</p></div>
       ${mtTier("direct", t("mt.sub.direct"), r.direct)}
       ${mtTier("stretch", t("mt.sub.stretch"), r.stretch)}
       ${mtTier("pivot", t(r.maybe ? "mt.sub.maybe" : "mt.sub.pivot"), r.pivot)}
@@ -361,6 +365,8 @@ function initMentor() {
     else if (k === "load") $("mt-file").click();
     else if (k === "go") getAdvice();
     else if (k === "search") mtSearch(b.dataset.q, b.dataset.all === "1");
+    else if (k === "recount") { mt.countFailedFor = ""; mtCount(); document.querySelector("#mt-roles-h")?.focus(); }
+    else if (k === "backup") { downloadBackup(); renderMentorSide(); }
   });
   m.addEventListener("input", e => {
     if (e.target.id === "mt-cv") { clearTimeout(mtTimers.cv); mtTimers.cv = setTimeout(mtSaveCv, 400); }

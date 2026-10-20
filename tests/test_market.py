@@ -191,6 +191,7 @@ async def main():
               and 'Arbetsgivarna anställer fortfarande' in txt and 'räknar med' not in txt, txt)
         await pg.keyboard.press('Escape')
         check('Escape closes it', not await dlg.is_visible())
+        check('and focus goes back to the role that was changed', await pg.evaluate("document.activeElement.dataset.ad") == 'h2')
         await pg.set_viewport_size({'width': 375, 'height': 800}); await pg.select_option('#apps select[data-ad="h0"]', 'Applied'); await pg.select_option('#apps select[data-ad="h0"]', 'Rejected')
         await pg.wait_for_timeout(300)
         check('rejecting again soon after gives no pop-up', not await dlg.is_visible())

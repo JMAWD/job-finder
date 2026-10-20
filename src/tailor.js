@@ -8,7 +8,7 @@ let tl = null;   // the open job: { id, title, employer, muni, url, src, task, b
 let tailorStore = store.get("jf-tailor", {});   // ad id -> { ad, extra, out: { task: { text, at, model, lang } } }
 const saveTailor = () => store.set("jf-tailor", tailorStore);
 const tlEntry = id => tailorStore[id] || (tailorStore[id] = { out: {} });
-const fullAds = new Map();
+const fullAds = new Map(), adFails = new Set();   // ads fetched in full, and Platsbanken ads that couldn't be fetched this time
 
 const RULE = /^\s*([-*_])(\s*\1){2,}\s*$/;   // a "---" divider line, left out everywhere
 // Small Markdown reader for the AI's answers: headings, lists, bold, italics. Everything is escaped first.
@@ -132,9 +132,26 @@ async function loadFullAd(job) {
   try {
     const h = await getJSON(`${JS_API}/ad/${encodeURIComponent(job.id)}`, 2);
     const text = (h.description?.text || "").trim();
-    fullAds.set(job.id, text);
+    fullAds.set(job.id, text); adFails.delete(job.id);
     return text;
-  } catch { return job.snippet || ""; }
+  } catch (err) { console.warn("The full ad could not be fetched", err); adFails.add(job.id); return job.snippet || ""; }
+}
+// Fetches a Platsbanken ad again after a failure. The text box is only replaced if the person hasn't changed the extract.
+async function refetchAd() {
+  if (!tl) return;
+  const id = tl.id, job = { ...tl }, before = tl.adText;
+  adFails.delete(id); tl.refetching = true; drawTailor();
+  const text = await loadFullAd(job);
+  if (!tl || tl.id !== id) return;
+  const ta = $("tl-ad");
+  if (ta && tlEntry(id).ad == null && ta.value === (before ?? "")) ta.value = text;
+  tl.adText = text; tl.refetching = false;
+  drawTailor(adFails.has(id) ? '[data-tl="refetch"]' : "#tl-ad");
+}
+// What the AI is and isn't, above everything it writes. The match check and interview prep get their own wording.
+function aiNoteHtml(textKey, partName, titleKey = "ai.title") {
+  return `<aside class="ai-note" aria-labelledby="ai-note-h" tabindex="-1"><div class="ai-head"><span class="ai-tag">${esc(t("ai.label"))}</span><b id="ai-note-h">${esc(t(titleKey))}</b></div>
+    <p>${esc(t(textKey))}</p>${fbLink("ai", t("ai.report"), t("fb.part", { p: partName }))}</aside>`;
 }
 // The apply button: the employer's own page or email, or for other job sites the ad on that site
 function applyHtml(job, big) {
@@ -162,7 +179,8 @@ function tailorHtml() {
       <div class="tl-grid">
         <section class="tl-box"><label class="tl-label" for="tl-ad">${esc(t("tl.ad"))}</label>
           <textarea id="tl-ad" data-tl="ad" rows="12" placeholder="${esc(t(tl.adText === undefined && e.ad == null ? "tl.ad.loading" : "tl.ad.ph"))}">${esc(e.ad ?? tl.adText ?? "")}</textarea>
-          <p class="tl-hint">${esc(job.src === "pb" ? t("tl.ad.hint") : t("tl.ad.hintlinks", { site: job.source || t("othersite") }))}</p></section>
+          <p class="tl-hint">${esc(job.src !== "pb" ? t("tl.ad.hintlinks", { site: job.source || t("othersite") }) : tl.refetching ? t("tl.ad.loading") : adFails.has(job.id) && e.ad == null ? t("tl.ad.fail") : t("tl.ad.hint"))}</p>
+          ${job.src === "pb" && adFails.has(job.id) && e.ad == null && !tl.refetching ? `<div><button class="btn ghost sm" type="button" data-tl="refetch">${esc(t("tl.ad.retry"))}</button></div>` : ""}</section>
         <section class="tl-box"><label class="tl-label" for="tl-cv">${esc(t("tl.cv"))}</label>
           <textarea id="tl-cv" data-tl="cv" rows="12" placeholder="${esc(t("tl.cv.ph"))}">${esc(store.get("jf-cv", ""))}</textarea>
           <div class="row"><button class="btn ghost sm" type="button" data-tl="load">${esc(t("tl.load"))}</button><input type="file" id="tl-file" accept=".docx,.txt,.md,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden><span class="tl-hint" id="tl-cvmsg">${esc(t("tl.cv.hint"))}</span></div></section>
@@ -177,12 +195,13 @@ function tailorHtml() {
       <section class="tl-result" role="tabpanel" aria-live="polite">
         <p class="tl-desc">${esc(t("tl.d." + task))}</p>
         <div class="row"><button class="btn" type="button" data-tl="go"${tl.busy ? " disabled" : ""}>${esc(tl.busy ? t("tl.busy") : out ? t("tl.again") : t("tl.go"))}</button><span class="tl-status" id="tl-status">${esc(tl.status || "")}</span></div>
+        ${out ? "" : `<p class="tl-hint">${esc(t("ai.before"))}</p>`}
         ${tl.error ? `<p class="tl-err" role="alert">${tl.error}</p>` : ""}
-        ${out ? `<div class="tl-out" tabindex="-1">${mdHtml(out.text)}</div>
+        ${out ? `${aiNoteHtml(task === "match" ? "ai.match" : task === "interview" ? "ai.interview" : "ai.write", t("tl.t." + task))}
+          <div class="tl-out" tabindex="-1">${mdHtml(out.text)}</div>
           <div class="row"><button class="btn ghost sm" type="button" data-tl="copy">${esc(t("copy"))}</button><button class="btn ghost sm" type="button" data-tl="word">${esc(t("tl.word"))}</button>${applyHtml(job, true)}
           <span class="tl-hint">${esc(t("tl.made", { date: fmtDate(localDay(new Date(out.at))) }))}</span></div>
-          ${appliedHtml(job.id)}
-          <p class="tl-hint">${esc(t("tl.check"))}</p>` : appliedHtml(job.id)}
+          ${appliedHtml(job.id)}` : appliedHtml(job.id)}
       </section>
       <p class="tl-hint tl-privacy">${esc(t("tl.privacy"))}</p>
     </div>`;
@@ -210,6 +229,7 @@ async function openTailor(id, from) {
   tl.adText = adText; tl.lang = guessLang(adText || job.title);
   const ta = $("tl-ad"); if (ta) { ta.placeholder = t("tl.ad.ph"); if (!ta.value && tlEntry(id).ad == null) ta.value = adText; }
   if (!tlEntry(id).lang) { const s = $("tl-lang"); if (s) s.value = tl.lang; }
+  if (adFails.has(id)) drawTailor();   // shows that only an extract came through, with a button to fetch the ad again
 }
 function closeTailor() {
   if (tl?.ctrl) tl.ctrl.abort();
@@ -247,7 +267,7 @@ async function generate() {
     msg = err.name === "AbortError" ? (tl?.id === id && $("tailor").open ? t("tl.e.timeout") : "") : embedded ? t("e.embedded") : t("tl.e.network");
   } finally {
     clearTimeout(timer); clearInterval(tick);
-    if (tl && tl.id === id) { tl.busy = false; tl.ctrl = null; tl.status = ""; tl.error = esc(msg); if ($("tailor").open) drawTailor(msg ? null : ".tl-out"); }
+    if (tl && tl.id === id) { tl.busy = false; tl.ctrl = null; tl.status = ""; tl.error = esc(msg); if ($("tailor").open) drawTailor(msg ? null : ".ai-note"); }
   }
 }
 const slugify = s => fold(s).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
@@ -257,6 +277,7 @@ function onTailorClick(e) {
   if (k === "close") closeTailor();
   else if (k === "task") { tl.task = el.dataset.task; tl.error = ""; tlEntry(tl.id).lastTask = tl.task; saveTailor(); drawTailor(`[data-task="${tl.task}"]`); }
   else if (k === "go") generate();
+  else if (k === "refetch") refetchAd();
   else if (k === "load") $("tl-file").click();
   else if (k === "apply") { if (!["Applied", "Interview", "Offer"].includes(apps[tl.id]?.status)) { tl.askApplied = true; setTimeout(() => { if (tl) drawTailor('[data-tl="mark"]'); }, 0); } }
   else if (k === "mark") {
