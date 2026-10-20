@@ -389,6 +389,7 @@ function applyLang() {
 document.querySelector(".lang").addEventListener("click", e => {
   const b = e.target.closest("button[data-lang]"); if (!b || b.dataset.lang === lang) return;
   lang = b.dataset.lang; store.set("jf-lang", lang); $("msg").textContent = ""; applyLang(); render(); renderWelcome(); if (ABOUT.tailor) { mt.error = ""; mt.cvMsg = ""; renderMentor(); } if (tl) drawTailor();
+  marketLang();
 });
 
 /* ---------- Colour theme: one choice recolours every view, step 2 and the Mentor, and is kept for the next visit ---------- */
@@ -668,7 +669,7 @@ function fromPB(h) {
     muni: wa.municipality || "", muniId: wa.municipality_concept_id || "", region: wa.region || "", regionId: wa.region_concept_id || "",
     pub: (h.publication_date || "").slice(0, 10), deadline: (h.application_deadline || "").slice(0, 10), url: h.webpage_url || adUrl(h.id),
     apply: h.application_details?.url || "", applyEmail: h.application_details?.email || "",
-    occ: h.occupation?.label || "", group: h.occupation_group?.label || "", groupId: h.occupation_group?.concept_id || "", field: h.occupation_field?.label || "",
+    occ: h.occupation?.label || "", group: h.occupation_group?.label || "", groupId: h.occupation_group?.concept_id || "", field: h.occupation_field?.label || "", fieldId: h.occupation_field?.concept_id || "",
     duration: h.duration?.label || "", hours: h.working_hours_type?.label || "", vacancies: h.number_of_vacancies || 1, exp: h.experience_required,
     agency, client: !agency && CLIENT_TEXT.test(desc), contacts: adContacts(h, agency), snippet: desc.slice(0, 500), _text: fold(`${h.headline} ${desc} ${emp.name || ""}`) };
 }
@@ -677,7 +678,7 @@ function fromLinks(h) {
   return { id: "L:" + h.id, src: "links", title: cleanTitle(h.headline), employer: emp, workplace: "", org: "", site: "", logo: "",
     muni: wa.municipality || "", muniId: wa.municipality_concept_id || "", region: wa.region || "", regionId: wa.region_concept_id || "",
     pub: (h.publication_date || "").slice(0, 10), deadline: "", url: link.url || "", source: siteLabel(link), apply: "", applyEmail: "",
-    occ: "", group: h.occupation_group?.label || "", groupId: h.occupation_group?.concept_id || "", field: h.occupation_field?.label || "",
+    occ: "", group: h.occupation_group?.label || "", groupId: h.occupation_group?.concept_id || "", field: h.occupation_field?.label || "", fieldId: h.occupation_field?.concept_id || "",
     duration: "", hours: "", vacancies: 1, exp: null, agency: STAFFING.test(emp), client: CLIENT_TEXT.test(brief), contacts: [], snippet: brief.slice(0, 500), _text: fold(`${h.headline} ${brief} ${emp}`) };
 }
 
@@ -1123,7 +1124,7 @@ function setOpen(key, open) {
 function snapOf(a) {
   const c = companies.find(x => x.ads.includes(a));
   return { title: a.title, company: c ? coName(c) : shortName(a.employer), companyKey: c ? c.key : companyKey(a), url: a.url || adUrl(a.id), apply: a.apply || (a.applyEmail ? `mailto:${a.applyEmail}` : ""),
-    deadline: a.deadline, muni: a.muni, pub: a.pub, contacts: (a.contacts || []).filter(p => p.kind !== "inbox").slice(0, 3) };
+    deadline: a.deadline, muni: a.muni, pub: a.pub, field: a.field || "", fieldId: a.fieldId || "", contacts: (a.contacts || []).filter(p => p.kind !== "inbox").slice(0, 3) };
 }
 function backupHtml() {
   const at = store.get("jf-backup-at", null);
@@ -1266,10 +1267,12 @@ $("list").addEventListener("submit", e => {
 });
 function onStatus(e) {
   const el = e.target; if (el.dataset.role !== "status") return;
+  const was = apps[el.dataset.ad]?.status || "";
   setStatus(el.dataset.ad, el.value);
   const art = el.closest("article.co");
   if (art) rerenderCompany(art.dataset.id, el.value ? `textarea[data-ad="${CSS.escape(el.dataset.ad)}"]` : `select[data-ad="${CSS.escape(el.dataset.ad)}"]`);
   renderStats(); renderApps(); renderWelcome();
+  if (el.value === "Rejected" && was !== "Rejected") maybeNudge();   // after a few rejections, a word on the market (src/market.js)
 }
 function flushNote(el) {
   const id = el.dataset.ad;
@@ -1295,23 +1298,25 @@ $("expand-all").addEventListener("click", () => {
   for (const c of vis) if (all) openIds.delete(c.key); else openIds.add(c.key);
   store.set("jf-open", [...openIds]); render();
 });
-// The three parts of the suite: Find jobs, My applications and the Mentor (only when there is an AI server)
-const VIEWS = () => ABOUT.tailor ? ["res", "app", "mentor"] : ["res", "app"];
+// The parts of the suite: Find jobs, My applications, the Market and the Mentor (only when there is an AI server)
+const ALL_VIEWS = ["res", "app", "market", "mentor"];
+const VIEWS = () => ABOUT.tailor ? ALL_VIEWS : ALL_VIEWS.filter(v => v !== "mentor");
 let currentView = "res";
 function selectTab(name, focus) {
   if (!VIEWS().includes(name)) name = "res";
   const was = currentView; currentView = name;
-  for (const v of ["res", "app", "mentor"]) {
+  for (const v of ALL_VIEWS) {
     const on = v === name, b = $("tab-" + v);
     b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1; $("view-" + v).hidden = !on;
   }
   store.set("jf-tab", name);
   if (name === "app") renderApps();
+  if (name === "market") showMarket();
   if (name === "mentor") { renderMentor(); mtCount(); }
   if (name !== was) window.scrollTo(0, 0);
   if (focus) $("tab-" + name).focus();
 }
-for (const v of ["res", "app", "mentor"]) $("tab-" + v).addEventListener("click", () => selectTab(v));
+for (const v of ALL_VIEWS) $("tab-" + v).addEventListener("click", () => selectTab(v));
 document.querySelector(".tabs").addEventListener("keydown", e => {
   if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
   e.preventDefault();
@@ -1449,15 +1454,18 @@ function initWelcome() {
 
 /*__MENTOR__*/
 
+/*__MARKET_JS__*/
+
 /* ---------- Start ---------- */
 if (ABOUT.tailor) document.querySelector('[data-th="about.privacy"]').dataset.th = "about.privacy.ai";
 $("tab-mentor").hidden = !ABOUT.tailor;
 initTailor();
 initMentor();
+initMarket();
 applyLang();
 applyPalette();
 loadPrefs();
 fillForm(store.get("jf-search", null) || { country: "SE", place: "", radius: 25, terms: [], excludes: [], links: true });
 render();
-selectTab({ "#mentor": "mentor", "#applications": "app", "#jobs": "res" }[location.hash] || store.get("jf-tab", "res"));
+selectTab({ "#mentor": "mentor", "#market": "market", "#applications": "app", "#jobs": "res" }[location.hash] || store.get("jf-tab", "res"));
 initWelcome();

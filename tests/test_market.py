@@ -1,0 +1,197 @@
+"""End-to-end tests for the Market tab and the pop-up after a few rejections, with simulated Platsbanken counts.
+
+    python3 build.py && python3 tests/test_market.py
+
+Platsbanken's counts are answered from a fixed table. The IT figures are the real counts for July to September 2026
+(6,251 closed and 947 open IT ads against 14,495 a year earlier; 114,236 and 13,922 for all ads against 233,853), so the
+expected answer is the real one: IT down about 24% while new postings across Sweden fell about 17%."""
+import asyncio, json, pathlib, sys
+from datetime import date, datetime, timedelta
+from urllib.parse import urlparse, parse_qs
+from playwright.async_api import async_playwright
+
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from test_app import jobsearch, joblinks, history, ok, check, passed
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+PAGE = (ROOT / 'index.html').as_uri()
+SHOTS = ROOT / 'docs' / 'screenshots'
+IT, HEALTH, MILITARY = 'apaJ_2ja_LuF', 'NYW6_mP6_vwf', 'bH5L_uXD_ZAX'
+# (field, region) -> closed ads in the archive this window, ads still open this window, the same months a year earlier, all open ads now
+COUNTS = {('', ''): (114236, 13922, 233853, 41000), (IT, ''): (6251, 947, 14495, 2310), ('', 'rVG'): (20000, 2500, 40000, 7900),
+          (IT, 'rVG'): (1100, 160, 2600, 410), (HEALTH, ''): (12000, 1800, 19000, 3900), (MILITARY, ''): (30, 5, 60, 12), (MILITARY, 'rVG'): (4, 1, 9, 2)}
+STATE, COUNTED = {'offline': False}, []
+
+def counts_for(q, api):
+    key = (q.get('occupation-field', [''])[0], q.get('region', [''])[0])
+    COUNTED.append((api, key, q.get('published-after', [''])[0][:10]))
+    hist, live, prev, open_now = COUNTS.get(key, (0, 0, 0, 0))
+    after = q.get('published-after', [''])[0]
+    if not after: return open_now
+    year_ago = date.fromisoformat(after[:10]) < date.today() - timedelta(days=200)
+    return (prev if year_ago else hist) if api == 'hist' else (0 if year_ago else live)
+
+def is_count(q): return q.get('limit') == ['0'] and 'q' not in q and ('occupation-field' in q or 'published-before' in q or 'region' in q or not q.get('published-after'))
+async def market_search(route):
+    q = parse_qs(urlparse(route.request.url).query)
+    if is_count(q):
+        if STATE['offline']: return await route.abort()
+        return await route.fulfill(**ok({"total": {"value": counts_for(q, 'live')}, "hits": []}))
+    await jobsearch(route)
+async def market_history(route):
+    q = parse_qs(urlparse(route.request.url).query)
+    if is_count(q):
+        if STATE['offline']: return await route.abort()
+        return await route.fulfill(**ok({"total": {"value": counts_for(q, 'hist')}, "hits": []}))
+    await history(route)
+
+def snap(title, field='Data/IT', field_id='f'):
+    return {"title": title, "company": "Firma AB", "url": f"https://x.example/{title}", "deadline": "", "contacts": [], "field": field, "fieldId": field_id}
+
+async def main():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        ctx = await browser.new_context(locale='en-US', viewport={'width': 1280, 'height': 1000})
+        await ctx.route('https://jobsearch.api.jobtechdev.se/**', market_search)
+        await ctx.route('https://links.api.jobtechdev.se/**', joblinks)
+        await ctx.route('https://historical.api.jobtechdev.se/**', market_history)
+        pg = await ctx.new_page(); errors = []; pg.on('pageerror', lambda e: errors.append(str(e)))
+        mkt, verdict = pg.locator('#market'), pg.locator('#market .mk-verdict')
+        settled = "!document.querySelector('#market .mk-busy') && !!document.querySelector('#market .mk-verdict h2')"
+        async def pick(sel, value):
+            await pg.select_option(sel, value); await pg.wait_for_function(settled, timeout=15000)
+
+        # A search in Göteborg for software engineers: the Market tab picks IT and offers Västra Götaland
+        await pg.goto(PAGE)
+        await pg.fill('#place', 'Göteborg'); await pg.fill('#kw-input', 'software engineer'); await pg.press('#kw-input', 'Enter')
+        await pg.click('#go'); await pg.wait_for_function("document.getElementById('msg').textContent.startsWith('Found')", timeout=20000)
+        await pg.click('#tab-market'); await pg.wait_for_function(settled, timeout=15000)
+        check('market tab sits between My applications and the Mentor', (await pg.locator('.topbar [role=tab]:visible').all_inner_texts())[2:] == ['Market', 'Mentor'])
+        check('field picked from the search', await pg.locator('#mk-field').input_value() == IT and 'Picked from your searches' in await pg.locator('#mk-hint').inner_text())
+        check('the county of the search is offered', await pg.locator('#mk-place option').all_inner_texts() == ['All of Sweden', 'Västra Götalands län'])
+        txt = await verdict.inner_text()
+        check('verdict for IT in Sweden', 'A tough market' in txt and 'There were about 24% fewer IT ads in Sweden from ' in txt and 'than a year earlier.' in txt, txt)
+        check('compared with the market as a whole', "That's weaker than the job market as a whole, where new postings fell 17% in September 2026." in txt, txt)
+        tiles = await verdict.locator('.mk-tile').all_inner_texts()
+        check('open ads, the change and the share', len(tiles) == 3 and '2,310' in tiles[0] and '−24%' in tiles[1] and '5.6%' in tiles[2] and '6.2% a year earlier' in tiles[2], tiles)
+        bars = await mkt.locator('.mk-bar').first.locator('xpath=..').locator('.mk-bar').all_inner_texts()
+        check('bars: IT against all of Sweden', len(bars) == 2 and bars[0].startswith('IT, all of Sweden') and '−24%' in bars[0] and '−17%' in bars[1], bars)
+        hist_calls = [c for c in COUNTED if c[0] == 'hist' and c[1] == (IT, '')]
+        check('counts this window and a year earlier from the archive, by field', len({c[2][:4] for c in hist_calls}) == 2, hist_calls)
+        txt = await mkt.inner_text()
+        check('figures for Sweden from the package', all(x in txt for x in ('65,000', '8.6%', '5,487', '139,600', 'Unemployment by year', 'Redundancy notices each month', "Employers' hiring plans for Q4 2026")), txt[:400])
+        check('industry figures for IT', 'More on IT' in txt and 'people work in information and communication' in txt and "hiring outlook for IT and tech is +41 for Q4 2026, against +27" in txt and 'listed Nordic consultancies' in txt)
+        main = await mkt.locator('.mk-card', has_text='hiring plans').locator('.mk-bar.main .mk-bar-label').all_inner_texts()
+        check('outlook highlights your industry and region', [m.split(' ')[0] for m in main] == ['IT', 'Västra'], main)
+        check('sources with dates', 'compiled 19 Oct 2026' in txt and 'Platsbanken, through JobTech' in txt)
+        await pg.hover('#market .mk-chart .mk-hit >> nth=0')
+        check('hovering a column shows its value', '6.9%' in await pg.locator('#mk-tip').inner_text() and await pg.locator('#mk-tip').is_visible())
+        await pg.focus('#market .mk-chart >> nth=1'); await pg.keyboard.press('End')
+        check('arrow keys step through a chart', await pg.locator('#mk-tip').is_visible() and 'Sep 2026' in await pg.locator('#mk-tip').inner_text())
+        await pg.click('#market .mk-table summary >> nth=0')
+        check('every chart has a table', await mkt.locator('.mk-table').count() == 2 and '2030' in await mkt.locator('.mk-table table').first.inner_text())
+        await pg.evaluate('window.scrollTo(0, 0)'); await pg.mouse.move(0, 0); await pg.screenshot(path=str(SHOTS / 'market-en.png'))
+
+        await pick('#mk-place', 'rVG')
+        bars = await mkt.locator('.mk-bars').first.locator('.mk-bar').all_inner_texts()
+        check('a county: IT there, IT in Sweden, all ads there and in Sweden', len(bars) == 4 and bars[0].startswith('IT, Västra Götalands län') and '−26%' in bars[0] and '−14%' in bars[2], bars)
+        await pick('#mk-field', MILITARY)
+        txt = await verdict.inner_text()
+        check('too few ads goes by the nearest wider figure', 'too few Military ads in Västra Götalands län' in txt and 'all job ads in Västra Götalands län' in txt and 'Slower than last year' in txt, txt)
+        await pick('#mk-place', ''); await pick('#mk-field', HEALTH)
+        txt = await verdict.inner_text()
+        check('a growing field', 'Busier than last year' in txt and 'about 10% more Health care ads' in txt and "stronger than the job market" in txt, txt)
+        check('no industry card without a match', await mkt.locator('#mk-sec-h').count() == 0)
+        await pick('#mk-field', '')
+        txt = await verdict.inner_text()
+        check('all fields in Sweden is the official figure', 'Arbetsförmedlingen got 17% fewer new job postings in September 2026' in txt and await mkt.locator('.mk-bars').count() == 1, txt)
+        await pg.reload(); await pg.wait_for_function(settled, timeout=15000)
+        check('the choice is kept', await pg.locator('#mk-field').input_value() == '' and await pg.locator('#tab-market').get_attribute('aria-selected') == 'true')
+
+        await pg.click('.lang button[data-lang=sv]'); await pick('#mk-field', IT)
+        txt = await verdict.inner_text()
+        check('Swedish', 'En tuff marknad' in txt and 'Det kom ungefär 24 % färre annonser inom Data/IT i Sverige under ' in txt and await pg.locator('#tab-market').inner_text() == 'Marknad', txt)
+        check('Swedish figures for Sweden', '8,6 %' in await mkt.inner_text() and 'Arbetslöshet per år' in await mkt.inner_text())
+        await pg.set_viewport_size({'width': 375, 'height': 900})
+        check('market fits a phone', await pg.evaluate('document.documentElement.scrollWidth') <= 375)
+        check('navigation still on the first phone screen', await pg.evaluate("document.getElementById('tab-mentor').getBoundingClientRect().right <= 375"))
+        await pg.screenshot(path=str(SHOTS / 'market-phone-sv.png'), full_page=True)
+        await pg.set_viewport_size({'width': 1280, 'height': 1000}); await pg.click('.lang button[data-lang=en]')
+
+        STATE['offline'] = True; await pg.evaluate("localStorage.removeItem('jf-mk-counts')"); await pg.reload()
+        await pg.wait_for_function("document.querySelector('#market .mk-err')", timeout=20000)
+        txt = await verdict.inner_text()
+        check('offline: says so and still shows Sweden', "Platsbanken couldn't be reached just now" in txt and 'Arbetsförmedlingen got 17% fewer' in txt and '8.6%' in await mkt.inner_text(), txt)
+        STATE['offline'] = False; await pg.click('#market [data-mk=retry]'); await pg.wait_for_function(settled + " && !document.querySelector('#market .mk-err')", timeout=15000)
+        check('try again', 'about 24% fewer IT ads' in await verdict.inner_text())
+
+        # Chart colours: the highlight and the grey both stand out from the card in every theme, light and dark
+        def lum(rgb):
+            c = [x / 255 for x in rgb]; c = [x / 12.92 if x <= 0.03928 else ((x + .055) / 1.055) ** 2.4 for x in c]
+            return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]
+        ratio = lambda a, b: (max(lum(a), lum(b)) + .05) / (min(lum(a), lum(b)) + .05)
+        low = []
+        for scheme in ('light', 'dark'):
+            await pg.emulate_media(color_scheme=scheme)
+            for k in ('seafoam', 'lavender', 'ocean', 'terracotta'):
+                await pg.evaluate(f"document.documentElement.dataset.palette = '{k}'")
+                v = await pg.evaluate("""() => { const g = el => getComputedStyle(el).backgroundColor, c = document.createElement('canvas').getContext('2d');
+                  const px = col => { c.clearRect(0, 0, 1, 1); c.fillStyle = col; c.fillRect(0, 0, 1, 1); return [...c.getImageData(0, 0, 1, 1).data].slice(0, 3); };
+                  return { main: px(g(document.querySelector('#market .mk-bar.main .mk-fill'))), ctx: px(g(document.querySelector('#market .mk-bar:not(.main) .mk-fill'))),
+                    card: px(g(document.querySelector('#market .mk-card'))) }; }""")
+                if ratio(v['main'], v['card']) < 3: low.append(f"{k} {scheme} highlight {ratio(v['main'], v['card']):.2f}")
+                if ratio(v['ctx'], v['card']) < 2: low.append(f"{k} {scheme} grey {ratio(v['ctx'], v['card']):.2f}")
+                if ratio(v['main'], v['ctx']) < 2.5: low.append(f"{k} {scheme} highlight vs grey {ratio(v['main'], v['ctx']):.2f}")
+        check('chart colours stand out in every theme', not low, low)
+        await pg.emulate_media(color_scheme='dark'); await pg.evaluate("document.documentElement.dataset.palette = 'lavender'")
+        await pg.emulate_media(color_scheme='light'); await pg.evaluate("delete document.documentElement.dataset.palette")
+
+        # The pop-up: seven applications in IT, rejected one by one in My applications
+        await pg.evaluate("""apps => { localStorage.setItem('jf-apps', JSON.stringify(apps)); localStorage.removeItem('jf-nudge'); localStorage.removeItem('jf-market'); }""",
+                          {f'a{i}': {"status": "Applied", "note": "", "updatedAt": datetime.now().isoformat(), "snap": snap(f'Role {i}')} for i in range(7)})
+        await pg.reload(); await pg.click('#tab-app')
+        dlg = pg.locator('#nudge')
+        async def reject(i):
+            await pg.select_option(f'#apps select[data-ad="a{i}"]', 'Rejected')
+        await reject(0); await reject(1); await pg.wait_for_timeout(400)
+        check('no pop-up after two rejections', not await dlg.is_visible())
+        await reject(2); await pg.wait_for_selector('#nudge[open]', timeout=10000)
+        txt = await dlg.inner_text()
+        check('pop-up after the third: a tough market, in numbers', "It's a tough market right now" in txt and "You've marked 3 applications as rejected" in txt
+              and 'about 24% fewer IT ads in Sweden' in txt and 'Unemployment in Sweden is 8.6%.' in txt and 'even strong candidates hear no more often than usual' in txt, txt)
+        check('a hopeful note from the forecast', 'Konjunkturinstitutet expects unemployment to ease to 7.9% in 2027.' in txt, txt)
+        check('suggests the Mentor', 'The Mentor reads your CV' in txt and await dlg.locator('[data-ng=mentor]').inner_text() == 'Get ideas from the Mentor'
+              and await pg.evaluate("document.activeElement.dataset.ng") == 'mentor')
+        await pg.wait_for_timeout(400); await pg.screenshot(path=str(SHOTS / 'nudge-en.png'))
+        await dlg.locator('[data-ng=mentor]').click()
+        check('opens the Mentor', not await dlg.is_visible() and await pg.locator('#tab-mentor').get_attribute('aria-selected') == 'true')
+        await pg.click('#tab-app'); await reject(3); await reject(4); await reject(5); await pg.wait_for_timeout(500)
+        check('not again within two weeks', not await dlg.is_visible() and await pg.evaluate("JSON.parse(localStorage.getItem('jf-nudge')).n") == 3)
+        await pg.evaluate("v => { const n = JSON.parse(localStorage.getItem('jf-nudge')); n.on = v; localStorage.setItem('jf-nudge', JSON.stringify(n)); }", (date.today() - timedelta(days=15)).isoformat())
+        await reject(6); await pg.wait_for_selector('#nudge[open]', timeout=10000)
+        check('again after three more and two weeks', "You've marked 7 applications as rejected" in await dlg.inner_text())
+        await dlg.locator('[data-ng=market]').click()
+        check('see the market for the field', await pg.locator('#tab-market').get_attribute('aria-selected') == 'true' and await pg.locator('#mk-field').input_value() == IT)
+
+        # A field that is doing well gets a different message, in Swedish too
+        await pg.click('.lang button[data-lang=sv]')
+        await pg.evaluate("""apps => { localStorage.setItem('jf-apps', JSON.stringify(apps)); localStorage.removeItem('jf-nudge'); }""",
+                          {f'h{i}': {"status": "Rejected" if i < 2 else "Applied", "note": "", "updatedAt": datetime.now().isoformat(), "snap": snap(f'Sjuksköterska {i}', 'Hälso- och sjukvård', '')} for i in range(3)})
+        await pg.reload(); await pg.click('#tab-app'); await pg.select_option('#apps select[data-ad="h2"]', 'Rejected')
+        await pg.wait_for_selector('#nudge[open]', timeout=10000)
+        txt = await dlg.inner_text()
+        check('a growing field: no is normal, in Swedish', 'Avslag hör till varje jobbsökande' in txt and 'ungefär 10 % fler annonser inom Hälso- och sjukvård' in txt
+              and 'Arbetsgivarna anställer fortfarande' in txt and 'räknar med' not in txt, txt)
+        await pg.keyboard.press('Escape')
+        check('Escape closes it', not await dlg.is_visible())
+        await pg.set_viewport_size({'width': 375, 'height': 800}); await pg.select_option('#apps select[data-ad="h0"]', 'Applied'); await pg.select_option('#apps select[data-ad="h0"]', 'Rejected')
+        await pg.wait_for_timeout(300)
+        check('rejecting again soon after gives no pop-up', not await dlg.is_visible())
+
+        check('no script errors', not errors, errors)
+        await browser.close()
+    print(f'{len(passed)} checks passed')
+
+if __name__ == '__main__':
+    try: asyncio.run(main())
+    except AssertionError as e: print('FAILED', e); sys.exit(1)
