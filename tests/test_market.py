@@ -20,7 +20,8 @@ IT, HEALTH, MILITARY = 'apaJ_2ja_LuF', 'NYW6_mP6_vwf', 'bH5L_uXD_ZAX'
 # "field|county" -> closed ads in the archive, ads still open, the same months a year earlier, all open ads on the 1st
 COUNTS = {'on': '2026-10-01', 'window': {'from': '2026-07-01', 'to': '2026-09-30', 'from_prev': '2025-07-01', 'to_prev': '2025-09-30'},
           'n': {'|': [114236, 13922, 233853, 41000], f'{IT}|': [6251, 947, 14495, 2310], '|rVG': [20000, 2500, 40000, 7900], f'{IT}|rVG': [1100, 160, 2600, 410],
-                f'{HEALTH}|': [12000, 1800, 19000, 3900], f'{MILITARY}|': [30, 5, 60, 12], f'{MILITARY}|rVG': [4, 1, 9, 2]}}
+                f'{HEALTH}|': [12000, 1800, 19000, 3900], f'{HEALTH}|rVG': [400, 50, 500, 120], f'{MILITARY}|': [30, 5, 60, 12], f'{MILITARY}|rVG': [4, 1, 9, 2],
+                f'{MILITARY}|rSK': [150, 20, 290, 40]}}
 REGIONS = [['Skåne län', 'rSK'], ['Västra Götalands län', 'rVG'], ['Stockholms län', 'rST']]
 tmp = pathlib.Path(tempfile.mkdtemp())
 
@@ -93,6 +94,8 @@ async def main():
         await pick('#mk-place', 'rVG')
         bars = await mkt.locator('.mk-bars').first.locator('.mk-bar').all_inner_texts()
         check('a county: IT there, IT in Sweden, all ads there and in Sweden', len(bars) == 4 and bars[0].startswith('IT, Västra Götalands län') and '−26%' in bars[0] and '−14%' in bars[2], bars)
+        tiles = await verdict.locator('.mk-tile').all_inner_texts()
+        check("a field in a county is a share of that county's ads", 'SHARE OF JOB ADS IN VÄSTRA GÖTALANDS LÄN' in tiles[2] and '5.6%' in tiles[2] and '6.5% a year earlier' in tiles[2], tiles)
         await pick('#mk-field', MILITARY)
         txt = await verdict.inner_text()
         check('too few ads goes by the nearest wider figure', 'too few Military ads in Västra Götalands län' in txt and 'all job ads in Västra Götalands län' in txt and 'Slower than last year' in txt, txt)
@@ -100,6 +103,12 @@ async def main():
         txt = await verdict.inner_text()
         check('a growing field', 'Busier than last year' in txt and 'about 10% more Health care ads' in txt and "stronger than the job market" in txt, txt)
         check('no industry card without a match', await mkt.locator('#mk-sec-h').count() == 0)
+        await pick('#mk-place', 'rVG')
+        txt = await verdict.inner_text()
+        check('a small slice is called a rough guide', "That's based on 450 ads, so treat it as a rough guide" in txt, txt)
+        await pick('#mk-field', MILITARY); await pick('#mk-place', 'rSK')
+        check('170 ads against 290 is too few to compare', 'too few Military ads in Skåne län' in await verdict.inner_text())
+        await pick('#mk-place', '')
         await pick('#mk-field', '')
         txt = await verdict.inner_text()
         check('all fields in Sweden is the official figure', 'Arbetsförmedlingen got 17% fewer new job postings in September 2026' in txt and await mkt.locator('.mk-bars').count() == 1, txt)

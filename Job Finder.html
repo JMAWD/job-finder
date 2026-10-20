@@ -2969,8 +2969,9 @@ Object.assign(I18N, {
   "mk.small.ads": ["ads", "annonser"], "mk.small.fads": ["{field} ads", "annonser inom {field}"],
   "mk.wider.f": ["{field} in all of Sweden", "{field} i hela Sverige"], "mk.wider.nat": ["the figures for all of Sweden", "siffrorna för hela Sverige"],
   "mk.wider.place": ["all job ads in {place}", "alla jobbannonser i {place}"],
+  "mk.rough": ["That's based on {n} ads, so treat it as a rough guide: a few employers can move it a lot.", "Det bygger på {n} annonser, så se det som en grov fingervisning: några få arbetsgivare kan flytta det mycket."],
   "mk.t.open": ["Open ads on {date}", "Lediga jobb den {date}"], "mk.t.change": ["Ads compared with a year earlier", "Annonser jämfört med ett år tidigare"],
-  "mk.t.about": ["About, {months}", "Ungefär, {months}"], "mk.t.share": ["Share of all job ads", "Andel av alla jobbannonser"],
+  "mk.t.about": ["About, {months}", "Ungefär, {months}"], "mk.t.share": ["Share of all job ads", "Andel av alla jobbannonser"], "mk.t.sharein": ["Share of job ads in {place}", "Andel av jobbannonserna i {place}"],
   "mk.t.share.sub": ["{prev} a year earlier", "{prev} ett år tidigare"], "mk.t.na": ["Not enough ads to tell", "För få annonser för att säga"],
   "mk.cmp.title": ["Compared with a year earlier", "Jämfört med ett år tidigare"],
   "mk.cmp.sub": ["Estimated change in job ads from {months}. All of Sweden is Arbetsförmedlingen's change in new postings in {month}.", "Uppskattad förändring i antalet jobbannonser under {months}. Hela Sverige är Arbetsförmedlingens förändring i nya lediga jobb i {month}."],
@@ -3110,7 +3111,9 @@ function mkNational() {
 }
 
 /* ---------- This month's counts, made on the 1st by market.py ---------- */
-const MK_SMALL_NOW = 100, MK_SMALL_PREV = 150;   // below these the year-on-year comparison is too noisy to show
+// Below these the year-on-year comparison is too noisy to show (counting noise alone moves it by about ±18% at 200 against 300),
+// and below MK_ROUGH ads it's shown with a note that it's a rough guide
+const MK_SMALL_NOW = 200, MK_SMALL_PREV = 300, MK_ROUGH = 600;
 const MK_REGIONS = MK?.regions || [];   // [county, JobTech id] for the 21 counties counted with every field
 const mkRegionName = id => (MK_REGIONS.find(r => r[1] === id) || [])[0] || "";
 // The field in the place, the wider slices around it and all of Sweden. Each slice's change on a year earlier is its own
@@ -3130,7 +3133,10 @@ function mkSummary(field, region) {
     s.small = !s.known || s.now < MK_SMALL_NOW || s.prev < MK_SMALL_PREV || !allRatio;
     s.rel = s.small ? null : (s.now / s.prev) / allRatio;
     s.est = s.rel == null || nat.change == null ? null : (1 + nat.change) * s.rel - 1;
-    s.share = s.known && all.now ? s.now / all.now : null; s.sharePrev = s.known && all.prev ? s.prev / all.prev : null;
+    // A field in a county is a share of that county's ads; anything else is a share of all of Sweden's
+    const base = s.field && s.region ? slices.find(x => !x.field && x.region === s.region) : all;
+    s.shareIn = base === all ? "" : s.region;
+    s.share = s.known && base?.known && base.now ? s.now / base.now : null; s.sharePrev = s.known && base?.known && base.prev ? s.prev / base.prev : null;
   }
   all.est = nat.change;   // all of Sweden is the official figure itself
   // The figure the verdict goes by: the slice asked for, or the nearest wider one with enough ads
@@ -3222,7 +3228,7 @@ function mkVerdictHtml() {
   }
   const s = sum.main, b = sum.basis, mood = mkMood(b?.est), place = mkPlaceName(sum.region);
   const lines = [];
-  if (s.est != null || (!s.field && !s.region)) { lines.push(mkSentence(s, sum)); lines.push(mkVersus(s, sum)); }
+  if (s.est != null || (!s.field && !s.region)) { lines.push(mkSentence(s, sum)); lines.push(mkVersus(s, sum)); if (s.est != null && s.now < MK_ROUGH) lines.push(t("mk.rough", { n: mkNum(s.now) })); }
   else if (b) {
     const wider = b.field ? t("mk.wider.f", { field: fieldName(b.field) }) : b.region ? t("mk.wider.place", { place: mkRegionName(b.region) }) : t("mk.wider.nat");
     lines.push(t("mk.small", { what: s.field ? t("mk.small.fads", { field: fieldName(s.field) }) : t("mk.small.ads"), where: t("mk.in", { place }), wider }));
@@ -3231,7 +3237,7 @@ function mkVerdictHtml() {
   const tiles = [mkTile(t("mk.t.open", { date: mkDate(sum.on) }), s.open != null ? mkNum(s.open) : "–", [s.field ? fieldName(s.field) : t("mk.allfields"), s.region ? place : t("allswe")].join(", "))];
   if (s.field || s.region) {
     tiles.push(mkTile(t("mk.t.change"), s.est != null ? mkPct(s.est, true) : "–", s.est != null ? t("mk.t.about", { months: sum.w.label() }) : t("mk.t.na")));
-    if (s.share != null && s.sharePrev != null && !s.small) tiles.push(mkTile(t("mk.t.share"), mkRate(s.share * 100), t("mk.t.share.sub", { prev: mkRate(s.sharePrev * 100) })));
+    if (s.share != null && s.sharePrev != null && !s.small) tiles.push(mkTile(s.shareIn ? t("mk.t.sharein", { place: mkRegionName(s.shareIn) }) : t("mk.t.share"), mkRate(s.share * 100), t("mk.t.share.sub", { prev: mkRate(s.sharePrev * 100) })));
   } else if (nat.change != null) tiles.push(mkTile(t("mk.n.postings"), mkPct(nat.change, true), t("mk.n.postings.sub", { month: mkMonth(nat.month) })));
   return `<section class="mk-verdict" aria-labelledby="mk-verdict-h">
     <span class="mk-mood${mood ? " m-" + mood : ""}">${esc([s.field ? fieldName(s.field) : t("mk.allfields"), place].join(" · "))}</span>
