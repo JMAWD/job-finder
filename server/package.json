@@ -5,5 +5,5 @@
   "description": "Small Scaleway Serverless Function that tailors a CV to a job ad with an EU-hosted model",
   "main": "handler.js",
   "scripts": { "test": "node --test", "dev": "node dev.mjs", "codes": "node make-codes.mjs" },
-  "license": "MIT"
+  "license": "UNLICENSED"
 }
