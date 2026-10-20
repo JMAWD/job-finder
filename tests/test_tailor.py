@@ -34,8 +34,10 @@ def post(url, data):
     return json.loads(urllib.request.urlopen(req).read())
 last_ai = lambda: json.loads(urllib.request.urlopen(FAKE + '/last').read())
 
+AD_DOWN = {'on': False}
 async def ad_or_search(route):
     url = route.request.url
+    if '/ad/' in url and AD_DOWN['on']: return await route.abort()
     if '/ad/' in url:
         a = next((x for x in SW if url.rstrip('/').endswith('/' + x['id'])), None)
         return await route.fulfill(**ok({**a, 'description': {'text': AD_TEXT}})) if a else await route.fulfill(status=404, body='{}')
@@ -81,6 +83,7 @@ async def main():
             check('full ad fetched from Platsbanken', 'Erfarenhet av FMEA' in await pg.input_value('#tl-ad'))
             check('output language follows the ad', await pg.input_value('#tl-lang') == 'sv')
             check('asks for a code, naming the author', 'Ask John Mawdsley for an access code' in await dlg.inner_text())
+            check('before anything is written: a draft to check, not a finished text', "You'll get a draft to read and change, not a finished text." in await dlg.locator('.tl-result').inner_text())
 
             await dlg.locator('[data-tl=go]').click()
             check('no code: clear message', 'Enter your access code first' in await dlg.locator('.tl-err').inner_text())
@@ -106,6 +109,12 @@ async def main():
             out = dlg.locator('.tl-out')
             check('divider lines left out', '---' not in await out.inner_text())
             check('answer shown with headings and lists', await out.locator('h4').count() == 3 and await out.locator('li').count() == 3 and await out.locator('b').first.inner_text() == 'FMEA')
+            note = dlg.locator('.ai-note')
+            check('the answer comes with a note that it is an AI draft, above it', await note.count() == 1 and await pg.evaluate("document.querySelector('.ai-note').compareDocumentPosition(document.querySelector('.tl-out')) & 4")
+                  and 'Written by AI' == await note.locator('.ai-tag').text_content() and 'This is an estimate from the words in your CV and the ad' in await note.inner_text(), await note.all_inner_texts())
+            check('focus lands on the note first', await pg.evaluate("document.activeElement.classList.contains('ai-note')"))
+            report = await note.locator('a[data-fb=ai]').get_attribute('href')
+            check('the note links to a report about the answer', '%5BAI%5D' in report and 'Part%3A%20Match%20check' in report, report)
             sent = last_ai()['body']
             user = sent['messages'][1]['content']
             check('server sent the ad, the CV and the wish', 'Erfarenhet av FMEA' in user and 'leverantörsrevisioner' in user and 'Håll det kort' in user and '<annons>' in user)
@@ -122,6 +131,7 @@ async def main():
             await pg.select_option('#tl-lang', 'en')
             await dlg.locator('[data-tl=go]').click(); await pg.wait_for_selector('#tailor .tl-out', timeout=10000)
             check('English prompt used', '<job_ad>' in last_ai()['body']['messages'][1]['content'])
+            check('a cover letter gets the interview test', "If you couldn't explain something in an interview, take it out." in await dlg.locator('.ai-note').inner_text())
             check('finished tasks get a dot', await dlg.locator('[data-task=match] .tl-dot').count() == 1)
             async with pg.expect_download() as dl: await dlg.locator('[data-tl=word]').click()
             d = await dl.value; word = tmp / d.suggested_filename; await d.save_as(word)
@@ -168,6 +178,20 @@ async def main():
             await btn.click(); await pg.wait_for_selector('#tailor .tl-out')
             check('reopens on the last task with its answer', await dlg.locator('[data-task=letter]').get_attribute('aria-selected') == 'true' and 'Dear [contact person]' in await dlg.locator('.tl-out').inner_text())
             await dlg.locator('.tl-close').click()
+
+            # When the full ad can't be fetched, the panel says so and fetches it again on request
+            AD_DOWN['on'] = True
+            await acme.locator('article.role[data-ad="102"] [data-tailor]').click()
+            await pg.wait_for_selector('#tailor [data-tl=refetch]', timeout=15000)
+            check('a failed fetch says only an extract is shown', "Couldn't fetch the full ad from Platsbanken just now" in await dlg.locator('.tl-box').first.inner_text())
+            AD_DOWN['on'] = False
+            await dlg.locator('[data-tl=refetch]').click()
+            await pg.wait_for_function("document.getElementById('tl-ad').value.includes('Kvalifikationer')", timeout=10000)
+            check('fetch again fills in the full ad', 'Fetched from Platsbanken' in await dlg.locator('.tl-box').first.inner_text() and await dlg.locator('[data-tl=refetch]').count() == 0)
+            await pg.set_viewport_size({'width': 320, 'height': 256})
+            check('at 400% zoom the panel scrolls as a whole', await dlg.evaluate("d => getComputedStyle(d).overflowY === 'auto' && d.scrollWidth <= 320"))
+            await pg.set_viewport_size({'width': 1280, 'height': 1000})
+            await pg.keyboard.press('Escape')
 
             # Ads from other sites only have a short extract
             echo = pg.locator('article.co', has_text='Echo Apps'); await echo.locator('button.exp').click()

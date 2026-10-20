@@ -20,8 +20,10 @@ SHOTS = ROOT / 'docs' / 'screenshots'
 QA = [ad(f'2{i:02d}', 'Kvalitetsingenjör', f'Firma {i} AB', f'55600010{i:02d}', GBG,
          ('Vi söker en kvalitetsingenjör med erfarenhet av FMEA. ' if i < 9 else 'Vi söker en kvalitetsingenjör. ') + ('Python är ett plus.' if i < 3 else '')) for i in range(12)]
 
+COUNT_DOWN = {'on': False}
 async def mentor_search(route):
     q = parse_qs(urlparse(route.request.url).query)
+    if COUNT_DOWN['on'] and q.get('limit', [''])[0] in ('1', '60'): return await route.abort()   # the Mentor's open-ad counts
     if 'kvalitetsingenjör' in q.get('q', [''])[0].lower() and q.get('qfields') != ['location']:
         return await route.fulfill(**ok({"total": {"value": 34}, "hits": QA}))
     if 'kvalitetschef' in q.get('q', [''])[0].lower():   # none near Göteborg, seven in the whole country
@@ -84,8 +86,14 @@ async def main():
             check('code field hidden once it works', await pg.locator('#mt-code').count() == 0)
             check('advice in three tiers', [await m.locator(f'.mt-tier.t-{k} .mt-role').count() for k in ('direct', 'stretch', 'pivot')] == [2, 3, 2])
             check('note from the mentor', 'Eight years of FMEA' in await m.locator('.mt-note').inner_text() and 'Pick a direction' in await m.locator('.mt-note').inner_text())
+            ai = m.locator('.ai-note')
+            check('the advice says what the AI saw and that it can be wrong', 'Suggestions, not decisions' in await ai.inner_text() and 'has only read your CV and your four answers' in await ai.inner_text()
+                  and 'Part%3A%20Mentor' in await ai.locator('a[data-fb=ai]').get_attribute('href'))
+            check('and that the CV and advice live only in this browser', 'Your CV and this advice are stored only in this browser.' in side, side)
+            async with pg.expect_download(): await m.locator('[data-mt=backup]').click()
+            check('a copy puts that line away', await m.locator('[data-mt=backup]').count() == 0)
 
-            await pg.wait_for_function("(document.querySelector('#mt-main .mt-block-head p') || {}).textContent === 'Open ads now in all of Sweden'", timeout=10000)
+            await pg.wait_for_function("((document.querySelector('#mt-main .mt-block-head p') || {}).textContent || '').startsWith('Open ads now in all of Sweden · counted ')", timeout=10000)
             check('open ads counted from Platsbanken', '34 open ads' in await m.locator('.mt-role', has_text='Kvalitetsingenjör').inner_text()
                   and '7 open ads' in await m.locator('.mt-role', has_text='Quality Manager').inner_text()
                   and 'No open ads right now' in await m.locator('.mt-role', has_text='Production Manager').inner_text())
@@ -141,8 +149,14 @@ async def main():
             await pg.evaluate('window.scrollTo(0, 0)'); await pg.fill('#place', 'Göteborg')
             await pg.evaluate("document.getElementById('msg').textContent = ''"); await pg.click('#go')
             await pg.wait_for_function("document.getElementById('msg').textContent.length > 0", timeout=20000)
+            COUNT_DOWN['on'] = True
             await pg.click('#tab-mentor')
-            await pg.wait_for_function("(document.querySelector('#mt-main .mt-block-head p') || {}).textContent === 'Open ads now in Göteborg + 25 km'", timeout=10000)
+            await pg.wait_for_selector('#mentor [data-mt=recount]', timeout=15000)
+            check('open-ad counts that fail say so', "Couldn't count open ads right now." in await m.locator('.mt-block-head p').first.inner_text())
+            COUNT_DOWN['on'] = False
+            await m.locator('[data-mt=recount]').click()
+            await pg.wait_for_function("((document.querySelector('#mt-main .mt-block-head p') || {}).textContent || '').startsWith('Open ads now in Göteborg + 25 km · counted ')", timeout=10000)
+            check('and try again counts them', await pg.evaluate("document.activeElement.id") == 'mt-roles-h')
             qm = m.locator('.mt-role', has_text='Quality Manager')
             check('none here, national count shown', 'None here right now · 7 in Sweden' in await qm.inner_text() and await qm.locator('[data-mt=search]').inner_text() == 'Search all of Sweden')
             await qm.locator('[data-mt=search]').click()

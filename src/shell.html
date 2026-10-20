@@ -141,6 +141,9 @@ h1 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; fon
 .f-place input, .f-country select, .f-radius select, .f-since select { width: 100%; }
 .chips-in { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 40px; padding: 5px 8px; background: var(--mast-field); border: 1px solid var(--mast-field-line); border-radius: var(--radius); cursor: text; }
 .chips-in:focus-within { outline: 2px solid var(--mast-accent); outline-offset: 1px; }
+/* Inside the input boxes the masthead's yellow ring would vanish, so the boxes use the field's ink colour and chip buttons their chip's text colour */
+.chips-in { --focus: var(--mast-field-ink); }
+.chips-in button:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; }
 .search .chips-in input { flex: 1 1 160px; min-width: 120px; border: 0; background: transparent; color: var(--mast-field-ink); font: inherit; font-size: 14px; padding: 3px 2px; outline: none; }
 .tok { display: inline-flex; align-items: center; gap: 4px; background: var(--mast-accent); color: var(--mast-accent-ink); font-size: 13px; font-weight: 600; border-radius: 999px; padding: 2px 4px 2px 10px; }
 .tok.ex { background: var(--tag-bg); color: var(--tag-fg); }
@@ -196,6 +199,7 @@ input[aria-invalid="true"] { border-color: var(--signal); }
 .tab:hover { color: var(--mast-ink); }
 .tab[aria-selected="true"] { color: var(--mast-ink); border-bottom-color: var(--mast-accent); }
 .tab .n { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--mast-muted); margin-left: 5px; }
+.tab-ic, .tab-s { display: none; }
 .topbar .lang { align-self: center; margin-left: auto; }
 .view-body { padding-bottom: 0; }
 .controls { position: sticky; top: 0; z-index: 5; background: var(--bg); padding-block: 12px 10px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
@@ -209,8 +213,12 @@ input[aria-invalid="true"] { border-color: var(--signal); }
 .toggle:has(input:checked) { border-color: var(--ink); background: var(--tag-bg); }
 .spacer { flex: 1 1 auto; }
 .count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.note-bar { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+.note-bar { font-size: 13px; color: var(--muted); margin: 10px 0 0; display: grid; gap: 8px; }
 .note-bar:empty { display: none; }
+.note-bar p { margin: 0; }
+.nb-line .linkbtn { font-size: 13px; }
+.nb-warn { background: var(--warn-soft); color: var(--ink); border-left: 3px solid var(--warn); border-radius: 0 8px 8px 0; padding: 10px 12px; display: grid; gap: 8px; font-size: 13.5px; }
+.nb-info { font-size: 13px; }
 
 /* Company rows */
 .co { border-bottom: 1px solid var(--line); }
@@ -293,6 +301,25 @@ input[aria-invalid="true"] { border-color: var(--signal); }
 .empty strong { color: var(--ink); display: block; font-size: 17px; margin-bottom: 4px; }
 .empty-mentor { margin-top: 18px; background: var(--accent-soft); color: var(--ink); border-radius: 8px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
 .empty-mentor span { flex: 1 1 260px; }
+.err-panel p { margin: 6px 0 14px; color: var(--ink); }
+.err-panel .row { gap: 10px 16px; }
+.fb-link { font-size: 13px; }
+/* The one-time reminder to keep a copy, in the tracker of the first saved job */
+.bk-prompt { background: var(--surface); border: 1px solid var(--line-strong); border-left: 3px solid var(--warn); border-radius: 0 6px 6px 0; padding: 9px 11px; display: grid; gap: 8px; font-size: 13.5px; }
+.bk-prompt p { margin: 0; }
+.bk-prompt.bk-ok { border-left-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.bk-prompt.bk-ok:focus { outline: none; }
+/* What the AI is and isn't, above everything it writes */
+.ai-note { background: var(--warn-soft); color: var(--ink); border-radius: 10px; padding: 12px 16px; display: grid; gap: 6px; max-width: 80ch; }
+.ai-note:focus { outline: none; }
+.ai-note:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.ai-note p { margin: 0; font-size: 13.5px; line-height: 1.5; }
+.ai-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 14.5px; }
+.ai-tag { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; background: var(--warn); color: var(--warn-soft); border-radius: 999px; padding: 1px 8px; }
+.ai-note .fb-link { justify-self: start; font-size: 12.5px; color: var(--ink); }
+/* Feedback links in the footer */
+.feedback { display: grid; gap: 6px; padding-top: 14px; margin-top: 6px; border-top: 1px solid var(--line); }
+.fb-list { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
 footer { margin-top: 40px; padding-top: 18px; border-top: 2px solid var(--ink); font-size: 13.5px; color: var(--muted); display: grid; gap: 8px; max-width: 80ch; }
 footer h3 { font-family: var(--font-display); font-stretch: 112%; font-size: 15px; color: var(--ink); margin: 0 0 2px; }
 footer p { margin: 0; }
@@ -301,9 +328,16 @@ footer p { margin: 0; }
 @media (max-width: 720px) {
   .controls { position: static; }
   .topbar-inner { gap: 0 12px; }
-  .tabs { order: 3; flex-basis: 100%; overflow-x: auto; margin-inline: -16px; padding-inline: 6px; scrollbar-width: none; }
-  .tab { padding: 10px 7px 11px; font-size: 13.5px; }
-  .tab .n { margin-left: 3px; }
+  .tabs { order: 3; flex-basis: 100%; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0; margin-inline: -16px; }
+  .tab { position: relative; flex-direction: column; justify-content: center; gap: 3px; padding: 8px 2px 7px; font-size: 12.5px; line-height: 1.2; white-space: nowrap; text-align: center; min-width: 0; }
+  .tab-ic { display: block; width: 21px; height: 21px; flex: none; }
+  .tab-l { display: none; }
+  .tab-s { display: inline; }
+  .tab .n { position: absolute; top: 4px; left: calc(50% + 9px); margin: 0; font-size: 10.5px; font-weight: 600; line-height: 16px; min-width: 16px; padding: 0 4px; border-radius: 999px; background: var(--mast-accent); color: var(--mast-accent-ink); }
+  .tab .n:empty { display: none; }
+}
+@media (max-width: 360px) {
+  .tab { font-size: 11.5px; letter-spacing: -.01em; }
   .f-country, .f-radius, .f-since { flex: 1 1 140px; }
   .roles-preview { white-space: normal; }
   .stat { flex-basis: 45%; }
@@ -322,6 +356,7 @@ footer p { margin: 0; }
 .backup .row { gap: 8px; }
 .backup .ok { color: var(--accent-ink); font-weight: 600; }
 .backup .err { color: var(--signal); font-weight: 600; }
+.backup.warn { border-left-color: var(--warn); background: var(--warn-soft); }
 .tab:focus-visible { outline-offset: -2px; }
 /* Welcome back: on return visits, a card in the seafoam band under the top bar with new ads for the last search and applications to follow up on */
 .welcome { --ink: var(--mast-ink); --muted: var(--mast-muted); --line: var(--mast-line); --line-strong: var(--mast-field-line); --accent-ink: var(--mast-accent); --accent: var(--mast-accent); --on-accent: var(--mast-accent-ink); --focus: var(--mast-accent); background: var(--mast-bg); color: var(--ink); }
@@ -398,6 +433,8 @@ body:has(.tailor[open]) { overflow: hidden; }
   .tl-inline { flex: 1 1 140px; }
 }
 @media (prefers-reduced-motion: reduce) { .tailor[open] { animation: none; } }
+/* On short screens, and at high zoom, the panel scrolls as a whole so its header doesn't take up the screen */
+@media (max-height: 520px) { .tailor[open] { display: block; overflow-y: auto; } .tl-body { overflow: visible; } }
 /* Mentor tab: what was read from the CV and the four questions on the left, the advice on the right */
 .mentor { display: grid; gap: 20px 28px; padding-top: 20px; align-items: start; }
 @media (min-width: 980px) {
@@ -619,10 +656,10 @@ section > .mk-tiles { margin: 0 0 14px; }
   <div class="topbar-inner">
     <div class="brand"><svg viewBox="0 0 64 64" aria-hidden="true"><rect class="b-tile" width="64" height="64" rx="14"/><circle class="b-lens" cx="28" cy="28" r="14" fill="none" stroke-width="6"/><path class="b-lens" d="M38 38l12 12" stroke-width="7" stroke-linecap="round"/></svg><span>Job Finder</span></div>
     <nav class="tabs" role="tablist" data-ta="tabs.label" aria-label="Views">
-      <button class="tab" role="tab" id="tab-res" aria-selected="true" aria-controls="view-res" type="button"><span data-t="tab.res">Find jobs</span><span class="n" id="n-res"></span></button>
-      <button class="tab" role="tab" id="tab-app" aria-selected="false" aria-controls="view-app" type="button" tabindex="-1"><span data-t="tab.app">My applications</span><span class="n" id="n-app"></span></button>
-      <button class="tab" role="tab" id="tab-market" aria-selected="false" aria-controls="view-market" type="button" tabindex="-1"><span data-t="tab.market">Market</span></button>
-      <button class="tab" role="tab" id="tab-mentor" aria-selected="false" aria-controls="view-mentor" type="button" tabindex="-1" hidden><span data-t="tab.mentor">Mentor</span></button>
+      <button class="tab" role="tab" id="tab-res" aria-selected="true" aria-controls="view-res" type="button"><svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><span class="tab-l" data-t="tab.res">Find jobs</span><span class="tab-s" data-t="tab.res.s">Jobs</span><span class="n" id="n-res"></span></button>
+      <button class="tab" role="tab" id="tab-app" aria-selected="false" aria-controls="view-app" type="button" tabindex="-1"><svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5h6M9 12.5l2 2 4-4"/></svg><span class="tab-l" data-t="tab.app">My applications</span><span class="tab-s" data-t="tab.app.s">Applications</span><span class="n" id="n-app"></span></button>
+      <button class="tab" role="tab" id="tab-market" aria-selected="false" aria-controls="view-market" type="button" tabindex="-1"><svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20v-7M10 20V8M15 20v-4M20 20V5"/></svg><span data-t="tab.market">Market</span></button>
+      <button class="tab" role="tab" id="tab-mentor" aria-selected="false" aria-controls="view-mentor" type="button" tabindex="-1" hidden><svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg><span data-t="tab.mentor">Mentor</span></button>
     </nav>
     <div class="lang" role="group" aria-label="Language / Språk">
       <button type="button" data-lang="sv" aria-pressed="false" lang="sv">Svenska</button>
@@ -703,7 +740,7 @@ section > .mk-tiles { margin: 0 0 14px; }
       </div>
       <div class="count" id="count" aria-live="polite"></div>
     </div>
-    <p class="note-bar" id="note-bar"></p>
+    <div class="note-bar" id="note-bar"></div>
     <main id="list"></main>
   </div>
 </section>
@@ -755,8 +792,14 @@ section > .mk-tiles { margin: 0 0 14px; }
     <p data-th="foot.place"></p>
     <p data-th="foot.history"></p>
     <p data-th="foot.market"></p>
+    <p data-th="foot.ai" hidden></p>
     <p data-th="foot.data"></p>
     <p><button class="linkbtn" type="button" id="goto-backup" data-t="foot.backup">Back up or restore your saved data</button></p>
+    <div class="feedback" id="feedback" hidden>
+      <h3 data-t="fb.title">Tell me what's wrong</h3>
+      <p data-t="fb.text"></p>
+      <ul class="fb-list" id="fb-list"></ul>
+    </div>
     <div class="about">
       <h3 data-t="about">About Job Finder</h3>
       <p data-th="about.indep"></p>
