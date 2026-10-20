@@ -1,0 +1,41 @@
+# Temporary: one full test run of the monthly market count on this branch, against the live services.
+# It commits the data and its log (test-run/) to the branch. Removed again after the test.
+name: Market test run
+
+on:
+  push:
+    branches: [market-analysis]
+    paths: [".github/workflows/market-test-run.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  market:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Count the month's figures
+        run: |
+          mkdir -p test-run
+          start=$(date +%s)
+          set +e
+          python3 -u market.py 2>&1 | tee test-run/market.log
+          code=${PIPESTATUS[0]}
+          echo "exit $code after $(( $(date +%s) - start )) s" | tee -a test-run/market.log
+          exit $code
+      - name: Build the page
+        run: python3 build.py 2>&1 | tee test-run/build.log
+      - name: Commit and push the data and the log
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test-run data/market.json index.html "Job Finder.html"
+          git commit -m "Market test run on $(date -u +'%-d %B %Y %H:%M') UTC"
+          git push
