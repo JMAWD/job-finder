@@ -84,6 +84,7 @@ async def main():
             trans_role = acme.locator('article.role[data-ad="101"]')
             translate_btn = trans_role.locator('[data-translate]')
             check('translation button names English as the target', await translate_btn.inner_text() == 'Translate ad to English')
+            check('no translation button on an ad already in English', await acme.locator('article.role[data-ad="102"] [data-translate]').count() == 0)
             await translate_btn.click()
             code_input = trans_role.locator('[data-translate-code]')
             check('translation asks for a code but not a CV', await code_input.count() == 1 and 'CV is not needed or sent' in await trans_role.locator('.translation-access').inner_text() and await trans_role.locator('.translation-access textarea').count() == 0)
@@ -168,10 +169,11 @@ async def main():
             await pg.locator('.lang button[data-lang=sv]').click()
             await pg.wait_for_function("document.querySelector('.lang button[data-lang=sv]').getAttribute('aria-pressed') === 'true'")
             bolt = pg.locator('article.co', has_text='Bolt Systems'); await bolt.locator('button.exp').click()
-            sw_role = bolt.locator('article.role[data-ad="103"]')
-            check('Swedish interface offers Swedish translation', await sw_role.locator('[data-translate]').inner_text() == 'Översätt annonsen till svenska')
+            check('no translation button on a Swedish ad in the Swedish interface', await bolt.locator('article.role[data-ad="103"] [data-translate]').count() == 0)
+            sw_role = acme.locator('article.role[data-ad="102"]')
+            check('Swedish interface offers Swedish translation of an English ad', await sw_role.locator('[data-translate]').inner_text() == 'Översätt annonsen till svenska')
             await sw_role.locator('[data-translate]').click()
-            await pg.wait_for_selector('article.role[data-ad="103"] .translation-text', timeout=10000)
+            await pg.wait_for_selector('article.role[data-ad="102"] .translation-text', timeout=10000)
             check('Swedish interface requests Swedish translation and sends only ad text', len(translation_payloads) == 3 and translation_payloads[-1].get('lang') == 'sv' and translation_payloads[-1].get('job') == {'text': AD_TEXT} and 'Translate the job ad into natural Swedish' in last_ai()['body']['messages'][1]['content'], repr(translation_payloads[-1:]) + ' ' + last_ai()['body']['messages'][1]['content'])
             await pg.locator('.lang button[data-lang=en]').click()
             await pg.wait_for_function("document.querySelector('.lang button[data-lang=en]').getAttribute('aria-pressed') === 'true'")
@@ -227,7 +229,7 @@ async def main():
 
             # When the full ad can't be fetched, the panel says so and fetches it again on request
             AD_DOWN['on'] = True
-            await acme.locator('article.role[data-ad="102"] [data-tailor]').click()
+            await bolt.locator('article.role[data-ad="103"] [data-tailor]').click()
             await pg.wait_for_selector('#tailor [data-tl=refetch]', timeout=15000)
             check('a failed fetch says only an extract is shown', "Couldn't fetch the full ad from Platsbanken just now" in await dlg.locator('.tl-box').first.inner_text())
             AD_DOWN['on'] = False

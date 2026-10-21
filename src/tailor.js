@@ -122,7 +122,7 @@ const guessLang = text => {
 };
 function jobFor(id) {
   const a = results?.ads.find(x => x.id === id);
-  if (a) { const c = companies.find(x => x.ads.includes(a)); return { id, title: a.title, employer: c ? coName(c) : shortName(a.employer), muni: a.muni, url: a.url || adUrl(a.id), src: a.src, source: a.source, snippet: a.snippet, apply: a.apply || (a.applyEmail ? `mailto:${a.applyEmail}` : "") }; }
+  if (a) { const c = companies.find(x => x.ads.includes(a)); return { id, title: a.title, employer: c ? coName(c) : shortName(a.employer), muni: a.muni, url: a.url || adUrl(a.id), src: a.src, source: a.source, snippet: a.snippet, adLang: a.adLang, apply: a.apply || (a.applyEmail ? `mailto:${a.applyEmail}` : "") }; }
   const sn = apps[id]?.snap;
   return sn ? { id, title: sn.title, employer: sn.company, muni: sn.muni, url: sn.url, src: id.startsWith("L:") ? "links" : "pb", snippet: "", apply: sn.apply || "" } : null;
 }
@@ -142,13 +142,14 @@ function translateBtn(id) {
   if (!ABOUT.tailor) return "";
   const job = jobFor(id), state = translations.get(id);
   if (!job || job.src !== "pb") return "";
+  if (job.adLang === lang && !state) return "";   // already in the interface language
   const label = state?.busy ? t("tr.busy") : state?.text ? t("tr.again") : t("tr.btn");
   return `<button class="btn ghost sm" type="button" data-translate="${esc(id)}"${state?.busy ? " disabled" : ""}>${esc(label)}</button>`;
 }
 function translationHtml(id) {
   const state = translations.get(id); if (!state) return "";
   const langAttr = state.lang === "en" ? "en" : "sv";
-  const error = state.error ? `<p class="translation-error" role="alert">${esc(t(state.error))}</p>` : "";
+  const error = state.error ? `<p class="translation-error" role="alert">${esc(t(state.error, state.errorVars))}</p>` : "";
   const access = state.askCode ? `<div class="translation-access"><p>${esc(t("tr.ask"))}</p><label>${esc(t("tl.code"))}<input data-translate-code type="text" maxlength="64" value="${esc(store.get("jf-code", ""))}" autocomplete="off" spellcheck="false" placeholder="ABCDE-FGHJK"></label><button class="btn sm" type="button" data-translate-go="${esc(id)}">${esc(t("tr.go"))}</button></div>` : "";
   const result = state.text ? `<p class="translation-note">${esc(t("tr.note"))}</p><div class="translation-text" lang="${langAttr}">${mdHtml(state.text)}</div>` : "";
   return `<section class="translation-panel" tabindex="-1" aria-live="polite">${state.busy ? `<p class="translation-status">${esc(t("tr.wait"))}</p>` : ""}${error}${access}${result}</section>`;
@@ -171,7 +172,7 @@ async function runTranslation(id, code) {
     const data = await r.json().catch(() => ({}));
     if (r.ok && typeof data.text === "string" && data.text.trim()) {
       state.text = data.text.trim(); store.set("jf-code", code);
-    } else state.error = TRANSLATE_ERRORS[data.error] || "tr.e.service";
+    } else { state.error = TRANSLATE_ERRORS[data.error] || "tr.e.service"; if (data.error === "limit_reached") state.errorVars = { perHour: data.perHour, perDay: data.perDay }; }
   } catch (err) { state.error = err.name === "AbortError" ? "tr.e.timeout" : "tr.e.network"; }
   finally { clearTimeout(timer); state.busy = false; redrawTranslation(id); }
 }

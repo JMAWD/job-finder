@@ -10,6 +10,7 @@ This is how the live server was set up. Repeat it if you ever need a second one.
    - AI_MODEL = `mistral-medium-3.5-128b`
    - AI_MODELS = the models `compare.html` may pick. Remove it when you have chosen.
    - LIMIT_PER_HOUR = `15`, LIMIT_PER_DAY = `40` (per access code)
+   - Optional: TRANSLATE_PER_HOUR (default `20`) and TRANSLATE_PER_DAY (default `60`). Ad translations are counted apart from the other tasks.
    - Secrets: AI_KEY = the secret key from step 2. ACCESS_CODES = the long line from `beta-codes.txt`.
 5. Deploy and copy the function endpoint (`https://….functions.fnc.fr-par.scw.cloud`). The address is safe to share; it only works with an access code.
 6. Put the endpoint in `config.json` as `tailor_url` and run `python3 build.py`.

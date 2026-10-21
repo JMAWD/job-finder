@@ -66,7 +66,7 @@ const I18N = {
   "tr.wait": ["Translating the full ad…", "Översätter hela annonsen…"],
   "tr.note": ["AI translation. Check the original ad before you apply.", "AI-översättning. Kontrollera originalannonsen innan du söker."],
   "tr.e.code": ["That access code wasn't accepted. Check it or ask for a new one.", "Åtkomstkoden godkändes inte. Kontrollera den eller be om en ny."],
-  "tr.e.limit": ["This code has reached its limit. Try again later.", "Koden har nått sin gräns. Försök igen senare."],
+  "tr.e.limit": ["This code has reached its translation limit ({perHour} an hour, {perDay} a day). Try again later. Tailoring and the Mentor are counted separately.", "Koden har nått sin gräns för översättningar ({perHour} i timmen, {perDay} per dag). Försök igen senare. Anpassning och Mentorn räknas för sig."],
   "tr.e.ad": ["The full ad could not be retrieved. Open the original ad and try again.", "Hela annonsen kunde inte hämtas. Öppna originalannonsen och försök igen."],
   "tr.e.origin": ["The translation service doesn't accept requests from this page yet.", "Översättningstjänsten tar inte emot anrop från den här sidan än."],
   "tr.e.timeout": ["The translation took too long. Try again.", "Översättningen tog för lång tid. Försök igen."],
@@ -741,6 +741,16 @@ function adContacts(h, agency) {
   }
   return out;
 }
+// Which language an ad is written in, from common small words: "sv", "en", or "" when the text is too short to tell.
+// Used to hide Translate on ads that are already in the interface language.
+const SV_WORDS = new Set("och att som för med är på av vi du till det har inom söker kommer eller din dig vår våra ska kan hos samt erfarenhet arbeta tjänsten".split(" "));
+const EN_WORDS = new Set("and the to of with you we for are our in is will your as on be this experience work role team who have".split(" "));
+function adLang(text) {
+  let sv = 0, en = 0;
+  for (const w of (text || "").toLowerCase().match(/[a-zåäö]+/g) || []) { if (SV_WORDS.has(w)) sv++; else if (EN_WORDS.has(w)) en++; }
+  if (sv + en < 2) return "";
+  return sv >= 2 * en ? "sv" : en >= 2 * sv ? "en" : "";
+}
 function fromPB(h) {
   const wa = h.workplace_address || {}, emp = h.employer || {}, desc = (h.description?.text || "").replace(/\s+/g, " ").trim();
   const agency = STAFFING.test(emp.name || "");
@@ -750,7 +760,7 @@ function fromPB(h) {
     apply: h.application_details?.url || "", applyEmail: h.application_details?.email || "",
     occ: h.occupation?.label || "", group: h.occupation_group?.label || "", groupId: h.occupation_group?.concept_id || "", field: h.occupation_field?.label || "", fieldId: h.occupation_field?.concept_id || "",
     duration: h.duration?.label || "", hours: h.working_hours_type?.label || "", vacancies: h.number_of_vacancies || 1, exp: h.experience_required,
-    agency, client: !agency && CLIENT_TEXT.test(desc), contacts: adContacts(h, agency), snippet: desc.slice(0, 500), _text: fold(`${h.headline} ${desc} ${emp.name || ""}`) };
+    agency, client: !agency && CLIENT_TEXT.test(desc), contacts: adContacts(h, agency), snippet: desc.slice(0, 500), adLang: adLang(`${h.headline} ${desc}`), _text: fold(`${h.headline} ${desc} ${emp.name || ""}`) };
 }
 function fromLinks(h) {
   const wa = (h.workplace_addresses || [])[0] || {}, link = (h.source_links || [])[0] || {}, emp = h.employer?.name || "", brief = (h.brief || "").replace(/\s+/g, " ").trim();

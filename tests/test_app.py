@@ -30,7 +30,7 @@ def ad(id, title, emp, org, where, text, pub=-2, deadline=20, contacts=(), field
 
 ANNA = {"name": "Anna Svensson", "description": "Enhetschef", "email": "anna.svensson@acme.example", "telephone": "070-111 22 33"}
 SW = [ad('101', 'Software Engineer till Acme', 'Acme Robotics AB', '5560000001', GBG, 'Vi söker en software engineer som kan FMEA och kvalitet.', contacts=[ANNA]),
-      ad('102', 'Senior Software Engineer', 'Acme Robotics AB', '5560000001', GBG, 'Senior software engineer för plattformen.'),
+      ad('102', 'Senior Software Engineer', 'Acme Robotics AB', '5560000001', GBG, 'Senior software engineer for the platform. You will work with our team.'),
       ad('103', 'Backend developer', 'Bolt Systems AB', '5560000002', MOL, 'Vi behöver en software engineer med Python.', deadline=2, duration='6 månader eller längre'),
       ad('104', 'Systemutvecklare', 'Bemanningsfirman Rekrytering AB', '5560000003', GBG, 'För vår kunds räkning söker vi en software engineer.')]
 # A new ad that only turns up once STATE['fresh'] is set, published an hour ago, for the welcome-back count
