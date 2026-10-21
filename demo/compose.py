@@ -2,6 +2,7 @@
 
     python3 demo/compose.py        # English, from demo/out/raw/
     python3 demo/compose.py sv     # Swedish, from demo/out/raw-sv/
+    python3 demo/compose.py events [sv]   # the short clip of Fairs and events, from record_events.py
 
 Adds a title card, the captions (highlighted words in **double stars**), a pointer with click rings and an end card,
 in the seafoam and sunshine colours. Writes demo/out/job-finder-demo.mp4 (job-finder-demo-sv.mp4 in Swedish, 1080 x 1080, 30 fps)
@@ -11,9 +12,10 @@ from PIL import Image, ImageDraw, ImageFont
 from playwright.async_api import async_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-LANG = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] in ('en', 'sv') else 'en'
-SUF = '' if LANG == 'en' else '-sv'
-OUT = ROOT / 'demo' / 'out'; RAW = OUT / ('raw' if LANG == 'en' else 'raw-sv')
+LANG = 'sv' if 'sv' in sys.argv[1:] else 'en'
+EVENTS = 'events' in sys.argv[1:]
+SUF = ('-events' if EVENTS else '') + ('' if LANG == 'en' else '-sv')
+OUT = ROOT / 'demo' / 'out'; RAW = OUT / ('raw' + SUF)
 S, FPS = 1080, 30
 GREEN, DEEP, SUN, MIST = '#1c6b5a', '#0f2e27', '#ffd86a', '#cde8de'
 TITLE_S, END_S, FADE = 3.6, 4.8, 0.4
@@ -37,6 +39,13 @@ END = {'en': ("<h1>Free. No account.<br>Swedish and English.</h1><div class=\"ur
               "<p>Advice based on your experience and plans, never your age.</p><p class=\"small\">Demo with fictional companies, people and ads.</p>"),
        'sv': ("<h1>Gratis. Inget konto.<br>Svenska och engelska.</h1><div class=\"url\">jmawd.github.io/job-finder</div>"
               "<p>Råd utifrån din erfarenhet och dina planer, aldrig din ålder.</p><p class=\"small\">Demo med påhittade företag, personer och annonser.</p>")}[LANG]
+if EVENTS:
+    TITLE = {'en': "<h1>Fairs and events<br>in your field.</h1><p>New in Job Finder: trade fairs, conferences and job fairs that fit your search, right above the job ads.</p>",
+             'sv': "<h1>Mässor och evenemang<br>inom ditt område.</h1><p>Nytt i Job Finder: fackmässor, konferenser och jobbmässor som passar din sökning, direkt ovanför annonserna.</p>"}[LANG]
+    END = {'en': ("<h1>Free. No account.<br>Swedish and English.</h1><div class=\"url\">jmawd.github.io/job-finder</div>"
+                  "<p>Go to talk and make contacts, not to hand out CVs.</p><p class=\"small\">Fictional job ads. The events are real, from the venues' calendars in October 2026.</p>"),
+           'sv': ("<h1>Gratis. Inget konto.<br>Svenska och engelska.</h1><div class=\"url\">jmawd.github.io/job-finder</div>"
+                  "<p>Gå dit för att prata och knyta kontakter, inte för att dela ut CV.</p><p class=\"small\">Påhittade jobbannonser. Evenemangen är riktiga, från mässornas kalendrar i oktober 2026.</p>")}[LANG]
 
 async def cards():
     async with async_playwright() as p:
