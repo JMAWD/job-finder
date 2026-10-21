@@ -12,7 +12,7 @@ from urllib.parse import urlparse, parse_qs
 from playwright.async_api import async_playwright
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
-from test_app import jobsearch, joblinks, history, check, passed
+from test_app import jobsearch, joblinks, history, check, passed, EVENT_HOSTS, no_events
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SHOTS = ROOT / 'docs' / 'screenshots'
@@ -54,6 +54,7 @@ async def main():
         browser = await p.chromium.launch()
         ctx = await browser.new_context(locale='en-US', viewport={'width': 1280, 'height': 1000})
         await ctx.route('https://jobsearch.api.jobtechdev.se/**', market_search)
+        await ctx.route(EVENT_HOSTS, no_events)
         await ctx.route('https://links.api.jobtechdev.se/**', joblinks)
         await ctx.route('https://historical.api.jobtechdev.se/**', market_history)
         pg = await ctx.new_page(); errors = []; pg.on('pageerror', lambda e: errors.append(str(e)))

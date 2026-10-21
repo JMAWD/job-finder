@@ -1,8 +1,8 @@
 # Job Finder
 
-**Svenska:** Job Finder är en gratis jobbsökare för Sverige. Välj ort och avstånd, skriv egna sökord (till exempel yrkestitlar, kunskaper eller metoder) och se vilka arbetsgivare som har lediga jobb just nu. Annonserna kommer från Platsbanken och andra svenska jobbsajter. Du kan spara jobb, följa dina ansökningar och skriva anteckningar. Platsbanken-annonser kan översättas till appens språk utan att ditt CV skickas. I steg 2 anpassar en AI ditt CV, ett personligt brev eller en intervjuförberedelse till ett jobb du hittat. Mentorn läser ditt CV och föreslår jobb du kan söka och kurser eller certifikat som håller dig eftertraktad, utifrån din erfarenhet och dina planer, aldrig din ålder. Fliken Marknaden visar hur många arbetsgivare inom ditt yrkesområde som annonserar jämfört med för ett år sedan, bredvid de senaste siffrorna för Sverige, och efter några avslag förklarar appen vad siffrorna betyder för dig. Allt sparas i din egen webbläsare. Inget konto, inga kakor, ingen spårning.
+**Svenska:** Job Finder är en gratis jobbsökare för Sverige. Välj ort och avstånd, skriv egna sökord (till exempel yrkestitlar, kunskaper eller metoder) och se vilka arbetsgivare som har lediga jobb just nu. Annonserna kommer från Platsbanken och andra svenska jobbsajter. Du kan spara jobb, följa dina ansökningar och skriva anteckningar. Ovanför resultaten visas mässor, konferenser och jobbmässor inom ditt område. Platsbanken-annonser kan översättas till appens språk utan att ditt CV skickas. I steg 2 anpassar en AI ditt CV, ett personligt brev eller en intervjuförberedelse till ett jobb du hittat. Mentorn läser ditt CV och föreslår jobb du kan söka och kurser eller certifikat som håller dig eftertraktad, utifrån din erfarenhet och dina planer, aldrig din ålder. Fliken Marknaden visar hur många arbetsgivare inom ditt yrkesområde som annonserar jämfört med för ett år sedan, bredvid de senaste siffrorna för Sverige, och efter några avslag förklarar appen vad siffrorna betyder för dig. Allt sparas i din egen webbläsare. Inget konto, inga kakor, ingen spårning.
 
-**English:** Job Finder is a free job search for Sweden. Pick a place and a distance, add your own keywords (job titles, skills, tools or methods) and see which employers are hiring right now. Ads come from Platsbanken and other Swedish job sites. You can save roles, track your applications and keep notes. Platsbanken ads can be translated into the app's language without sending your CV. In step 2 an AI tailors your CV, a cover letter or interview prep to a job you found. The Mentor reads your CV and suggests roles to apply for and courses or certificates that keep you in demand, judged by your experience and your plans, never your age. The Market tab shows how many employers in your field are advertising compared with a year ago, next to the latest figures for Sweden, and after a few rejections the app explains what those figures mean for you. Everything stays in your own browser. No account, no cookies, no tracking.
+**English:** Job Finder is a free job search for Sweden. Pick a place and a distance, add your own keywords (job titles, skills, tools or methods) and see which employers are hiring right now. Ads come from Platsbanken and other Swedish job sites. You can save roles, track your applications and keep notes. Above the results it shows trade fairs, conferences and job fairs in your field. Platsbanken ads can be translated into the app's language without sending your CV. In step 2 an AI tailors your CV, a cover letter or interview prep to a job you found. The Mentor reads your CV and suggests roles to apply for and courses or certificates that keep you in demand, judged by your experience and your plans, never your age. The Market tab shows how many employers in your field are advertising compared with a year ago, next to the latest figures for Sweden, and after a few rejections the app explains what those figures mean for you. Everything stays in your own browser. No account, no cookies, no tracking.
 
 **Try it:** [jmawd.github.io/job-finder](https://jmawd.github.io/job-finder/) (or download `Job Finder.html` and open it in your browser)
 
@@ -16,6 +16,7 @@
 - A keyword of several words is searched as one exact phrase. If almost no ads in Sweden use that phrase but its parts find plenty, the app offers to split it, so "project leader engineering" becomes "project leader" and "engineering". Real phrases like "project leader" stay together.
 - Common job titles written in English also search the word Swedish ads use, so "project manager" brings in ads for "projektledare". The Swedish word shows next to the keyword and can be removed. The list of titles is in `src/titles.txt`.
 - Groups the ads by employer, shows the contact people named in the ads, and links to a LinkedIn search for people at the employer.
+- Fairs and events in your field: above the employers, a panel lists upcoming trade fairs, conferences and job fairs that fit the search, soonest first, with the venue, how far away it is and why it was picked. It reads the calendars of Stockholmsmässan, Kistamässan and Malmömässan, plus job fairs from Visit Sweden's open data near the searched place. An event fits when it mentions one of your keywords, or when it's in the same area of work as most of the ads the search found. Fairs for the general public, school fairs and cancelled events are left out, and the panel only appears when something fits. It can be hidden.
 - Hiring history: when you open an employer it checks the past two years of Platsbanken ads, so you can see whether that kind of role comes up there regularly.
 - Tracks applications as Saved, Applied, Interview, Offer, Rejected or Not interested, with notes. They stay in My applications when you search for something else. They're stored only in the browser, so the first time you save a job the app suggests downloading a copy, and My applications shows how many changes you've made since your last copy.
 - Welcome back: when you return after a while, a card at the top tells you how many new Platsbanken ads match your last search since you ran it, with a button that shows just those. It also lists applications that have waited long enough to follow up on (7 days after applying once the deadline has passed, or 14 days whatever the deadline), with a link to email or call the contact named in the ad. Mark a follow-up as done or ask to be reminded in a week. It's all worked out in your browser, with no AI.
@@ -42,9 +43,13 @@
 
 ![Welcome back](docs/screenshots/welcome-en.png)
 
+![Fairs and events in your field](docs/screenshots/events-en.png)
+
 ## How it works
 
 The whole app is one HTML file with no server behind it. Searches go straight from the browser to JobTech's open APIs (`jobsearch`, `historical` and `links` at api.jobtechdev.se), which allow requests from any web page. Saved roles, notes and contacts are kept in the browser's local storage.
+
+Fairs and events come from the venues' own calendar APIs (Stockholmsmässan's WordPress events calendar, Kistamässan's and Malmömässan's WordPress event lists) and Visit Sweden's national API at data.visitsweden.com, which all allow requests from any web page. The app downloads each calendar whole and matches it in the browser, so no search words are sent to them, and keeps them for 12 hours. These aren't documented public APIs, so a calendar that stops answering is left out with a note, and the rest still work. Svenska Mässan and Elmia couldn't be read from a web page when this was built.
 
 To find a place, the app asks Platsbanken for ads in that place and reads their location ids and coordinates, so it needs no separate map service.
 
@@ -82,7 +87,7 @@ Sweden comes first, but the search is built so more countries can be added later
 
 I built it with Claude as my coding assistant. The tests run the real page against made-up data, so I can change things and know straight away if something broke.
 
-`python3 build.py` joins the source files into one HTML file. They're in `src/`: `shell.html` (layout and styles), `app.js` (everything else, including both languages), `tailor.js` (step 2), `mentor.js` (the Mentor), `market.js` (the Market and the pop-up after a few rejections), `munis.txt` (Sweden's municipalities and counties) and `titles.txt` (English job titles and the Swedish words ads use for them). The Market tab's figures come from `data/market.json` (see above); `python3 market.py` makes a new one by hand (`pip install requests` first).
+`python3 build.py` joins the source files into one HTML file. They're in `src/`: `shell.html` (layout and styles), `app.js` (everything else, including both languages), `tailor.js` (step 2), `mentor.js` (the Mentor), `events.js` (fairs and events), `market.js` (the Market and the pop-up after a few rejections), `munis.txt` (Sweden's municipalities and counties) and `titles.txt` (English job titles and the Swedish words ads use for them). The Market tab's figures come from `data/market.json` (see above); `python3 market.py` makes a new one by hand (`pip install requests` first).
 
 ## Tests
 
@@ -93,6 +98,7 @@ python3 tests/test_market.py          # the Market tab and the pop-up after a fe
 python3 tests/test_market_counts.py   # the monthly count, without the network
 python3 tests/test_tailor.py          # step 2, against the real server code and a fake AI
 python3 tests/test_mentor.py          # the Mentor, the same way
+python3 tests/test_events.py          # fairs and events, with example venue calendars
 cd server && node --test              # the server on its own, the fact check's property tests and the eval's plumbing
 ```
 

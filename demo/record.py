@@ -130,6 +130,11 @@ TX = {
 def ok(body): return dict(status=200, content_type='application/json', headers={'access-control-allow-origin': '*'}, body=json.dumps(body))
 def has(a, term): return term.lower() in (a['headline'] + ' ' + a['description']['text']).lower()
 
+# Fairs and events in your field: empty venue calendars, so the demo doesn't reach the real sites
+EVENT_HOSTS = re.compile(r'^https://(stockholmsmassan\.se|www\.malmomassan\.se|www\.kistamassan\.se|data\.visitsweden\.com)/')
+async def no_events(route):
+    u = route.request.url
+    await route.fulfill(**ok({"events": []} if 'tribe' in u else {"resource": {"children": []}} if 'visitsweden' in u else []))
 async def jobsearch(route):
     url = route.request.url; q = parse_qs(urlparse(url).query)
     if '/ad/' in url:
@@ -284,6 +289,7 @@ async def main():
             await ctx.add_init_script(f"""if (!localStorage.getItem('jf-cv')) {{ localStorage.setItem('jf-cv', {json.dumps(json.dumps(CV))});
                 localStorage.setItem('jf-code', '"{CODE}"'); localStorage.setItem('jf-lang', '"{LANG}"'); localStorage.setItem('jf-palette', '"seafoam"'); }}""")
             await ctx.route('https://jobsearch.api.jobtechdev.se/**', jobsearch)
+            await ctx.route(EVENT_HOSTS, no_events)
             await ctx.route('https://links.api.jobtechdev.se/**', joblinks)
             await ctx.route('https://historical.api.jobtechdev.se/**', history)
             pg = await ctx.new_page(); errors = []; pg.on('pageerror', lambda e: errors.append(str(e)))

@@ -53,13 +53,13 @@ const I18N = {
   "about": ["About Job Finder", "Om Job Finder"],
   "about.indep": ["Job Finder is a free, independent tool. It is not made by, affiliated with or endorsed by Arbetsförmedlingen. Job ads come from Arbetsförmedlingen's open data, published through <a href=\"https://jobtechdev.se\" target=\"_blank\" rel=\"noopener\">JobTech Dev</a>. Always check the original ad before you apply.",
     "Job Finder är ett gratis och fristående verktyg. Det är inte gjort av, kopplat till eller godkänt av Arbetsförmedlingen. Annonserna kommer från Arbetsförmedlingens öppna data, som publiceras via <a href=\"https://jobtechdev.se\" target=\"_blank\" rel=\"noopener\">JobTech Dev</a>. Kontrollera alltid originalannonsen innan du söker."],
-  "about.privacy": ["<b>Privacy.</b> No account, no cookies, no tracking. The only things that leave your browser are your searches and employer logos, which go directly to Arbetsförmedlingen's open job ad services. Everything you save stays on your device.",
-    "<b>Integritet.</b> Inget konto, inga kakor, ingen spårning. Det enda som lämnar din webbläsare är dina sökningar och arbetsgivarnas logotyper, som hämtas direkt från Arbetsförmedlingens öppna annonstjänster. Allt du sparar stannar på din enhet."],
+  "about.privacy": ["<b>Privacy.</b> No account, no cookies, no tracking. The only things that leave your browser are your searches and employer logos, which go directly to Arbetsförmedlingen's open job ad services. To show fairs and events, it also downloads the public event calendars of Stockholmsmässan, Kistamässan, Malmömässan and Visit Sweden; your search words are not sent to them. Everything you save stays on your device.",
+    "<b>Integritet.</b> Inget konto, inga kakor, ingen spårning. Det enda som lämnar din webbläsare är dina sökningar och arbetsgivarnas logotyper, som hämtas direkt från Arbetsförmedlingens öppna annonstjänster. För att visa mässor och evenemang hämtar appen också de öppna evenemangskalendrarna hos Stockholmsmässan, Kistamässan, Malmömässan och Visit Sweden; dina sökord skickas inte dit. Allt du sparar stannar på din enhet."],
   "credit": ["Made by {name}.", "Gjord av {name}."], "credit.code": ["Source code on GitHub", "Källkoden på GitHub"], "version": ["Version {v}", "Version {v}"],
 
   // Step 2: tailoring an application
-  "about.privacy.ai": ["<b>Privacy.</b> No account, no cookies, no tracking. Your searches and employer logos go directly to Arbetsförmedlingen's open job ad services. If you use Translate ad, only the job ad text is sent to the Job Finder server and an AI model hosted by Scaleway in Paris; your CV is not needed or sent. Your CV leaves your browser only when you press Generate in step 2 or Get advice in the Mentor, together with the job ad for step 2. The server keeps no copy. Everything you save stays on your device.",
-    "<b>Integritet.</b> Inget konto, inga kakor, ingen spårning. Dina sökningar och arbetsgivarnas logotyper hämtas direkt från Arbetsförmedlingens öppna annonstjänster. Om du översätter en annons skickas bara annonstexten till Job Finders server och en AI-modell hos Scaleway i Paris; ditt CV behövs inte och skickas inte. Ditt CV lämnar webbläsaren bara när du trycker på Skapa i steg 2 eller Få råd i Mentorn, tillsammans med annonsen i steg 2. Servern sparar ingen kopia. Allt du sparar stannar på din enhet."],
+  "about.privacy.ai": ["<b>Privacy.</b> No account, no cookies, no tracking. Your searches and employer logos go directly to Arbetsförmedlingen's open job ad services. To show fairs and events, the app also downloads the public event calendars of Stockholmsmässan, Kistamässan, Malmömässan and Visit Sweden; your search words are not sent to them. If you use Translate ad, only the job ad text is sent to the Job Finder server and an AI model hosted by Scaleway in Paris; your CV is not needed or sent. Your CV leaves your browser only when you press Generate in step 2 or Get advice in the Mentor, together with the job ad for step 2. The server keeps no copy. Everything you save stays on your device.",
+    "<b>Integritet.</b> Inget konto, inga kakor, ingen spårning. Dina sökningar och arbetsgivarnas logotyper hämtas direkt från Arbetsförmedlingens öppna annonstjänster. För att visa mässor och evenemang hämtar appen också de öppna evenemangskalendrarna hos Stockholmsmässan, Kistamässan, Malmömässan och Visit Sweden; dina sökord skickas inte dit. Om du översätter en annons skickas bara annonstexten till Job Finders server och en AI-modell hos Scaleway i Paris; ditt CV behövs inte och skickas inte. Ditt CV lämnar webbläsaren bara när du trycker på Skapa i steg 2 eller Få råd i Mentorn, tillsammans med annonsen i steg 2. Servern sparar ingen kopia. Allt du sparar stannar på din enhet."],
   "tl.open": ["Tailor my application", "Anpassa min ansökan"],
   "tr.btn": ["Translate ad to English", "Översätt annonsen till svenska"], "tr.again": ["Translate again", "Översätt igen"], "tr.busy": ["Translating…", "Översätter…"], "tr.go": ["Translate", "Översätt"],
   "tr.ask": ["Enter your access code to translate. Your CV is not needed or sent.", "Skriv in din åtkomstkod för att översätta. Ditt CV behövs inte och skickas inte."],
@@ -1188,6 +1188,7 @@ function render() {
   }
   $("expand-all").textContent = t(vis.length && vis.every(c => openIds.has(c.key)) ? "collapse" : "expand");
   renderApps();
+  renderEvents();
   for (const c of vis) if (openIds.has(c.key) && c.org && !hist.has(c.org)) loadHistory(c.org);
 }
 // The bar above the results: what was searched and when it was last checked. When results are a day old it suggests searching
@@ -1642,6 +1643,8 @@ function initWelcome() {
 
 /*__MARKET_JS__*/
 
+/*__EVENTS__*/
+
 /* ---------- Start ---------- */
 if (ABOUT.tailor) document.querySelector('[data-th="about.privacy"]').dataset.th = "about.privacy.ai";
 document.querySelector('[data-th="foot.ai"]').hidden = !ABOUT.tailor;
@@ -1649,6 +1652,7 @@ $("tab-mentor").hidden = !ABOUT.tailor;
 initTailor();
 initMentor();
 initMarket();
+initEvents();
 applyLang();
 applyPalette();
 loadPrefs();
