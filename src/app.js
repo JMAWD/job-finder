@@ -58,9 +58,20 @@ const I18N = {
   "credit": ["Made by {name}.", "Gjord av {name}."], "credit.code": ["Source code on GitHub", "Källkoden på GitHub"], "version": ["Version {v}", "Version {v}"],
 
   // Step 2: tailoring an application
-  "about.privacy.ai": ["<b>Privacy.</b> No account, no cookies, no tracking. Your searches and employer logos go directly to Arbetsförmedlingen's open job ad services. Your CV leaves your browser only when you press Generate in step 2 or Get advice in the Mentor: it goes, with the job ad in step 2, to the Job Finder server and on to an AI model hosted by Scaleway in Paris, which writes the answer. The server keeps no copy. Everything you save stays on your device.",
-    "<b>Integritet.</b> Inget konto, inga kakor, ingen spårning. Dina sökningar och arbetsgivarnas logotyper hämtas direkt från Arbetsförmedlingens öppna annonstjänster. Ditt CV lämnar webbläsaren bara när du trycker på Skapa i steg 2 eller Få råd i Mentorn: då skickas det, i steg 2 tillsammans med annonsen, till Job Finders server och vidare till en AI-modell hos Scaleway i Paris, som skriver svaret. Servern sparar ingen kopia. Allt du sparar stannar på din enhet."],
+  "about.privacy.ai": ["<b>Privacy.</b> No account, no cookies, no tracking. Your searches and employer logos go directly to Arbetsförmedlingen's open job ad services. If you use Translate ad, only the job ad text is sent to the Job Finder server and an AI model hosted by Scaleway in Paris; your CV is not needed or sent. Your CV leaves your browser only when you press Generate in step 2 or Get advice in the Mentor, together with the job ad for step 2. The server keeps no copy. Everything you save stays on your device.",
+    "<b>Integritet.</b> Inget konto, inga kakor, ingen spårning. Dina sökningar och arbetsgivarnas logotyper hämtas direkt från Arbetsförmedlingens öppna annonstjänster. Om du översätter en annons skickas bara annonstexten till Job Finders server och en AI-modell hos Scaleway i Paris; ditt CV behövs inte och skickas inte. Ditt CV lämnar webbläsaren bara när du trycker på Skapa i steg 2 eller Få råd i Mentorn, tillsammans med annonsen i steg 2. Servern sparar ingen kopia. Allt du sparar stannar på din enhet."],
   "tl.open": ["Tailor my application", "Anpassa min ansökan"],
+  "tr.btn": ["Translate ad to English", "Översätt annonsen till svenska"], "tr.again": ["Translate again", "Översätt igen"], "tr.busy": ["Translating…", "Översätter…"], "tr.go": ["Translate", "Översätt"],
+  "tr.ask": ["Enter your access code to translate. Your CV is not needed or sent.", "Skriv in din åtkomstkod för att översätta. Ditt CV behövs inte och skickas inte."],
+  "tr.wait": ["Translating the full ad…", "Översätter hela annonsen…"],
+  "tr.note": ["AI translation. Check the original ad before you apply.", "AI-översättning. Kontrollera originalannonsen innan du söker."],
+  "tr.e.code": ["That access code wasn't accepted. Check it or ask for a new one.", "Åtkomstkoden godkändes inte. Kontrollera den eller be om en ny."],
+  "tr.e.limit": ["This code has reached its limit. Try again later.", "Koden har nått sin gräns. Försök igen senare."],
+  "tr.e.ad": ["The full ad could not be retrieved. Open the original ad and try again.", "Hela annonsen kunde inte hämtas. Öppna originalannonsen och försök igen."],
+  "tr.e.origin": ["The translation service doesn't accept requests from this page yet.", "Översättningstjänsten tar inte emot anrop från den här sidan än."],
+  "tr.e.timeout": ["The translation took too long. Try again.", "Översättningen tog för lång tid. Försök igen."],
+  "tr.e.network": ["Couldn't reach the translation service. Check your connection and try again.", "Kunde inte nå översättningstjänsten. Kontrollera uppkopplingen och försök igen."],
+  "tr.e.service": ["The translation service couldn't answer right now. Try again shortly.", "Översättningstjänsten kunde inte svara just nu. Försök igen om en stund."],
   "tl.eyebrow": ["Step 2 · tailor your application", "Steg 2 · anpassa din ansökan"], "tl.close": ["Close", "Stäng"],
   "tl.ad": ["The job ad", "Annonsen"], "tl.ad.ph": ["Paste the full job ad here", "Klistra in hela annonsen här"], "tl.ad.loading": ["Fetching the full ad…", "Hämtar hela annonsen…"],
   "tl.ad.hint": ["Fetched from Platsbanken. You can edit it, for example to cut parts that don't matter.", "Hämtad från Platsbanken. Du kan ändra i den, till exempel stryka delar som inte spelar roll."],
@@ -88,8 +99,8 @@ const I18N = {
   "tl.applyon": ["Apply on {site}", "Sök på {site}"],
   "tl.markq": ["Sent your application?", "Har du skickat ansökan?"], "tl.mark": ["Mark as applied", "Markera som sökt"],
   "tl.marked": ["Marked as applied. You'll find it under My applications.", "Markerad som sökt. Du hittar den under Mina ansökningar."],
-  "tl.privacy": ["When you press Generate, your CV, the ad and your wishes are sent to the Job Finder server and on to an AI model hosted by Scaleway in Paris. The server keeps no copy. Your CV and the answers are saved only in this browser.",
-    "När du trycker på Skapa skickas ditt CV, annonsen och dina önskemål till Job Finders server och vidare till en AI-modell hos Scaleway i Paris. Servern sparar ingen kopia. Ditt CV och svaren sparas bara i den här webbläsaren."],
+  "tl.privacy": ["When you press Generate, your CV, the ad and your wishes are sent to the Job Finder server and on to an AI model hosted by Scaleway in Paris. Translate ad sends only the ad text; your CV is not needed or sent. The server keeps no copy. Your CV and the answers are saved only in this browser.",
+    "När du trycker på Skapa skickas ditt CV, annonsen och dina önskemål till Job Finders server och vidare till en AI-modell hos Scaleway i Paris. Översätt annons skickar bara annonstexten; ditt CV behövs inte och skickas inte. Servern sparar ingen kopia. Ditt CV och svaren sparas bara i den här webbläsaren."],
   "tl.e.nocode": ["Enter your access code first.", "Skriv in din åtkomstkod först."],
   "tl.e.code": ["That access code wasn't accepted. Check it, or ask for a new one.", "Åtkomstkoden godkändes inte. Kontrollera den eller be om en ny."],
   "tl.e.limit": ["Your code has reached its limit ({perHour} an hour, {perDay} a day). Try again later.", "Din kod har nått sin gräns ({perHour} i timmen, {perDay} per dag). Försök igen senare."],
@@ -1088,11 +1099,12 @@ function roleHtml(c, a) {
     <div class="role-meta">${metaHtml(a)}</div>
     ${matches.length ? `<div class="matches">${esc(t("matches"))} ${matches.join("")}</div>` : ""}
     ${a.snippet ? `<p class="snippet">${highlight(snippetFor(a, ts), a.terms)}</p>` : ""}
+    ${translationHtml(a.id)}
     ${histLine}
     <div class="track">
       <div class="row">${statusSelect(a.id, app.status || "")}
         ${applyHref ? `<a class="btn ghost sm" href="${esc(applyHref)}" target="_blank" rel="noopener">${esc(t("howapply"))}</a>` : ""}
-        <a class="btn ghost sm" href="${esc(a.url || adUrl(a.id))}" target="_blank" rel="noopener">${esc(t("readad"))}</a>${tailorBtn(a.id)}</div>
+        <a class="btn ghost sm" href="${esc(a.url || adUrl(a.id))}" target="_blank" rel="noopener">${esc(t("readad"))}</a>${translateBtn(a.id)}${tailorBtn(a.id)}</div>
       ${app.status || app.note ? noteHtml(a.id, a.title, app.note) : ""}
       ${bkPromptHtml(a.id)}
     </div>

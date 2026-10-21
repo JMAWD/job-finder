@@ -1,7 +1,8 @@
 /* ---------- Step 2: tailor an application to one job ----------
    Opens a panel over the list with the full ad, the person's CV and four things the AI can write.
-   The CV and access code are kept in this browser. Text only leaves the browser when Generate is pressed,
-   and then only to the tailoring server (ABOUT.tailor), which forwards it to an AI model hosted in the EU. */
+   Platsbanken ads can also be translated inline; translation sends only the ad text, without a CV.
+   The CV and access code are kept in this browser. Translation sends only the ad text; Generate sends the CV,
+   ad and any extra wishes to the tailoring server, which forwards them to an AI model hosted in the EU. */
 const TASKS = ["match", "cv", "letter", "interview"];
 const TAILOR_TIMEOUT = 110000;
 let tl = null;   // the open job: { id, title, employer, muni, url, src, task, busy, ctrl }
@@ -9,6 +10,7 @@ let tailorStore = store.get("jf-tailor", {});   // ad id -> { ad, extra, out: { 
 const saveTailor = () => store.set("jf-tailor", tailorStore);
 const tlEntry = id => tailorStore[id] || (tailorStore[id] = { out: {} });
 const fullAds = new Map(), adFails = new Set();   // ads fetched in full, and Platsbanken ads that couldn't be fetched this time
+const translations = new Map();   // translated ads stay in memory for this page view; never saved with application data
 
 const RULE = /^\s*([-*_])(\s*\1){2,}\s*$/;   // a "---" divider line, left out everywhere
 // Small Markdown reader for the AI's answers: headings, lists, bold, italics. Everything is escaped first.
@@ -135,6 +137,55 @@ async function loadFullAd(job) {
     fullAds.set(job.id, text); adFails.delete(job.id);
     return text;
   } catch (err) { console.warn("The full ad could not be fetched", err); adFails.add(job.id); return job.snippet || ""; }
+}
+function translateBtn(id) {
+  if (!ABOUT.tailor) return "";
+  const job = jobFor(id), state = translations.get(id);
+  if (!job || job.src !== "pb") return "";
+  const label = state?.busy ? t("tr.busy") : state?.text ? t("tr.again") : t("tr.btn");
+  return `<button class="btn ghost sm" type="button" data-translate="${esc(id)}"${state?.busy ? " disabled" : ""}>${esc(label)}</button>`;
+}
+function translationHtml(id) {
+  const state = translations.get(id); if (!state) return "";
+  const langAttr = state.lang === "en" ? "en" : "sv";
+  const error = state.error ? `<p class="translation-error" role="alert">${esc(t(state.error))}</p>` : "";
+  const access = state.askCode ? `<div class="translation-access"><p>${esc(t("tr.ask"))}</p><label>${esc(t("tl.code"))}<input data-translate-code type="text" maxlength="64" value="${esc(store.get("jf-code", ""))}" autocomplete="off" spellcheck="false" placeholder="ABCDE-FGHJK"></label><button class="btn sm" type="button" data-translate-go="${esc(id)}">${esc(t("tr.go"))}</button></div>` : "";
+  const result = state.text ? `<p class="translation-note">${esc(t("tr.note"))}</p><div class="translation-text" lang="${langAttr}">${mdHtml(state.text)}</div>` : "";
+  return `<section class="translation-panel" tabindex="-1" aria-live="polite">${state.busy ? `<p class="translation-status">${esc(t("tr.wait"))}</p>` : ""}${error}${access}${result}</section>`;
+}
+function redrawTranslation(id, focusSel = ".translation-panel") {
+  const role = document.querySelector(`article.role[data-ad="${CSS.escape(id)}"]`), company = role?.closest("article.co");
+  if (company) rerenderCompany(company.dataset.id, focusSel);
+}
+const TRANSLATE_ERRORS = { bad_code: "tr.e.code", limit_reached: "tr.e.limit", ad_too_short: "tr.e.ad", too_long: "tr.e.ad", origin_not_allowed: "tr.e.origin", ai_timeout: "tr.e.timeout", ai_busy: "tr.e.service", ai_error: "tr.e.service", ai_empty: "tr.e.service", ai_unreachable: "tr.e.network" };
+async function runTranslation(id, code) {
+  const job = jobFor(id); if (!job || !code) return;
+  const state = { lang, busy: true, askCode: false, error: "", text: "" };
+  translations.set(id, state); redrawTranslation(id);
+  const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), TAILOR_TIMEOUT);
+  try {
+    const ad = (await loadFullAd(job)).trim();
+    if (ad.length < 100 || (adFails.has(id) && !tlEntry(id).ad)) { state.error = "tr.e.ad"; return; }
+    const r = await fetch(ABOUT.tailor, { method: "POST", headers: { "Content-Type": "application/json" }, signal: ctrl.signal,
+      body: JSON.stringify({ code, task: "translate", lang: state.lang, job: { text: ad } }) });
+    const data = await r.json().catch(() => ({}));
+    if (r.ok && typeof data.text === "string" && data.text.trim()) {
+      state.text = data.text.trim(); store.set("jf-code", code);
+    } else state.error = TRANSLATE_ERRORS[data.error] || "tr.e.service";
+  } catch (err) { state.error = err.name === "AbortError" ? "tr.e.timeout" : "tr.e.network"; }
+  finally { clearTimeout(timer); state.busy = false; redrawTranslation(id); }
+}
+function onTranslateClick(e) {
+  const go = e.target.closest("[data-translate-go]");
+  if (go) {
+    const id = go.dataset.translateGo, code = go.closest(".translation-panel")?.querySelector("[data-translate-code]")?.value.trim();
+    if (!code) { go.closest(".translation-panel")?.querySelector("[data-translate-code]")?.focus(); return; }
+    runTranslation(id, code); return;
+  }
+  const button = e.target.closest("[data-translate]"); if (!button || button.disabled) return;
+  const id = button.dataset.translate, code = store.get("jf-code", "");
+  if (code) runTranslation(id, code);
+  else { translations.set(id, { lang, askCode: true, busy: false, error: "", text: "" }); redrawTranslation(id, "[data-translate-code]"); }
 }
 // Fetches a Platsbanken ad again after a failure. The text box is only replaced if the person hasn't changed the extract.
 async function refetchAd() {
@@ -334,6 +385,7 @@ function initTailor() {
     const id = tl?.id, from = tl?.from; tl = null; d.innerHTML = "";
     const back = id && document.querySelector(`${from === "apps" ? "#apps" : "#list"} [data-tailor="${CSS.escape(id)}"]`); if (back) back.focus();
   });
+  for (const where of ["list", "apps"]) $(where).addEventListener("click", onTranslateClick);
   for (const where of ["list", "apps"]) $(where).addEventListener("click", e => { const b = e.target.closest("[data-tailor]"); if (b) openTailor(b.dataset.tailor, where); });
   d.addEventListener("keydown", e => {
     const tab = e.target.closest?.(".tl-task"); if (!tab || !["ArrowLeft", "ArrowRight"].includes(e.key)) return;

@@ -5,7 +5,7 @@
 Starts server/dev.mjs on port 8787 and tests/fake_ai.mjs on port 8799, builds a copy of the page that points at the local
 server, and runs through the panel in a browser: fetching the full ad, the CV from a Word file, access code errors,
 generating, the Word download, backup, Swedish and a phone-sized screen."""
-import asyncio, hashlib, json, os, pathlib, re, subprocess, sys, tempfile, time, urllib.request, zipfile
+import asyncio, hashlib, json, os, pathlib, re, shutil, subprocess, sys, tempfile, time, urllib.request, zipfile
 from playwright.async_api import async_playwright
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
@@ -71,10 +71,31 @@ async def main():
             await pg.fill('#place', 'Göteborg'); await pg.fill('#kw-input', 'software engineer'); await pg.press('#kw-input', 'Enter'); await search(pg)
             check('no tailor buttons without a server', await pg.locator('[data-tailor]').count() == 0)
             check('no Mentor without a server', await pg.locator('#tab-mentor').is_hidden() and await pg.locator('[data-act=goto-mentor]').count() == 0)
+            check('no translation buttons without a server', await pg.locator('[data-translate]').count() == 0)
 
+            translation_payloads = []
+            async def capture_translation(route):
+                payload = route.request.post_data_json
+                if isinstance(payload, dict) and payload.get('task') == 'translate': translation_payloads.append(payload)
+                await route.continue_()
+            await pg.route(SERVER + '/**', capture_translation)
             await pg.goto(page.as_uri()); await search(pg)
             acme = pg.locator('article.co', has_text='Acme Robotics'); await acme.locator('button.exp').click()
-            btn = acme.locator('article.role[data-ad="101"] [data-tailor]')
+            trans_role = acme.locator('article.role[data-ad="101"]')
+            translate_btn = trans_role.locator('[data-translate]')
+            check('translation button names English as the target', await translate_btn.inner_text() == 'Translate ad to English')
+            await translate_btn.click()
+            code_input = trans_role.locator('[data-translate-code]')
+            check('translation asks for a code but not a CV', await code_input.count() == 1 and 'CV is not needed or sent' in await trans_role.locator('.translation-access').inner_text() and await trans_role.locator('.translation-access textarea').count() == 0)
+            await code_input.fill(CODE); await trans_role.locator('[data-translate-go]').click()
+            await pg.wait_for_selector('article.role[data-ad="101"] .translation-text', timeout=10000)
+            first_translation = await trans_role.locator('.translation-text').inner_text()
+            check('full ad translation is shown inline', 'Quality Engineer' in first_translation and 'quality improvements' in first_translation, first_translation)
+            check('translation sends only the ad text to the server, without CV or job metadata', len(translation_payloads) == 1 and translation_payloads[0].get('job') == {'text': AD_TEXT} and 'cv' not in translation_payloads[0], repr(translation_payloads))
+            first_request = last_ai()['body']['messages'][1]['content']
+            check('AI receives the full ad but no CV or separate job metadata', 'Erfarenhet av FMEA' in first_request and 'leverantörsrevisioner' not in first_request and '<cv>' not in first_request and 'Acme Robotics' not in first_request and 'Software Engineer till Acme' not in first_request)
+            await pg.evaluate("localStorage.removeItem('jf-code')")
+            btn = trans_role.locator('[data-tailor]')
             check('tailor button on each role', await btn.inner_text() == 'Tailor my application')
             await btn.click()
             dlg = pg.locator('#tailor')
@@ -123,7 +144,7 @@ async def main():
 
             await dlg.locator('[data-tl=copy]').click()
             clip = await pg.evaluate('navigator.clipboard.readText()')
-            check('copy gives plain text', clip.startswith('Det som matchar\n• FMEA: åtta') and '**' not in clip and '##' not in clip and '---' not in clip, clip[:80])
+            check('copy gives plain text', clip.replace('\r\n', '\n').startswith('Det som matchar\n• FMEA: åtta') and '**' not in clip and '##' not in clip and '---' not in clip, clip[:80])
 
             # Cover letter in English, then the Word file
             await dlg.locator('[data-task=letter]').click()
@@ -133,6 +154,29 @@ async def main():
             check('English prompt used', '<job_ad>' in last_ai()['body']['messages'][1]['content'])
             check('a cover letter gets the interview test', "If you couldn't explain something in an interview, take it out." in await dlg.locator('.ai-note').inner_text())
             check('finished tasks get a dot', await dlg.locator('[data-task=match] .tl-dot').count() == 1)
+
+            # Translate the ad inline, reusing the saved code without sending the CV
+            await dlg.locator('.tl-close').click()
+            trans_role = acme.locator('article.role[data-ad="101"]')
+            await trans_role.locator('[data-translate]').click()
+            await pg.wait_for_selector('article.role[data-ad="101"] .translation-text', timeout=10000)
+            translation = await trans_role.locator('.translation-text').inner_text()
+            check('English translation shown inline', 'Quality Engineer' in translation and 'quality improvements' in translation, translation)
+            request_text = last_ai()['body']['messages'][1]['content']
+            check('only ad text sent for translation', 'Erfarenhet av FMEA' in request_text and 'leverantörsrevisioner' not in request_text)
+            check('translation code reused', await pg.evaluate("JSON.parse(localStorage.getItem('jf-code')).toUpperCase()") == CODE)
+            await pg.locator('.lang button[data-lang=sv]').click()
+            await pg.wait_for_function("document.querySelector('.lang button[data-lang=sv]').getAttribute('aria-pressed') === 'true'")
+            bolt = pg.locator('article.co', has_text='Bolt Systems'); await bolt.locator('button.exp').click()
+            sw_role = bolt.locator('article.role[data-ad="103"]')
+            check('Swedish interface offers Swedish translation', await sw_role.locator('[data-translate]').inner_text() == 'Översätt annonsen till svenska')
+            await sw_role.locator('[data-translate]').click()
+            await pg.wait_for_selector('article.role[data-ad="103"] .translation-text', timeout=10000)
+            check('Swedish interface requests Swedish translation and sends only ad text', len(translation_payloads) == 3 and translation_payloads[-1].get('lang') == 'sv' and translation_payloads[-1].get('job') == {'text': AD_TEXT} and 'Translate the job ad into natural Swedish' in last_ai()['body']['messages'][1]['content'], repr(translation_payloads[-1:]) + ' ' + last_ai()['body']['messages'][1]['content'])
+            await pg.locator('.lang button[data-lang=en]').click()
+            await pg.wait_for_function("document.querySelector('.lang button[data-lang=en]').getAttribute('aria-pressed') === 'true'")
+            await trans_role.locator('[data-tailor]').click(); await pg.wait_for_selector('#tailor .tl-out', timeout=10000)
+
             async with pg.expect_download() as dl: await dlg.locator('[data-tl=word]').click()
             d = await dl.value; word = tmp / d.suggested_filename; await d.save_as(word)
             check('Word file name', d.suggested_filename == 'cover-letter-acme-robotics-software-engineer-till-acme.docx', d.suggested_filename)
@@ -140,8 +184,10 @@ async def main():
             doc = docx.Document(str(word)); paras = [x.text for x in doc.paragraphs]
             check('Word file opens and has the letter', paras[0] == 'Cover letter: Software Engineer till Acme, Acme Robotics' and 'Dear [contact person],' in paras and '• Eight years of FMEA' in paras, paras)
             check('bold kept in Word', any(r.bold and r.text == 'Acme Robotics' for x in doc.paragraphs for r in x.runs))
-            conv = subprocess.run(['soffice', '--headless', '--convert-to', 'pdf', '--outdir', str(tmp), str(word)], capture_output=True, timeout=120)
-            check('LibreOffice can open the Word file', (tmp / (word.stem + '.pdf')).exists(), conv.stderr[-300:])
+            if shutil.which('soffice'):
+                conv = subprocess.run(['soffice', '--headless', '--convert-to', 'pdf', '--outdir', str(tmp), str(word)], capture_output=True, timeout=120)
+                check('LibreOffice can open the Word file', (tmp / (word.stem + '.pdf')).exists(), conv.stderr[-300:].decode(errors='replace'))
+            else: print('SKIPPED LibreOffice open check: soffice is not installed')
             await pg.screenshot(path=str(SHOTS / 'tailor-en.png'))
             await pg.evaluate("document.documentElement.dataset.palette = 'terracotta'")
             check('the panel follows the chosen colours', await dlg.locator('.tl-head').evaluate('e => getComputedStyle(e).backgroundColor') == 'rgb(156, 74, 51)')

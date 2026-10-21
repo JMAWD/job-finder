@@ -2,10 +2,7 @@
 /*
   Job Finder tailoring server: one Scaleway Serverless Function (Node 22).
 
-  The browser sends a CV, a job ad and which text it wants, or only the CV for the Mentor tab. This function
-  checks the beta access code, limits how much each code can use, sends the request to Scaleway Generative APIs
-  (Paris) with the prompts kept here on the server, and returns the text (or, for the Mentor, the advice as JSON).
-  It never stores or logs CV or ad text.
+  Job Finder's tailoring server: translation sends only ad text, application writing sends a CV and ad, and Mentor reads only a CV. The function checks the beta access code, limits how much each code can use, sends the request to Scaleway Generative APIs (Paris) with the prompts kept here on the server, and returns the text (or, for the Mentor, the advice as JSON). It never stores or logs CV or ad text.
 
   Environment variables (set on the function in the Scaleway console):
     ALLOWED_ORIGINS   comma-separated sites allowed to call it, e.g. https://name.github.io  (add "null" to allow the downloaded file)
@@ -19,7 +16,7 @@
     ACCESS_CODES      comma-separated SHA-256 hashes of the beta access codes (make them with make-codes.mjs)
 */
 const crypto = require("crypto");
-const { PROMPTS, TASKS, AD_TASKS, parseMentor } = require("./prompts.js");
+const { PROMPTS, TASKS, AD_TASKS, CV_TASKS, parseMentor } = require("./prompts.js");
 
 const MAX_CV = 20000, MAX_AD = 20000, MAX_EXTRA = 2000;
 const usage = new Map();   // access code hash -> timestamps of recent requests (per running instance)
@@ -97,21 +94,21 @@ async function handle(event) {
   if (!h) return fail(401, "bad_code", okOrigin);
   const task = req.task, lang = req.lang === "en" ? "en" : "sv";
   if (!TASKS.includes(task)) return fail(400, "bad_task", okOrigin, { tasks: TASKS });
-  const needsAd = AD_TASKS.includes(task);
-  const cv = typeof req.cv === "string" ? req.cv.trim() : "", ad = needsAd && typeof req.job?.text === "string" ? req.job.text.trim() : "";
-  if (cv.length < 200) return fail(400, "cv_too_short", okOrigin);
+  const needsAd = AD_TASKS.includes(task), needsCv = CV_TASKS.includes(task);
+  const cv = needsCv && typeof req.cv === "string" ? req.cv.trim() : "", ad = needsAd && typeof req.job?.text === "string" ? req.job.text.trim() : "";
+  if (needsCv && cv.length < 200) return fail(400, "cv_too_short", okOrigin);
   if (needsAd && ad.length < 100) return fail(400, "ad_too_short", okOrigin);
   if (cv.length > MAX_CV || ad.length > MAX_AD) return fail(413, "too_long", okOrigin, { maxCv: MAX_CV, maxAd: MAX_AD });
   const limit = overLimit(h);
   if (limit) return fail(429, "limit_reached", okOrigin, limit);
 
-  const job = { title: String(req.job?.title || "").slice(0, 300), employer: String(req.job?.employer || "").slice(0, 200), text: ad };
+  const job = task === "translate" ? { text: ad } : { title: String(req.job?.title || "").slice(0, 300), employer: String(req.job?.employer || "").slice(0, 200), text: ad };
   const extra = typeof req.extra === "string" ? req.extra.slice(0, MAX_EXTRA) : "";
   const started = Date.now();
   const model = req.model && list("AI_MODELS").includes(req.model) ? req.model : (env("AI_MODEL") || "mistral-medium-3.5-128b");
-  const mentor = task === "mentor";
-  const out = await callModel(PROMPTS[task](lang, { cv, job, extra, year: new Date().getFullYear() }), model,
-    mentor ? { maxTokens: 4000, temperature: 0.3, timeout: 110000 } : undefined);
+  const mentor = task === "mentor", translation = task === "translate";
+  const options = mentor ? { maxTokens: 4000, temperature: 0.3, timeout: 110000 } : translation ? { maxTokens: 6000, temperature: 0.1 } : undefined;
+  const out = await callModel(PROMPTS[task](lang, { cv, job, extra, year: new Date().getFullYear() }), model, options);
   const data = mentor && !out.error ? parseMentor(out.text) : null;
   if (mentor && !out.error && !data) out.error = "ai_bad_format";
   // Only sizes and timings are logged, never the CV or the ad
