@@ -44,8 +44,8 @@ const I18N = {
     "<b>Sökord.</b> Varje sökord söks för sig och resultaten slås ihop, så en annons visas om den matchar något av dem. Skriv en fras som undersköterska natt som den är, så söks den som en fras. De gröna etiketterna på ett jobb visar vilka av dina sökord som finns i annonsen. En grå etikett betyder att Platsbanken matchade annonsen på ett närliggande ord, till exempel en synonym eller yrket. Slå på Annonser med alla sökord för att bara behålla annonser som nämner alla. Skriver du en vanlig yrkestitel på engelska, som project manager, söks också ordet som svenska annonser använder, som projektledare. Det syns bredvid ditt sökord och tas bort med sitt ×."],
   "foot.place": ["<b>Place.</b> Pick a municipality and a distance, or a whole county. Distance is measured from the centre of the place you pick, so neighbouring municipalities are included.",
     "<b>Ort.</b> Välj en kommun och ett avstånd, eller ett helt län. Avståndet räknas från mitten av orten du väljer, så närliggande kommuner kommer med."],
-  "foot.history": ["<b>Hiring history.</b> When you open an employer, the app checks Platsbanken's archive for the past two years. It shows how often they've advertised similar roles, which tells you whether this kind of job comes up there regularly.",
-    "<b>Tidigare annonser.</b> När du öppnar en arbetsgivare kollar appen Platsbankens arkiv för de senaste två åren. Där ser du hur ofta de har annonserat liknande jobb, och alltså om den sortens jobb brukar dyka upp hos dem."],
+  "foot.history": ["<b>Hiring history.</b> When you open an employer, the app checks Platsbanken's archive for the past two years. It shows how often they've advertised similar roles, which tells you whether this kind of job comes up there regularly. Know before you apply points out patterns worth asking about: the same job advertised again and again, hiring that has slowed or grown, and how many of their jobs are fixed-term. Each comes with a question for the interview. It's worked out in your browser from their ads alone, with no AI.",
+    "<b>Tidigare annonser.</b> När du öppnar en arbetsgivare kollar appen Platsbankens arkiv för de senaste två åren. Där ser du hur ofta de har annonserat liknande jobb, och alltså om den sortens jobb brukar dyka upp hos dem. Bra att veta innan du söker pekar ut mönster som är värda att fråga om: samma jobb som annonseras om och om igen, anställningar som har minskat eller ökat och hur många av jobben som är visstid. Till varje hör en fråga att ställa på intervjun. Det räknas ut i din webbläsare enbart från deras annonser, utan AI."],
   "foot.data": ["<b>Your data.</b> Saved roles, statuses, notes and contacts you add stay in the browser you use. Nobody else sees them and they aren't sent anywhere. Download a copy now and then to keep them safe.",
     "<b>Dina uppgifter.</b> Sparade jobb, statusar, anteckningar och kontakter du lägger till stannar i webbläsaren du använder. Ingen annan ser dem och de skickas ingenstans. Ladda ner en kopia ibland så att de inte försvinner."],
   "foot.backup": ["Back up or restore your saved data", "Säkerhetskopiera eller läs in dina sparade uppgifter"],
@@ -326,6 +326,21 @@ const I18N = {
   "namedon": ["Named on: {roles}", "Nämns i: {roles}"], "copy": ["Copy", "Kopiera"], "copied": ["Copied", "Kopierat"], "copyfail": ["Select and copy", "Markera och kopiera"],
   "employer": ["Employer", "Arbetsgivare"], "orgnr": ["Org nr", "Org.nr"], "hist.total": ["<b>{n}</b> Platsbanken ads in 2 yrs", "<b>{n}</b> annonser i Platsbanken på 2 år"],
   "hist.loading": ["Checking two years of Platsbanken ads…", "Kollar två års annonser i Platsbanken…"], "hist.failed": ["The 2-year history couldn't be loaded.", "Historiken för 2 år kunde inte hämtas."], "hist.later": ["History loads when you open the employer.", "Historiken hämtas när du öppnar arbetsgivaren."],
+  "sig.head": ["Know before you apply", "Bra att veta innan du söker"],
+  "sig.basis": ["From their Platsbanken ads over 2 years. Patterns to ask about, not verdicts.", "Utifrån deras annonser i Platsbanken under 2 år. Mönster att fråga om, inte domar."],
+  "sig.none": ["Nothing stands out in their hiring. This only covers their job ads, not how the company is doing.", "Inget sticker ut i hur de anställer. Det gäller bara deras annonser, inte hur det går för företaget."],
+  "sig.few": ["Too few ads in 2 years to see a pattern.", "För få annonser på 2 år för att se ett mönster."],
+  "sig.ask": ["Ask:", "Fråga:"],
+  "sig.repost": ["“{title}” was advertised {n} times in the past year. That can mean people don't stay, the role is hard to fill, or they simply need several.", "”{title}” har annonserats {n} gånger det senaste året. Det kan betyda att folk inte stannar, att tjänsten är svår att tillsätta eller bara att de behöver flera."],
+  "sig.repost.ask": ["Why is this role open again, and how long did the last person stay?", "Varför är tjänsten ledig igen, och hur länge stannade den som hade den senast?"],
+  "sig.big": ["Large employer with {n} ads in the past 6 months, so the same title coming back is normal there.", "Stor arbetsgivare med {n} annonser de senaste 6 månaderna, så samma titel återkommer naturligt där."],
+  "sig.slow": ["Hiring has slowed: {n} ads in the past 6 months, against about {m} per 6 months before that. That can mean a hiring freeze, cutbacks or just a quieter period.", "Anställningstakten har gått ner: {n} annonser de senaste 6 månaderna, mot ungefär {m} per halvår innan dess. Det kan betyda anställningsstopp, nedskärningar eller bara en lugnare period."],
+  "sig.slow.ask": ["How has the team changed over the past year, and what are the plans for it?", "Hur har teamet förändrats det senaste året, och vilka planer finns framåt?"],
+  "sig.grow": ["Hiring more than before: {n} ads in the past 6 months, against about {m} per 6 months before that.", "Anställer mer än tidigare: {n} annonser de senaste 6 månaderna, mot ungefär {m} per halvår innan dess."],
+  "sig.grow.ask": ["What is driving the growth, and how is the new team being onboarded?", "Vad driver tillväxten, och hur tar ni emot alla nya?"],
+  "sig.temp": ["Most of their ads are for fixed-term jobs ({n} of {m}).", "De flesta av deras annonser gäller visstidsjobb ({n} av {m})."],
+  "sig.temp.ask": ["Is there a path to a permanent job, and how often does that happen?", "Finns det en väg till fast anställning, och hur ofta blir det så?"],
+  "sig.perm": ["Most of their jobs are permanent ({n} of {m}).", "De flesta av deras jobb är tillsvidareanställningar ({n} av {m})."],
   "agency.fact": ["Staffing or recruitment firm. Its ads are usually for jobs at other companies.", "Bemannings- eller rekryteringsföretag. Annonserna gäller oftast jobb hos andra företag."],
   "hide": ["Hide this employer", "Dölj arbetsgivaren"], "unhide": ["Show this employer again", "Visa arbetsgivaren igen"],
 
@@ -941,25 +956,65 @@ function normLi(s) {
 }
 
 /* ---------- Hiring history, fetched when an employer is opened ---------- */
+const HIST_V = 2;   // bump when the cached history gains fields, so older copies are fetched again
+const normTitle = x => (x || "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 async function loadHistory(org) {
   if (!org || histLoading.has(org)) return;
   const h = hist.get(org);
-  if (h && (Date.now() - new Date(h.at)) < 7 * 864e5) return;
+  if (h && h.v === HIST_V && (Date.now() - new Date(h.at)) < 7 * 864e5) return;
   histLoading.add(org);
   try {
-    const from = isoDay(Date.now() - 730 * 864e5) + "T00:00:00", groups = {};
-    let total = 0;
+    const from = isoDay(Date.now() - 730 * 864e5) + "T00:00:00", yearAgo = isoDay(Date.now() - 365 * 864e5), groups = {}, titles = {};
+    let total = 0, temp = 0, perm = 0;
     for (let off = 0; off < 300; off += 100) {
       const j = await getJSON(`${HS_API}/search?employer=${org}&historical-from=${from}&limit=100&offset=${off}&sort=pubdate-desc`, 3);
       total = j.total.value;
-      for (const x of j.hits) { const g = x.occupation_group?.concept_id || ""; (groups[g] || (groups[g] = [])).push((x.publication_date || "").slice(0, 10)); }
+      for (const x of j.hits) {
+        const d = (x.publication_date || "").slice(0, 10), g = x.occupation_group?.concept_id || "";
+        (groups[g] || (groups[g] = [])).push(d);
+        const dur = x.duration?.label || "";
+        if (dur) /tills vidare|until further/i.test(dur) ? perm++ : temp++;
+        const k = normTitle(x.headline);
+        if (k && d >= yearAgo) (titles[k] || (titles[k] = { t: x.headline.trim(), n: 0 })).n++;
+      }
       if (off + 100 >= total) break;
     }
-    hist.set(org, { at: new Date().toISOString(), total, groups });
+    // How many ads in the past 6 months, counted by the archive itself so large employers aren't cut off at 300
+    const recent = total ? (await getJSON(`${HS_API}/search?employer=${org}&historical-from=${isoDay(Date.now() - 182 * 864e5)}T00:00:00&limit=0`, 3)).total.value : 0;
+    const reposts = Object.values(titles).filter(x => x.n >= 3).sort((a, b) => b.n - a.n).slice(0, 2);
+    hist.set(org, { v: HIST_V, at: new Date().toISOString(), total, recent, temp, perm, reposts, groups });
   } catch (e) { hist.set(org, { at: new Date().toISOString(), failed: true }); }
   histLoading.delete(org);
   store.set("jf-hist", Object.fromEntries([...hist.entries()].slice(-150).filter(([, v]) => !v.failed)));
   rerenderCompany(companies.find(c => c.org === org)?.key);
+}
+// Patterns in an employer's hiring that are worth asking about, worked out from the cached history alone.
+// Each is { kind: "warn" | "good" | "info", text, ask }. Returns null when there is too little to go on.
+function hiringSignals(h) {
+  if (!h || h.failed || h.v !== HIST_V) return null;
+  if (h.total < 4) return [];
+  const out = [], recent = h.recent || 0, perHalf = Math.max(0, h.total - recent) / 3, big = recent > 60;
+  if (big) out.push({ kind: "info", text: t("sig.big", { n: recent }) });
+  else for (const r of h.reposts || []) out.push({ kind: "warn", text: t("sig.repost", { title: r.t, n: r.n }), ask: t("sig.repost.ask") });
+  if (perHalf >= 6 && recent <= perHalf * 0.35) out.push({ kind: "warn", text: t("sig.slow", { n: recent, m: Math.round(perHalf) }), ask: t("sig.slow.ask") });
+  else if (recent >= 6 && recent >= perHalf * 1.5 && h.total - recent >= 3) out.push({ kind: "good", text: t("sig.grow", { n: recent, m: Math.round(perHalf) }), ask: t("sig.grow.ask") });
+  const known = (h.temp || 0) + (h.perm || 0);
+  if (known >= 5 && h.temp / known >= 0.6) out.push({ kind: "warn", text: t("sig.temp", { n: h.temp, m: known }), ask: t("sig.temp.ask") });
+  else if (known >= 5 && h.perm / known >= 0.8) out.push({ kind: "good", text: t("sig.perm", { n: h.perm, m: known }) });
+  return out;
+}
+function signalsHtml(c) {
+  if (!c.org || c.agency) return "";
+  const sig = hiringSignals(hist.get(c.org));
+  if (!sig) return "";
+  const warns = sig.filter(x => x.kind === "warn").length;
+  const body = !sig.length && hist.get(c.org).total < 4 ? `<p class="none">${esc(t("sig.few"))}</p>`
+    : (warns ? "" : `<p class="sig-ok">${esc(t("sig.none"))}</p>`) + sig.map(x => `<div class="sig ${x.kind}"><p>${esc(x.text)}</p>${x.ask ? `<p class="sig-ask"><b>${esc(t("sig.ask"))}</b> ${esc(x.ask)}</p>` : ""}</div>`).join("");
+  return `<section class="card signals" aria-label="${esc(t("sig.head"))}">
+      <div class="sec-head"><h3>${esc(t("sig.head"))}</h3>${warns ? `<span class="label">${warns}</span>` : ""}</div>
+      ${body}
+      <p class="sig-basis">${esc(t("sig.basis"))}</p>
+    </section>`;
 }
 function similarCount(a) {
   const h = a.org && hist.get(a.org);
@@ -1071,6 +1126,7 @@ function sideHtml(c) {
       <div class="facts">${facts.join("")}</div>
       <div><button class="btn ghost sm" type="button" data-act="hide">${esc(t(hidden.has(c.key) ? "unhide" : "hide"))}</button></div>
     </section>
+    ${signalsHtml(c)}
   </aside>`;
 }
 function deadlineHtml(d, quiet) {
@@ -1189,7 +1245,7 @@ function render() {
   $("expand-all").textContent = t(vis.length && vis.every(c => openIds.has(c.key)) ? "collapse" : "expand");
   renderApps();
   renderEvents();
-  for (const c of vis) if (openIds.has(c.key) && c.org && !hist.has(c.org)) loadHistory(c.org);
+  for (const c of vis) if (openIds.has(c.key) && c.org && (!hist.has(c.org) || (!hist.get(c.org).failed && hist.get(c.org).v !== HIST_V))) loadHistory(c.org);
 }
 // The bar above the results: what was searched and when it was last checked. When results are a day old it suggests searching
 // again, and when the latest search didn't reach the job ad services it says so and keeps the earlier results with a way to try again.

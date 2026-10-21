@@ -69,10 +69,23 @@ async def jobsearch(route):
 async def joblinks(route):
     q = parse_qs(urlparse(route.request.url).query)
     await route.fulfill(**ok({"total": {"value": 2}, "hits": LINKS} if 'software' in q.get('q', [''])[0].lower() else {"total": {"value": 0}, "hits": []}))
+def hist_ad(i, days_ago, title='Software Engineer', duration='Tills vidare'):
+    return {"id": f"h{i}", "headline": title, "publication_date": day(-days_ago) + "T08:00:00", "occupation_group": {"concept_id": "g_sw"}, "duration": {"label": duration}}
+# Past ads per employer. Acme has too few for a pattern. Bolt keeps advertising the same backend job, has nearly stopped
+# hiring and mostly offers fixed-term jobs. Cog is hiring more than before, all permanent.
+TEMP = '6 månader eller längre'
+HISTORY = {
+    '5560000001': [hist_ad(i, 100 + 30 * i) for i in range(3)],
+    '5560000002': [hist_ad(0, 40, 'Backend developer', TEMP), hist_ad(1, 90, 'Tester', TEMP), hist_ad(2, 200, 'Backend Developer', TEMP), hist_ad(3, 300, 'Backend developer!', TEMP)]
+                  + [hist_ad(4 + i, 380 + 15 * i, f'Role {i}', TEMP if i % 3 else 'Tills vidare') for i in range(18)],
+    '5560000004': [hist_ad(i, 10 + 20 * i, f'Kvalitetsroll {i}') for i in range(8)] + [hist_ad(8 + i, 250 + 70 * i, f'Äldre roll {i}') for i in range(6)],
+}
 async def history(route):
     q = parse_qs(urlparse(route.request.url).query)
-    hits = [{"id": f"h{i}", "publication_date": day(-100 - 30 * i) + "T08:00:00", "occupation_group": {"concept_id": "g_sw"}} for i in range(3)] if q.get('employer') == ['5560000001'] else []
-    await route.fulfill(**ok({"total": {"value": len(hits)}, "hits": hits}))
+    frm = q.get('historical-from', ['0000'])[0][:10]
+    hits = [h for h in HISTORY.get(q.get('employer', [''])[0], []) if h['publication_date'][:10] >= frm]
+    lim, off = int(q.get('limit', ['100'])[0]), int(q.get('offset', ['0'])[0])
+    await route.fulfill(**ok({"total": {"value": len(hits)}, "hits": hits[off:off + lim]}))
 
 # The venue calendars for Fairs and events in your field, empty here (tests/test_events.py has its own). Without them the page
 # would try to reach the real sites during the tests.
@@ -262,6 +275,22 @@ async def main():
         check('contact from the ad', 'Anna Svensson' in await acme.locator('.side').inner_text())
         cog = pg.locator('article.co', has_text='Cog Industri'); await cog.locator('button.exp').click()
         check('related-word match marked', await cog.locator('.matches .chip.loose').inner_text() == 'FMEA?')
+        # Know before you apply: patterns in each employer's past ads
+        await pg.wait_for_selector('article.co:has-text("Cog Industri") .signals', timeout=15000)
+        sig = await cog.locator('.signals').inner_text()
+        check('hiring signals: growth and permanent jobs are good signs', 'Nothing stands out' in sig and 'Hiring more than before: 8 ads' in sig and 'permanent (14 of 14)' in sig
+              and await cog.locator('.sig.warn').count() == 0, sig)
+        check('hiring signals: too few ads', 'Too few ads' in await acme.locator('.signals').inner_text())
+        bolt = pg.locator('article.co', has_text='Bolt Systems'); await bolt.locator('button.exp').click()
+        await pg.wait_for_selector('article.co:has-text("Bolt Systems") .signals .sig', timeout=15000)
+        sig = await bolt.locator('.signals').inner_text()
+        check('hiring signals: same job again and again', '“Backend developer” was advertised 3 times in the past year' in sig and 'how long did the last person stay' in sig, sig)
+        check('hiring signals: hiring has slowed', 'Hiring has slowed: 2 ads in the past 6 months, against about 7 per 6 months' in sig, sig)
+        check('hiring signals: mostly fixed-term', 'fixed-term jobs (16 of 22)' in sig, sig)
+        await bolt.locator('.signals').screenshot(path=str(SHOTS / 'signals-en.png'))
+        check('hiring signals: warnings counted', await bolt.locator('.signals .sec-head .label').inner_text() == '3')
+        rec = pg.locator('article.co', has_text='Bemanningsfirman'); await rec.locator('button.exp').click(); await pg.wait_for_timeout(300)
+        check('hiring signals: none for staffing firms', await rec.locator('.signals').count() == 0)
 
         await pg.check('#f-all'); check('every keyword filter', await pg.locator('article.co').count() == 1); await pg.uncheck('#f-all')
         await pg.check('#f-direct'); check('hide recruiters filter', await pg.locator('article.co', has_text='Bemanningsfirman').count() == 0); await pg.uncheck('#f-direct')
