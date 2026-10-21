@@ -63,6 +63,35 @@ test("a good request returns the text and sends the prompt from the server", asy
   assert.match(b.messages[1].content, /cover letter/);
   assert.match(b.messages[1].content, /<job_ad>[\s\S]*Acme[\s\S]*<\/job_ad>/);
 });
+test("translation needs only the ad, targets the chosen language, and never sends a CV", async () => {
+  _test.usage.clear(); sent.length = 0;
+  aiReply = { status: 200, body: { choices: [{ message: { content: "Quality Engineer — we are looking for..." } }] } };
+  const r = await call({ code: CODE, task: "translate", lang: "en", job: { text: AD } });
+  assert.equal(r.statusCode, 200);
+  assert.match(json(r).text, /Quality Engineer/);
+  const b = sent[0].body;
+  assert.ok(b.messages[0].content.toLowerCase().includes("faithful translation"));
+  assert.ok(b.messages[1].content.includes("Translate the job ad into natural English"));
+  assert.ok(b.messages[1].content.includes(AD.trim()));
+  assert.doesNotMatch(b.messages[1].content, /Title:|Employer:|Acme/);
+  assert.ok(!b.messages[1].content.includes("<cv>"));
+  assert.equal(JSON.parse(logs.at(-1)).cvChars, 0);
+});
+test("translation can target Swedish", async () => {
+  _test.usage.clear(); sent.length = 0;
+  const r = await call({ code: CODE, task: "translate", lang: "sv", job: { text: AD } });
+  assert.equal(r.statusCode, 200);
+  assert.match(sent[0].body.messages[1].content, /Translate the job ad into natural Swedish/);
+  assert.equal(JSON.parse(logs.at(-1)).lang, "sv");
+});
+
+test("translation rejects a missing ad without calling the AI", async () => {
+  _test.usage.clear(); const before = sent.length;
+  const r = await call({ code: CODE, task: "translate", lang: "en", job: { title: "Engineer", text: "short" } });
+  assert.equal(json(r).error, "ad_too_short");
+  assert.equal(sent.length, before);
+});
+
 test("a request can pick another model only from the allowed list", async () => {
   _test.usage.clear(); sent.length = 0;
   process.env.AI_MODELS = "qwen3.5-397b-a17b,glm-5.3";

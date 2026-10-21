@@ -260,6 +260,18 @@ input[aria-invalid="true"] { border-color: var(--signal); }
 .role-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; font-size: 12.5px; color: var(--muted); }
 .matches { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; font-size: 12.5px; color: var(--muted); }
 .snippet { margin: 0; font-size: 13.5px; color: var(--ink); line-height: 1.5; overflow-wrap: anywhere; }
+.translation-panel { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 7px; background: var(--sunk); min-width: 0; }
+.translation-panel p { margin: 0; }
+.translation-access { display: flex; align-items: end; flex-wrap: wrap; gap: 8px; }
+.translation-access p { flex-basis: 100%; font-size: 12.5px; color: var(--muted); }
+.translation-access label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+.translation-access input { width: min(220px, 100%); padding: 6px 8px; font-size: 13px; }
+.translation-note { font-size: 12px; font-weight: 600; color: var(--muted); }
+.translation-status { font-size: 13px; color: var(--muted); }
+.translation-error { font-size: 13px; color: var(--danger, #a23b31); }
+.translation-text { font-size: 13.5px; line-height: 1.55; overflow-wrap: anywhere; }
+.translation-text > :first-child { margin-top: 0; }
+.translation-text > :last-child { margin-bottom: 0; }
 .hist { font-size: 12.5px; color: var(--muted); }
 .track { background: var(--sunk); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; padding: 10px 12px; display: grid; gap: 8px; }
 .track .row { gap: 8px; }

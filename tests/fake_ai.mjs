@@ -52,6 +52,7 @@ http.createServer(async (req, res) => {
       return send(200, { choices: [{ message: { content } }], usage: { prompt_tokens: 1500, completion_tokens: 1800 } });
     }
     const ask = last.body.messages[1].content;
+    if (/Translate the job ad into natural/.test(ask)) return send(200, { choices: [{ message: { content: "# Quality Engineer\n\nWe are looking for a quality engineer who can use FMEA and wants to drive quality improvements in production.\n\n## Experience\n- Experience with FMEA\n- Supplier audits" } }], usage: { prompt_tokens: 800, completion_tokens: 120 } });
     const task = /cover letter|personligt brev/i.test(ask) ? "letter" : /Tailor the CV|Anpassa CV/i.test(ask) ? "cv" : /interview|intervju/i.test(ask) ? "interview" : "match";
     return send(200, { choices: [{ message: { content: ANSWERS[task] } }], usage: { prompt_tokens: 1200, completion_tokens: 300 } });
   }
