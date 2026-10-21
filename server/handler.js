@@ -11,6 +11,8 @@
     AI_BASE_URL       default https://api.scaleway.ai/v1
     LIMIT_PER_HOUR    requests per access code per hour, default 15
     LIMIT_PER_DAY     requests per access code per day, default 40
+    TRANSLATE_PER_HOUR  ad translations per access code per hour, default 20 (counted apart from the other tasks)
+    TRANSLATE_PER_DAY   ad translations per access code per day, default 60
   Secret environment variables:
     AI_KEY            an IAM API secret key that is allowed to use Generative APIs
     ACCESS_CODES      comma-separated SHA-256 hashes of the beta access codes (make them with make-codes.mjs)
@@ -44,12 +46,16 @@ function codeOk(code) {
   }
   return null;
 }
-function overLimit(h, now = Date.now()) {
-  const perHour = +env("LIMIT_PER_HOUR") || 15, perDay = +env("LIMIT_PER_DAY") || 40;
-  const times = (usage.get(h) || []).filter(t => now - t < 864e5);
+// Translations are counted in their own bucket, so translating ads never uses up a tester's tailoring and Mentor requests
+function overLimit(h, now = Date.now(), kind = "write") {
+  const translate = kind === "translate";
+  const perHour = +env(translate ? "TRANSLATE_PER_HOUR" : "LIMIT_PER_HOUR") || (translate ? 20 : 15);
+  const perDay = +env(translate ? "TRANSLATE_PER_DAY" : "LIMIT_PER_DAY") || (translate ? 60 : 40);
+  const key = translate ? h + ":translate" : h;
+  const times = (usage.get(key) || []).filter(t => now - t < 864e5);
   const lastHour = times.filter(t => now - t < 36e5).length;
-  if (lastHour >= perHour || times.length >= perDay) { usage.set(h, times); return { perHour, perDay }; }
-  times.push(now); usage.set(h, times);
+  if (lastHour >= perHour || times.length >= perDay) { usage.set(key, times); return { perHour, perDay }; }
+  times.push(now); usage.set(key, times);
   return null;
 }
 function header(event, name) {
@@ -99,7 +105,7 @@ async function handle(event) {
   if (needsCv && cv.length < 200) return fail(400, "cv_too_short", okOrigin);
   if (needsAd && ad.length < 100) return fail(400, "ad_too_short", okOrigin);
   if (cv.length > MAX_CV || ad.length > MAX_AD) return fail(413, "too_long", okOrigin, { maxCv: MAX_CV, maxAd: MAX_AD });
-  const limit = overLimit(h);
+  const limit = overLimit(h, Date.now(), task === "translate" ? "translate" : "write");
   if (limit) return fail(429, "limit_reached", okOrigin, limit);
 
   const job = task === "translate" ? { text: ad } : { title: String(req.job?.title || "").slice(0, 300), employer: String(req.job?.employer || "").slice(0, 200), text: ad };

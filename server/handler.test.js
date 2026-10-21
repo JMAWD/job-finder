@@ -113,6 +113,20 @@ test("limits per access code", async () => {
   assert.equal(json(r).perHour, 3);
   assert.equal((await call(ok({ code: "OTHER-CODE1" }))).statusCode, 200, "another code is not affected");
 });
+test("translations have their own limit and don't use up the code's other requests", async () => {
+  _test.usage.clear();
+  process.env.TRANSLATE_PER_HOUR = "2";
+  const tr = () => call({ code: CODE, task: "translate", lang: "en", job: { text: AD } });
+  for (let i = 0; i < 2; i++) assert.equal((await tr()).statusCode, 200);
+  const r = await tr();
+  assert.equal(r.statusCode, 429); assert.equal(json(r).perHour, 2);
+  assert.equal((await call(ok())).statusCode, 200, "tailoring still works after translations hit their limit");
+  _test.usage.clear();
+  for (let i = 0; i < 3; i++) assert.equal((await call(ok())).statusCode, 200);
+  assert.equal((await call(ok())).statusCode, 429);
+  assert.equal((await tr()).statusCode, 200, "translation still works after tailoring hits its limit");
+  delete process.env.TRANSLATE_PER_HOUR;
+});
 test("AI errors become clear error codes", async () => {
   _test.usage.clear();
   aiReply = { status: 500, body: {} };
