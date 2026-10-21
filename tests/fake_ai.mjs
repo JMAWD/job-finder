@@ -3,8 +3,9 @@
 // POST /v1/chat/completions answers with fixed Markdown for each task.
 // GET /last returns the last request it received and how many came in. POST /mode {"status":429} makes the next answers fail,
 // {"mentorBad":true} makes the Mentor's answer come back as Markdown instead of JSON.
+// {"invent":true} makes the tailored CV name a job the test CV doesn't have, for the fact check.
 import http from "node:http";
-let last = null, count = 0, mode = { status: 200, delay: 300, mentorBad: false };
+let last = null, count = 0, mode = { status: 200, delay: 300, mentorBad: false, invent: false };
 const course = (name, provider, format, extra, directions, priority, skill, forRole, why) => ({ name, provider, format, ...extra, directions, priority, why, skill, for_role: forRole });
 const MENTOR = {
   name: "Eva", years: 8, stage: "established", stage_reason: "Eight years in quality roles, the last three leading improvement work.",
@@ -54,7 +55,8 @@ http.createServer(async (req, res) => {
     const ask = last.body.messages[1].content;
     if (/Translate the job ad into natural/.test(ask)) return send(200, { choices: [{ message: { content: "# Quality Engineer\n\nWe are looking for a quality engineer who can use FMEA and wants to drive quality improvements in production.\n\n## Experience\n- Experience with FMEA\n- Supplier audits" } }], usage: { prompt_tokens: 800, completion_tokens: 120 } });
     const task = /cover letter|personligt brev/i.test(ask) ? "letter" : /Tailor the CV|Anpassa CV/i.test(ask) ? "cv" : /interview|intervju/i.test(ask) ? "interview" : "match";
-    return send(200, { choices: [{ message: { content: ANSWERS[task] } }], usage: { prompt_tokens: 1200, completion_tokens: 300 } });
+    const content = mode.invent && task === "cv" ? ANSWERS.cv + "\n\n### Senior kvalitetsingenjör, Bosch Rexroth (2012–nu)\n- Ledde FMEA" : ANSWERS[task];
+    return send(200, { choices: [{ message: { content } }], usage: { prompt_tokens: 1200, completion_tokens: 300 } });
   }
   send(404, {});
 }).listen(+process.argv[2] || 8799, "127.0.0.1");

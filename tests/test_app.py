@@ -187,7 +187,7 @@ async def beta_checks(browser, errors):
     check('feedback links for each kind of report', titles == ['[Bug] ', '[Ads] ', '[AI] ', '[Idea] ', '[Other] '], titles)
     await pg.click('#tab-app'); await links.first.focus()
     body = parse_qs(urlparse(await links.first.get_attribute('href')).query)['body'][0]
-    check('the report names the version, language and tab, and says it is public', 'Job Finder 1.3' in body and 'English · My applications' in body and 'This report is public' in body, body)
+    check('the report names the version, language and tab, and says it is public', f"Job Finder {json.loads((ROOT / 'config.json').read_text())['version']}" in body and 'English · My applications' in body and 'This report is public' in body, body)
     check('and leaves out the search', 'software engineer' not in body and 'Göteborg' not in body, body)
     await pg.click('#tab-res')
 

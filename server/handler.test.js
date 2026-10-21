@@ -176,6 +176,25 @@ test("a mentor answer that isn't usable JSON gives a clear error", async () => {
   assert.equal(json(await call(mentorReq({ cv: "kort" }))).error, "cv_too_short");
   aiReply = { status: 200, body: { choices: [{ message: { content: "ok" } }] } };
 });
+test("every written answer comes back with a fact check against the CV", async () => {
+  _test.usage.clear();
+  const cv = "Kvalitetsingenjör, Nordvik Automotive, 2018 – nu. Ledde FMEA och 8D för bromssystem och utbildade kollegor i riskanalys. ".repeat(3);
+  aiReply = { status: 200, body: { choices: [{ message: { content: "### Kvalitetsingenjör, Nordvik Automotive (2018–nu)\n- Ledde FMEA" } }] } };
+  let b = json(await call(ok({ task: "cv", cv })));
+  assert.deepEqual(b.check, { ok: true, issues: [] });
+  aiReply = { status: 200, body: { choices: [{ message: { content: "### Senior kvalitetsingenjör, Bosch Rexroth (2014–nu)\n- Ledde FMEA" } }] } };
+  b = json(await call(ok({ task: "letter", cv })));
+  assert.equal(b.check.ok, false);
+  assert.deepEqual(b.check.issues.map(i => i.kind).sort(), ["date", "employer", "title"]);
+  assert.ok(b.check.issues.some(i => i.text === "Bosch Rexroth"));
+  // The log says how many things were flagged, never what they were
+  assert.match(logs.at(-1), /"flagged":3/);
+  assert.doesNotMatch(logs.at(-1), /Bosch|Senior|2014/);
+  // Translation and the Mentor have no CV and ad pair to check
+  aiReply = { status: 200, body: { choices: [{ message: { content: "We are looking for someone at Bosch Rexroth since 2014." } }] } };
+  assert.equal(json(await call(ok({ task: "translate" }))).check, undefined);
+  aiReply = { status: 200, body: { choices: [{ message: { content: "ok" } }] } };
+});
 test("the CV and the ad are never logged", async () => {
   assert.ok(logs.length > 0);
   for (const l of logs) { assert.doesNotMatch(l, /FMEA|Kvalitetsingenjör med|driva förbättringsarbete/); }

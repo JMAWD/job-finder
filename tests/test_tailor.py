@@ -135,6 +135,10 @@ async def main():
             check('the answer comes with a note that it is an AI draft, above it', await note.count() == 1 and await pg.evaluate("document.querySelector('.ai-note').compareDocumentPosition(document.querySelector('.tl-out')) & 4")
                   and 'Written by AI' == await note.locator('.ai-tag').text_content() and 'This is an estimate from the words in your CV and the ad' in await note.inner_text(), await note.all_inner_texts())
             check('focus lands on the note first', await pg.evaluate("document.activeElement.classList.contains('ai-note')"))
+            fc = dlg.locator('.fc')
+            check('the answer passed the fact check and says so, between the note and the text', await fc.count() == 1 and 'fc-ok' in (await fc.get_attribute('class'))
+                  and 'every employer, job title and date in this text is in your CV' in await fc.inner_text()
+                  and await pg.evaluate("document.querySelector('.fc').compareDocumentPosition(document.querySelector('.tl-out')) & 4"), await fc.all_inner_texts())
             report = await note.locator('a[data-fb=ai]').get_attribute('href')
             check('the note links to a report about the answer', '%5BAI%5D' in report and 'Part%3A%20Match%20check' in report, report)
             sent = last_ai()['body']
@@ -155,6 +159,22 @@ async def main():
             check('English prompt used', '<job_ad>' in last_ai()['body']['messages'][1]['content'])
             check('a cover letter gets the interview test', "If you couldn't explain something in an interview, take it out." in await dlg.locator('.ai-note').inner_text())
             check('finished tasks get a dot', await dlg.locator('[data-task=match] .tl-dot').count() == 1)
+
+            # A tailored CV that names a job the CV doesn't have is flagged, by code on the server
+            post(FAKE + '/mode', {'invent': True})
+            await dlg.locator('[data-task=cv]').click(); await pg.select_option('#tl-lang', 'sv')
+            await dlg.locator('[data-tl=go]').click(); await pg.wait_for_selector('#tailor .fc-warn', timeout=10000)
+            warn = await dlg.locator('.fc-warn').inner_text()
+            check('invented employer, title and date are listed above the answer', 'Fact check: 3 things here are not in your CV' in warn
+                  and 'Bosch Rexroth' in warn and 'Senior kvalitetsingenjör' in warn and '2012' in warn and 'not by the AI' in warn, warn)
+            check('the warning is announced', await dlg.locator('.fc-warn').get_attribute('role') == 'alert')
+            await dlg.locator('.fc-warn').scroll_into_view_if_needed(); await pg.evaluate("document.querySelector('#tailor .fc-warn').scrollIntoView({block: 'center'})")
+            await pg.screenshot(path=str(SHOTS / 'factcheck-en.png'))
+            post(FAKE + '/mode', {'invent': False})
+            stored = await pg.evaluate("JSON.parse(localStorage.getItem('jf-tailor'))['101'].out.cv.check")
+            check('the check is saved with the answer', stored and stored['ok'] is False and len(stored['issues']) == 3, stored)
+            await dlg.locator('[data-task=letter]').click()
+            check('the letter shows its own check', await dlg.locator('.fc-ok').count() == 1 and await dlg.locator('.fc-warn').count() == 0)
 
             # Translate the ad inline, reusing the saved code without sending the CV
             await dlg.locator('.tl-close').click()

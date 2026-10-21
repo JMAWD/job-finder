@@ -329,6 +329,15 @@ input[aria-invalid="true"] { border-color: var(--signal); }
 .ai-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 14.5px; }
 .ai-tag { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; background: var(--warn); color: var(--warn-soft); border-radius: 999px; padding: 1px 8px; }
 .ai-note .fb-link { justify-self: start; font-size: 12.5px; color: var(--ink); }
+/* The fact check: employers, titles and dates in the answer that the CV doesn't back up */
+.fc { border: 1px solid var(--line-strong); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; background: var(--surface); padding: 9px 12px; display: grid; gap: 6px; max-width: 80ch; font-size: 13.5px; line-height: 1.5; }
+.fc p { margin: 0; }
+.fc.fc-ok { color: var(--accent-ink); font-weight: 600; }
+.fc.fc-warn { border-left-color: var(--signal); background: var(--signal-soft); color: var(--ink); }
+.fc.fc-warn b { color: var(--ink); }
+.fc ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+.fc li { overflow-wrap: anywhere; }
+.fc .fc-kind { font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
 /* Feedback links in the footer */
 .feedback { display: grid; gap: 6px; padding-top: 14px; margin-top: 6px; border-top: 1px solid var(--line); }
 .fb-list { margin: 0; padding-left: 18px; display: grid; gap: 3px; }

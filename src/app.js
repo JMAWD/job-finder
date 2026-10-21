@@ -112,6 +112,11 @@ const I18N = {
   "tl.e.timeout": ["It took too long to get an answer. Try again.", "Det tog för lång tid att få svar. Försök igen."],
   "tl.e.network": ["Couldn't reach the tailoring server. Check your connection and try again.", "Kunde inte nå servern. Kontrollera din uppkoppling och försök igen."],
   "tl.e.other": ["Something went wrong with the request. Try again.", "Något gick fel med förfrågan. Försök igen."],
+  "fc.ok": ["Fact check passed: every employer, job title and date in this text is in your CV.", "Faktakollen godkänd: alla arbetsgivare, titlar och datum i texten finns i ditt CV."],
+  "fc.warn1": ["Fact check: one thing here is not in your CV. Remove or correct it before you use the text.", "Faktakoll: en sak här finns inte i ditt CV. Ta bort eller rätta den innan du använder texten."],
+  "fc.warn": ["Fact check: {n} things here are not in your CV. Remove or correct them before you use the text.", "Faktakoll: {n} saker här finns inte i ditt CV. Ta bort eller rätta dem innan du använder texten."],
+  "fc.how": ["Checked by plain code against your CV, not by the AI. It looks only at employers, job titles and dates.", "Kontrollerat med vanlig kod mot ditt CV, inte av AI:n. Den tittar bara på arbetsgivare, titlar och datum."],
+  "fc.k.employer": ["Employer", "Arbetsgivare"], "fc.k.title": ["Job title", "Titel"], "fc.k.date": ["Date", "Datum"], "fc.k.dates": ["Dates for a role", "Datum för en tjänst"],
 
   // Mentor tab
   "mt.eyebrow": ["Mentor · career advice", "Mentor · karriärråd"], "mt.h1": ["Your next step", "Ditt nästa steg"],

@@ -6,7 +6,7 @@
 const TASKS = ["match", "cv", "letter", "interview"];
 const TAILOR_TIMEOUT = 110000;
 let tl = null;   // the open job: { id, title, employer, muni, url, src, task, busy, ctrl }
-let tailorStore = store.get("jf-tailor", {});   // ad id -> { ad, extra, out: { task: { text, at, model, lang } } }
+let tailorStore = store.get("jf-tailor", {});   // ad id -> { ad, extra, out: { task: { text, at, model, lang, check } } }
 const saveTailor = () => store.set("jf-tailor", tailorStore);
 const tlEntry = id => tailorStore[id] || (tailorStore[id] = { out: {} });
 const fullAds = new Map(), adFails = new Set();   // ads fetched in full, and Platsbanken ads that couldn't be fetched this time
@@ -212,6 +212,14 @@ function applyHtml(job, big) {
   const label = job.apply ? t("howapply") : t("tl.applyon", { site: job.source || t("othersite") });
   return `<a class="btn ${big ? "" : "ghost "}sm" href="${esc(href)}" target="_blank" rel="noopener" data-tl="apply">${esc(label)}</a>`;
 }
+// The server's fact check (server/factcheck.js). Answers saved before it existed have none, and show nothing.
+function factCheckHtml(check) {
+  if (!check || !Array.isArray(check.issues)) return "";
+  if (!check.issues.length) return `<p class="fc fc-ok" role="status">${esc(t("fc.ok"))}</p>`;
+  return `<section class="fc fc-warn" role="alert"><p><b>${esc(check.issues.length === 1 ? t("fc.warn1") : t("fc.warn", { n: check.issues.length }))}</b></p>
+    <ul>${check.issues.map(i => `<li><span class="fc-kind">${esc(t("fc.k." + i.kind))}</span>${esc(i.text)}</li>`).join("")}</ul>
+    <p class="tl-hint">${esc(t("fc.how"))}</p></section>`;
+}
 function appliedHtml(id) {
   const st = apps[id]?.status;
   if (tl.marked) return `<p class="tl-hint tl-ok" role="status">${esc(t("tl.marked"))}</p>`;
@@ -250,6 +258,7 @@ function tailorHtml() {
         ${out ? "" : `<p class="tl-hint">${esc(t("ai.before"))}</p>`}
         ${tl.error ? `<p class="tl-err" role="alert">${tl.error}</p>` : ""}
         ${out ? `${aiNoteHtml(task === "match" ? "ai.match" : task === "interview" ? "ai.interview" : "ai.write", t("tl.t." + task))}
+          ${factCheckHtml(out.check)}
           <div class="tl-out" tabindex="-1">${mdHtml(out.text)}</div>
           <div class="row"><button class="btn ghost sm" type="button" data-tl="copy">${esc(t("copy"))}</button><button class="btn ghost sm" type="button" data-tl="word">${esc(t("tl.word"))}</button>${applyHtml(job, true)}
           <span class="tl-hint">${esc(t("tl.made", { date: fmtDate(localDay(new Date(out.at))) }))}</span></div>
@@ -308,7 +317,7 @@ async function generate() {
       body: JSON.stringify({ code, task, lang: outLang, cv, extra, job: { title: tl.title, employer: tl.employer, text: ad } }) });
     const j = await r.json().catch(() => ({}));
     if (r.ok && j.text) {
-      e.out[task] = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang };
+      e.out[task] = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.check && Array.isArray(j.check.issues) ? { check: { ok: !!j.check.ok, issues: j.check.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) } } : {}) };
       e.lastTask = task; e.lang = outLang;
       saveTailor();
       if (!apps[id]?.status) setStatus(id, "Saved");

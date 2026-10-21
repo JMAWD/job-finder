@@ -1,0 +1,38 @@
+[
+  {
+    "case": "quality-sv", "task": "cv", "lang": "sv", "clean": true,
+    "text": "## 1. Ny profiltext\nKvalitetsingenjör med åtta års erfarenhet från fordonsindustrin, varav sex år med att leda FMEA och driva 8D-arbete tillsammans med leverantörer. Van att ställa krav, följa upp avvikelser och få leverantörer att förbättra sig, vilket passar rollen som leverantörskvalitetsingenjör hos Acme Robotics.\n\n## 2. Nyckelkompetenser\n- FMEA (AIAG-VDA)\n- 8D och rotorsaksanalys\n- PPAP\n- Leverantörsuppföljning\n- Riskanalys\n- Minitab\n- SAP QM\n- Utbildning av kollegor\n\n## 3. Omskrivna punkter\n\n### Kvalitetsingenjör, Nordvik Automotive AB (2018 – nu)\n- Drev 8D-ärenden med 15 leverantörer och halverade antalet reklamationer\n- Ledde process-FMEA för bromssystem i tre fordonsprogram\n- Utbildade 40 kollegor i riskanalys\n\n### Produktionstekniker, Svea Bearings AB (2016 – 2018)\n- Ansvarade för en monteringslina med 12 operatörer\n- Införde standardiserat arbetssätt och 5S\n\n## 4. Det som kan kortas\n- B-körkort kan tas bort, det efterfrågas inte.\n- Utbildningen på Chalmers räcker med en rad.\n\n*Obs: CV:t nämner inte ISO 9001 eller IATF 16949. Lägg bara till dem om du har arbetat med dem.*"
+  },
+  {
+    "case": "quality-sv", "task": "letter", "lang": "en", "clean": true,
+    "text": "## Cover letter\n\nDear [contact person],\n\nWhen I read that Acme Robotics is looking for a Supplier Quality Engineer to take responsibility for supplier quality across Europe, I recognised the work I have done for the past eight years.\n\nAs a Quality Engineer at Nordvik Automotive since 2018, I have run 8D cases with 15 suppliers and halved the number of complaints. I have also led process FMEA for brake systems in three vehicle programmes, using the AIAG-VDA method you mention. Before that, as a Production Technician at Svea Bearings, I learned what a supplier problem looks like from the production line.\n\nI have not worked with IATF 16949 directly, but I am used to PPAP approvals and would be glad to build on that with you.\n\nI could start in January 2027 and I am happy to travel.\n\nKind regards,\n[Your name]"
+  },
+  {
+    "case": "pm-en", "task": "match", "lang": "en", "clean": true,
+    "text": "## What matches well\n- **Nine years of project management** in telecom and infrastructure, which meets the 8+ years Northwind Grid asks for.\n- **Leading suppliers:** at Mälarstrand Energi you lead a 40 MSEK grid automation programme with five suppliers.\n- **Energy experience:** your current role is in grid automation, close to substation work.\n- **PMP certified** (2019).\n- **Process:** you introduced a stage-gate model, which shows you can set up governance across projects.\n\n## What is missing or weak\n- The ad asks you to lead project managers. Your CV doesn't say you have done that. Be honest: you have led suppliers and a programme, and you can describe how you coordinated others.\n- Steering group reporting is not mentioned. If you report to one today, add it.\n\n## Words from the ad to use\nportfolio, budgets, risks, steering group, grid modernisation, contracts\n\n## Overall\nA strong match: your energy programme and supplier leadership fit the Programme Manager role well."
+  },
+  {
+    "case": "pm-en", "task": "cv", "lang": "sv", "clean": true,
+    "text": "## 1. Profiltext\nProjektledare med nio års erfarenhet från telekom- och infrastrukturprojekt, i dag ansvarig för ett program inom nätautomation. PMP-certifierad och van att leda leverantörer, budget och tidplaner.\n\n## 2. Nyckelkompetenser\n- Programledning\n- Leverantörsstyrning\n- Stage-gate\n- MS Project\n- PMP\n- Driftsättning\n\n## 3. Omskrivna punkter\n**Projektledare · Mälarstrand Energi · 2021 – nu**\n- Leder ett nätautomationsprogram på 40 MSEK med fem leverantörer\n- Införde en stage-gate-modell som hela avdelningen nu använder\n\n**Projektkoordinator · Vikinge Marine · 2017 – 2021**\n- Samordnade ombyggnadsprojekt på 12 fartyg\n- Ägde tidplaner och leverantörsuppföljning i MS Project\n\n## 4. Kan kortas\n- Tiden på Granhammar Steel kan kortas till en rad."
+  },
+  {
+    "case": "nurse-sv", "task": "interview", "lang": "sv", "clean": true,
+    "text": "## Troliga frågor\n1. **Hur skulle du lägga upp telefonrådgivningen?**\n   - Du triagerar enligt RETTS på akuten sedan mars 2019\n   - Erfarenhet av att bedöma vårdbehov snabbt\n2. **Hur arbetar du med patienter med kroniska sjukdomar?**\n   - Ansvar för 25 patienter i hemsjukvården i Västerås stad\n3. **Varför vill du arbeta på vårdcentral?**\n   - Din specialistutbildning till distriktssköterska från 2018\n\n## De svåraste frågorna för dig\n- *Har du arbetat med diabetes- eller astmamottagning?* CV:t nämner det inte. Svara ärligt och berätta om uppföljningen du gjorde i hemsjukvården.\n\n## Frågor att ställa till Mälarstrand Vård\n- Hur ser introduktionen ut?\n- Hur fördelas telefontiden mellan sjuksköterskorna?"
+  },
+  {
+    "case": "analyst-en", "task": "letter", "lang": "en", "clean": true,
+    "text": "Dear [name],\n\nI'd like to apply for the Analytics Engineer role at Morningside Labs. Building trusted data models for retail is close to what I do every week.\n\nAt Sundvall Retail I built the weekly sales dashboard that 120 store managers use, and I wrote the seasonal stock forecast in Python. Before that I worked as a Business Analyst at Österlind Medical, where I automated the monthly reports and saved two days a month. I use dbt and SQL daily, and my MSc in Statistics from Lund University helps me question numbers before they reach a decision.\n\nI haven't worked with Snowflake yet, but I learn new tools quickly.\n\nBest regards,\nPriya Natarajan"
+  },
+  {
+    "case": "developer-sv", "task": "cv", "lang": "en", "clean": true,
+    "text": "## Profile\nSoftware developer with six years of backend work in Java and Kotlin, the last two on AWS. Has moved services to the cloud and mentors junior developers.\n\n## Key skills\nKotlin · Java · Spring Boot · AWS (ECS, RDS) · Terraform · PostgreSQL · Docker\n\n## Rewritten bullet points\n### Kvarnby Software — Software Developer (2020 – present)\n- Builds APIs in Kotlin and Spring Boot for a payment platform\n- Moved four services to AWS in 2023\n- Mentors two junior developers\n\n### Lindqvist Elektronik — Software Developer (2018 – 2020)\n- Test tools in Java and Python for electronics production\n\n## What to cut\nThe Jenkins detail can go; Pinewood Payments asks about AWS, not CI."
+  },
+  {
+    "case": "developer-sv", "task": "cv", "lang": "en", "clean": false,
+    "text": "## Profile\nSenior Backend Developer with eight years of experience.\n\n### Kvarnby Software — Senior Backend Developer (2018 – present)\n- Led the Kafka migration\n\n### Pinewood Payments — Software Developer (2016 – 2018)"
+  },
+  {
+    "case": "buyer-sv", "task": "letter", "lang": "sv", "clean": false,
+    "text": "Hej [kontaktperson],\n\nJag har arbetat som inköpschef på Sundvall Retail sedan 2017 och dessförinnan hos H&M i två år."
+  }
+]

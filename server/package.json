@@ -1,9 +1,9 @@
 {
   "name": "job-finder-tailor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Small Scaleway Serverless Function that tailors a CV to a job ad with an EU-hosted model",
   "main": "handler.js",
-  "scripts": { "test": "node --test", "dev": "node dev.mjs", "codes": "node make-codes.mjs" },
+  "scripts": { "test": "node --test", "eval": "node eval/run.mjs", "dev": "node dev.mjs", "codes": "node make-codes.mjs" },
   "license": "UNLICENSED"
 }

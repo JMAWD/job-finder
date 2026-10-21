@@ -19,6 +19,7 @@
 */
 const crypto = require("crypto");
 const { PROMPTS, TASKS, AD_TASKS, CV_TASKS, parseMentor } = require("./prompts.js");
+const { factCheck } = require("./factcheck.js");
 
 const MAX_CV = 20000, MAX_AD = 20000, MAX_EXTRA = 2000;
 const usage = new Map();   // access code hash -> timestamps of recent requests (per running instance)
@@ -117,10 +118,12 @@ async function handle(event) {
   const out = await callModel(PROMPTS[task](lang, { cv, job, extra, year: new Date().getFullYear() }), model, options);
   const data = mentor && !out.error ? parseMentor(out.text) : null;
   if (mentor && !out.error && !data) out.error = "ai_bad_format";
-  // Only sizes and timings are logged, never the CV or the ad
-  console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null }));
+  // Every written answer is checked in code for employers, job titles and dates that the CV doesn't back up (see factcheck.js)
+  const check = !out.error && needsCv && needsAd ? factCheck(out.text, { cv, ad, title: job.title, employer: job.employer, extra, year: new Date().getFullYear() }) : null;
+  // Only sizes, timings and how many things the check flagged are logged, never the CV, the ad or the flagged words
+  console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null, ...(check ? { flagged: check.issues.length } : {}) }));
   if (out.error) return fail(out.error === "ai_busy" ? 503 : 502, out.error, okOrigin);
-  return reply(200, mentor ? { data, model: out.model, tokens: out.tokens } : { text: out.text, model: out.model, tokens: out.tokens }, okOrigin);
+  return reply(200, mentor ? { data, model: out.model, tokens: out.tokens } : { text: out.text, model: out.model, tokens: out.tokens, ...(check ? { check } : {}) }, okOrigin);
 }
 
 module.exports = { handle, _test: { usage, sha256 } };

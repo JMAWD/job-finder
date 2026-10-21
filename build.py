@@ -15,6 +15,8 @@ munis = [l.split('|') for l in (here / 'src' / 'munis.txt').read_text(encoding='
 titles = [[[w.strip() for w in side.split(',') if w.strip()] for side in l.split('|')]
           for l in (here / 'src' / 'titles.txt').read_text(encoding='utf-8').splitlines() if l.strip() and not l.lstrip().startswith('#')]
 assert all(len(x) == 2 and x[0] and x[1] for x in titles), 'every line in titles.txt needs English titles | Swedish words'
+# The server's fact check uses the same list, so an English title for a Swedish one in the CV isn't flagged as invented
+(here / 'server' / 'titles.json').write_text(json.dumps(titles, ensure_ascii=False, indent=0) + '\n', encoding='utf-8')
 about = {k: cfg.get(k, '') for k in ('author', 'linkedin', 'github', 'repo', 'version')}
 about['tailor'] = cfg.get('tailor_url', '').strip()
 # The figures for Sweden, the 21 occupation fields and 21 counties, and this month's ad counts (see market.py)
