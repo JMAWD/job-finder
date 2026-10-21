@@ -33,6 +33,7 @@ js = js.replace('/*__ABOUT__*/', json.dumps(about, ensure_ascii=False), 1)
 js = js.replace('/*__TAILOR__*/', (here / 'src' / 'tailor.js').read_text(encoding='utf-8'), 1)
 js = js.replace('/*__MENTOR__*/', (here / 'src' / 'mentor.js').read_text(encoding='utf-8'), 1)
 js = js.replace('/*__MARKET_JS__*/', (here / 'src' / 'market.js').read_text(encoding='utf-8'), 1)
+js = js.replace('/*__EVENTS__*/', (here / 'src' / 'events.js').read_text(encoding='utf-8'), 1)
 js = js.replace('/*__MARKET__*/', json.dumps(mk, ensure_ascii=False, separators=(',', ':')), 1)
 js = js.replace('/*__FIELDS__*/', json.dumps(market['fields'], ensure_ascii=False, separators=(',', ':')), 1)
 

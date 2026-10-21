@@ -5,7 +5,7 @@
 
 The JobTech services are replaced with fixed answers, so the tests run offline and give the same result every time.
 Screenshots of the example data are written to docs/screenshots/."""
-import asyncio, json, pathlib, sys
+import asyncio, json, pathlib, re, sys
 from datetime import date, datetime, timedelta
 from urllib.parse import urlparse, parse_qs
 from playwright.async_api import async_playwright
@@ -74,6 +74,13 @@ async def history(route):
     hits = [{"id": f"h{i}", "publication_date": day(-100 - 30 * i) + "T08:00:00", "occupation_group": {"concept_id": "g_sw"}} for i in range(3)] if q.get('employer') == ['5560000001'] else []
     await route.fulfill(**ok({"total": {"value": len(hits)}, "hits": hits}))
 
+# The venue calendars for Fairs and events in your field, empty here (tests/test_events.py has its own). Without them the page
+# would try to reach the real sites during the tests.
+EVENT_HOSTS = re.compile(r'^https://(stockholmsmassan\.se|www\.malmomassan\.se|www\.kistamassan\.se|data\.visitsweden\.com)/')
+async def no_events(route):
+    u = route.request.url
+    await route.fulfill(**ok({"events": []} if 'tribe' in u else {"resource": {"children": []}} if 'visitsweden' in u else []))
+
 passed = []
 def check(name, cond, detail=''):
     if not cond: raise AssertionError(f'{name}: {detail}')
@@ -115,6 +122,7 @@ async def beta_checks(browser, errors):
     async def links_or_fail(route): return await (route.abort() if down['links'] else joblinks(route))
     async def hist_or_fail(route): return await (route.abort() if down['hist'] else history(route))
     await ctx.route('https://jobsearch.api.jobtechdev.se/**', jobsearch)
+    await ctx.route(EVENT_HOSTS, no_events)
     await ctx.route('https://links.api.jobtechdev.se/**', links_or_fail)
     await ctx.route('https://historical.api.jobtechdev.se/**', hist_or_fail)
     pg = await ctx.new_page(); pg.on('pageerror', lambda e: errors.append(str(e)))
@@ -222,6 +230,7 @@ async def main():
         browser = await p.chromium.launch()
         ctx = await browser.new_context(locale='en-US', viewport={'width': 1280, 'height': 1000}, accept_downloads=True)
         await ctx.route('https://jobsearch.api.jobtechdev.se/**', jobsearch)
+        await ctx.route(EVENT_HOSTS, no_events)
         await ctx.route('https://links.api.jobtechdev.se/**', joblinks)
         await ctx.route('https://historical.api.jobtechdev.se/**', history)
         # Lets a test set the time of the last visit for the next load. The page saves the visit time when it unloads, so it can't be set before a reload.
