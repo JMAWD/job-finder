@@ -84,13 +84,16 @@ Each degree or course as ### Degree or course, School (years), with the school a
 Then the CV's other sections, such as certificates, languages and driving licence, each under its own ## heading with what the CV says. Leave out sections the CV doesn't have.
 Keep the CV to two pages at most by cutting older jobs down to one line, not by leaving them out.`,
   },
+  // Job Tailor's letter rules: under 250 words and no placeholders, since the letter downloads ready to send
   letter: {
-    sv: `Skriv ett personligt brev till den här tjänsten, 250–350 ord.
-Börja med varför just den här rollen och arbetsgivaren, inte med "Jag heter". Koppla 2–3 konkreta erfarenheter ur CV:t till det annonsen efterfrågar. Avsluta enkelt och utan överdrifter.
-Lämna [hakparenteser] där personen själv måste fylla i något, till exempel namn på kontaktperson.`,
-    en: `Write a cover letter for this role, 250–350 words.
-Open with why this role and employer, not with "My name is". Link 2–3 concrete experiences from the CV to what the ad asks for. Close simply, without exaggeration.
-Leave [brackets] where the person must fill something in, such as the contact person's name.`,
+    sv: `Skriv ett personligt brev till den här tjänsten, högst 250 ord, färdigt att skicka.
+Inga platshållare inom hakparenteser. Står en kontaktperson i annonsen, hälsa på hen med namn. Annars börja med "Hej!". Avsluta med personens namn som det står i CV:t.
+Börja med varför just den här rollen och arbetsgivaren, inte med "Jag heter" eller "Jag söker härmed". Koppla 2–3 konkreta erfarenheter ur CV:t till det annonsen efterfrågar, med de detaljer och siffror CV:t faktiskt ger. Avsluta enkelt och utan överdrifter.
+Skriv bara brevet, utan rubrik, ämnesrad eller kommentarer före eller efter.`,
+    en: `Write a cover letter for this role, under 250 words, ready to send.
+No placeholders in brackets. If the ad names a contact person, greet them by name. Otherwise open with "Dear Hiring Manager". Sign off with the person's name as the CV gives it.
+Open with why this role and employer, not with "My name is" or "I am writing to apply". Link 2–3 concrete experiences from the CV to what the ad asks for, with the details and figures the CV actually gives. Close simply, without exaggeration.
+Write only the letter, with no heading, subject line or comments before or after it.`,
   },
   interview: {
     sv: `Förbered personen inför en intervju för den här tjänsten.
