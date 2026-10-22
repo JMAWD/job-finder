@@ -19,8 +19,7 @@
 */
 const crypto = require("crypto");
 const { PROMPTS, TASKS, AD_TASKS, CV_TASKS, OPTIONS, parseMentor } = require("./prompts.js");
-const { factCheck } = require("./factcheck.js");
-const { stripDashes, styleCheck, tidyCv } = require("./style.js");
+const { finish } = require("./pipeline.js");
 
 const MAX_CV = 20000, MAX_AD = 20000, MAX_EXTRA = 2000;
 const usage = new Map();   // access code hash -> timestamps of recent requests (per running instance)
@@ -116,22 +115,22 @@ async function handle(event) {
   const started = Date.now();
   const model = req.model && list("AI_MODELS").includes(req.model) ? req.model : (env("AI_MODEL") || "mistral-medium-3.5-128b");
   const mentor = task === "mentor";
-  const out = await callModel(PROMPTS[task](lang, { cv, job, extra, year: new Date().getFullYear() }), model, OPTIONS[task]);
+  const year = new Date().getFullYear();
+  const out = await callModel(PROMPTS[task](lang, { cv, job, extra, year }), model, OPTIONS[task]);
   const data = mentor && !out.error ? parseMentor(out.text) : null;
   if (mentor && !out.error && !data) out.error = "ai_bad_format";
-  // The CV and the letter go to the employer, so dashes used as punctuation are taken out in code, not just asked for,
-  // and the style check reports what's left: jobs of even length and buzzwords (see style.js)
-  const sent = !out.error && (task === "cv" || task === "letter");
-  if (sent) out.text = stripDashes(out.text);
-  if (sent && task === "cv") out.text = tidyCv(out.text);   // bullets, contact line and year ranges in one form, whatever the model did
-  const style = sent ? styleCheck(out.text, { cv, ad, task }) : null;
-  // Every written answer is checked in code for employers, job titles, schools, degrees and dates the CV doesn't back up,
-  // and the CV and letter also for words and figures taken from the ad (see factcheck.js)
-  const check = !out.error && needsCv && needsAd ? factCheck(out.text, { cv, ad, title: job.title, employer: job.employer, extra, year: new Date().getFullYear(), task, lang }) : null;
+  // Cleaned in code, fact-checked, corrected once if the CV or letter claims something the CV doesn't back up, and
+  // style-checked (see pipeline.js). One correction call at most, within what is left of the time.
+  let check = null, style = null, fixed = 0;
+  if (!out.error && !mentor && task !== "translate") {
+    const ask = (messages, options) => callModel(messages, model, { ...options, timeout: Math.max(15000, Math.min(options?.timeout || 90000, 100000 - (Date.now() - started))) });
+    const done = await finish({ text: out.text, task, lang, cv: needsCv ? cv : "", ad: needsCv && needsAd ? ad : "", job, extra, year }, ask);
+    out.text = done.text; check = done.check; style = done.style; fixed = done.fixed;
+  }
   // Only sizes, timings and how many things the check flagged are logged, never the CV, the ad or the flagged words
-  console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null, ...(out.cut ? { cut: true } : {}), ...(check ? { flagged: check.issues.length } : {}), ...(style ? { even: style.even, buzzwords: style.words.length } : {}) }));
+  console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null, ...(out.cut ? { cut: true } : {}), ...(check ? { flagged: check.issues.length } : {}), ...(fixed ? { fixed } : {}), ...(style ? { even: style.even, buzzwords: style.words.length } : {}) }));
   if (out.error) return fail(out.error === "ai_busy" ? 503 : 502, out.error, okOrigin);
-  return reply(200, mentor ? { data, model: out.model, tokens: out.tokens } : { text: out.text, model: out.model, tokens: out.tokens, ...(out.cut ? { cut: true } : {}), ...(check ? { check } : {}), ...(style ? { style } : {}) }, okOrigin);
+  return reply(200, mentor ? { data, model: out.model, tokens: out.tokens } : { text: out.text, model: out.model, tokens: out.tokens, ...(out.cut ? { cut: true } : {}), ...(check ? { check } : {}), ...(fixed ? { fixed } : {}), ...(style ? { style } : {}) }, okOrigin);
 }
 
 module.exports = { handle, _test: { usage, sha256 } };

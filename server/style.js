@@ -53,7 +53,8 @@ const BUZZWORDS = ["leverage", "leveraged", "leveraging", "results-driven", "res
   "game-changer", "best-in-class", "world-class", "thrive in", "drivande", "resultatinriktad", "resultatorienterad", "lösningsorienterad", "brinner för",
   "passionerad", "dynamisk", "dynamiska", "synergi", "synergier", "spjutspets", "världsklass",
   // filler that machine-written Swedish and English lean on
-  "säkerställa", "säkerställde", "säkerställer", "perfekt match", "bidra till", "aligns with", "align with", "ensure", "ensured", "ensuring", "eager to"];
+  "säkerställa", "säkerställde", "säkerställer", "perfekt match", "bidra till", "spännande utmaning", "aligns with", "align with", "ensure", "ensured", "ensuring", "eager to",
+  "exactly the kind of", "learn and grow", "at the intersection of"];
 const fold = s => String(s || "").normalize("NFC").toLowerCase();
 const hasWord = (text, w) => new RegExp(`(?<![\\p{L}\\d])${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\p{L}\\d])`, "iu").test(text);
 
@@ -94,13 +95,15 @@ function styleCheck(text, { cv = "", ad = "", task = "cv" } = {}) {
   const blocks = task === "cv" ? roleBlocks(out) : [];
   const v = variation(blocks.map(b => b.length));
   const sameBullets = blocks.length >= 3 && blocks[0].bullets > 0 && blocks.every(b => b.bullets === blocks[0].bullets);
+  // With only two jobs, different numbers of bullets is already uneven
+  const twoDiffer = blocks.length === 2 && blocks[0].bullets !== blocks[1].bullets;
   const source = [cv, ad].join("\n");
   const words = BUZZWORDS.filter(w => hasWord(out, w) && !hasWord(source, w));
   // Dashes still used as punctuation (only possible after the person's own edits, since answers are cleaned).
   // Date ranges and number ranges don't count.
   const rest = out.replace(DATE_RANGE, "").replace(/\d\s*[\u2013\u2014]\s*\d/g, "");
   const dashes = (rest.match(/[ \t][\u2013\u2014](?=[ \t])|\u2014/g) || []).length;
-  return { even: (v !== null && v < UNIFORM) || sameBullets, words, dashes };
+  return { even: (v !== null && v < UNIFORM && !twoDiffer) || sameBullets, words, dashes };
 }
 
 // The tailored CV's form, made consistent in code so the PDF always looks the same, whatever the model did:
@@ -142,4 +145,27 @@ function tidyCv(md) {
   return out.filter((l, i) => !(l.trim() === "" && /^- /.test(out[i - 1] || "") && /^- /.test(out[i + 1] || ""))).join("\n");
 }
 
-module.exports = { stripDashes, styleCheck, tidyCv, _test: { roleBlocks, variation, UNIFORM, sentencesOf } };
+// The contact line under the name keeps only what the CV has. An email, phone number or link the CV doesn't have was
+// made up, and is removed in code; so is a place the CV never names. A model has done exactly that in a live test.
+const digits = s => String(s).replace(/\D/g, "");
+function keepContact(md, cv) {
+  const lines = String(md || "").split("\n"), src = String(cv || "").toLowerCase(), srcDigits = digits(cv);
+  const i = lines.findIndex(l => /^\s*#\s/.test(l));
+  if (i < 0) return md;
+  const j = lines.findIndex((l, k) => k > i && l.trim());
+  if (j < 0 || /^\s*(#|[-*•]\s)/.test(lines[j])) return md;
+  const items = lines[j].split(/\s*[·|]\s*/).map(x => x.trim()).filter(Boolean);
+  const looksContact = items.some(x => /@|\d{5,}|\d{2,4}[ -]\d{2,3}|linkedin|github|https?:|www\./i.test(x));
+  if (!looksContact && items.length > 1 && !items.every(x => x.length < 40)) return md;   // a sentence, not a contact line
+  const kept = items.filter(x => {
+    if (/@/.test(x)) return src.includes(x.toLowerCase());
+    if (/\d{2,}[\d -]{4,}/.test(x) && digits(x).length >= 7) return srcDigits.includes(digits(x)) || srcDigits.includes(digits(x).replace(/^46/, "0"));
+    if (/linkedin|github|https?:|www\./i.test(x)) return src.includes(x.toLowerCase().replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""));
+    return src.includes(x.toLowerCase());
+  });
+  if (kept.length === items.length) return md;
+  if (kept.length) lines[j] = kept.join(" · "); else lines.splice(j, 1);
+  return lines.join("\n");
+}
+
+module.exports = { stripDashes, styleCheck, tidyCv, keepContact, _test: { roleBlocks, variation, UNIFORM, sentencesOf } };

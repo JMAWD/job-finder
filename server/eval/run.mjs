@@ -20,8 +20,7 @@ import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
 const { PROMPTS, OPTIONS } = require("../prompts.js");
-const { factCheck } = require("../factcheck.js");
-const { stripDashes, styleCheck, tidyCv } = require("../style.js");
+const { finish } = require("../pipeline.js");
 const here = path.dirname(fileURLToPath(import.meta.url));
 
 // The same room to write as the server gives each task (prompts.js OPTIONS), so a whole CV isn't cut short here either
@@ -48,14 +47,15 @@ export async function runEval({ cases, tasks, langs, runs, ask, year = new Date(
         try { text = await ask(PROMPTS[task](lang, { cv: c.cv, job: c.job, extra: "" }), task); error = ""; }
         catch (e) { error = String(e.message || e); await new Promise(r => setTimeout(r, 2000 * attempt)); }
       }
-      // The same clean-up and style check the server runs on a CV or letter before anyone sees it
-      const sent = text && (task === "cv" || task === "letter");
-      if (sent) text = stripDashes(text);
-      if (sent && task === "cv") text = tidyCv(text);
-      const check = text ? factCheck(text, { cv: c.cv, ad: c.job.text, title: c.job.title, employer: c.job.employer, extra: "", year, task, lang }) : null;
-      const style = sent ? styleCheck(text, { cv: c.cv, ad: c.job.text, task }) : null;
-      results.push({ case: c.id, task, lang, run, text, error, issues: check ? check.issues : [], ...(style ? { style } : {}) });
-      log(`${results.length}/${jobs.length} ${c.id} ${task} ${lang} #${run}: ${error ? "error " + error : check.issues.length ? check.issues.length + " flagged" : "clean"}`);
+      // Exactly what the server does before anyone sees the answer: clean, check, one correction call, style check
+      let issues = [], style = null, fixed = 0;
+      if (text) {
+        const fix = async messages => { try { return { text: await ask(messages, task) }; } catch (e) { return { error: String(e.message || e) }; } };
+        const done = await finish({ text, task, lang, cv: c.cv, ad: c.job.text, job: c.job, extra: "", year }, fix);
+        text = done.text; issues = done.check ? done.check.issues : []; style = done.style; fixed = done.fixed;
+      }
+      results.push({ case: c.id, task, lang, run, text, error, issues, fixed, ...(style ? { style } : {}) });
+      log(`${results.length}/${jobs.length} ${c.id} ${task} ${lang} #${run}: ${error ? "error " + error : (issues.length ? issues.length + " flagged" : "clean") + (fixed ? `, ${fixed} corrected` : "")}`);
     }
   };
   await Promise.all([worker(), worker()]);

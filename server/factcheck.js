@@ -211,7 +211,6 @@ person personer people individ dig själv yourself someone
 utveckla utvecklar utveckling develop development utvecklas
 år åren year years månad månader month months vecka veckor week weeks dag dagar day days
 heltid deltid fulltime full-time parttime part-time tillsvidare permanent anställning employment start tillträde
-svenska engelska swedish english språk language languages flytande fluent
 ny nya nytt new egen eget egna own hel hela whole entire
 stor stora stort large small liten små big
 vi oss man en ett ni du jag mig min mitt mina i på av om
@@ -267,16 +266,19 @@ function backed(w, srcWords, srcText) {
 
 const NUMBER_WORDS = { tva: 2, tre: 3, fyra: 4, fem: 5, sex: 6, sju: 7, atta: 8, nio: 9, tio: 10, elva: 11, tolv: 12, femton: 15, tjugo: 20, trettio: 30,
   two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, fifteen: 15, twenty: 20, thirty: 30 };
-// The figures in a text: standalone numbers (not years, not parts of 8D or Office 365-style names) and number words
+// The figures in a text: standalone numbers (not years, not parts of 8D or Office 365-style names) and number words.
+// A figure followed by "år" or "years" is a count of years, which must match a count of years in the CV: "under fem år"
+// is not backed by "5 varför".
+const YEARS_AFTER = /^\s*(?:hela\s+|full\s+)?(?:ar|ars|aren|year|years)(?![a-z])/;
 function figures(text) {
-  const out = [];
-  for (const m of String(text || "").matchAll(/(?<![\p{L}\d.,-])(\d{1,3}(?:[  ]\d{3})+|\d+(?:[.,]\d+)?)(?![\p{L}\d]|[.,]\d)/gu)) {
-    const raw = m[1], n = Number(raw.replace(/[  ]/g, "").replace(",", "."));
+  const out = [], f = fold(text);
+  for (const m of String(text || "").matchAll(/(?<![\p{L}\d.,-])(\d{1,3}(?:[ \u00a0]\d{3})+|\d+(?:[.,]\d+)?)(?![\p{L}\d]|[.,]\d)/gu)) {
+    const raw = m[1], n = Number(raw.replace(/[ \u00a0]/g, "").replace(",", "."));
     if (/^(19|20)\d\d$/.test(raw)) continue;   // years are the date check's job
-    out.push({ raw, n });
+    out.push({ raw, n, years: YEARS_AFTER.test(f.slice(m.index + m[0].length, m.index + m[0].length + 14)) });
   }
-  for (const m of fold(text).matchAll(/(?<![a-z])(tva|tre|fyra|fem|sex|sju|atta|nio|tio|elva|tolv|femton|tjugo|trettio|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty)(?![a-z])/g))
-    out.push({ raw: m[1], n: NUMBER_WORDS[m[1]] });
+  for (const m of f.matchAll(/(?<![a-z])(tva|tre|fyra|fem|sex|sju|atta|nio|tio|elva|tolv|femton|tjugo|trettio|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty)(?![a-z])/g))
+    out.push({ raw: m[1], n: NUMBER_WORDS[m[1]], years: YEARS_AFTER.test(f.slice(m.index + m[0].length, m.index + m[0].length + 14)) });
   return out;
 }
 // In a letter, the person's own sentences: first person, and not about the employer or the job
@@ -285,8 +287,9 @@ const THEIRS = /(?<![\p{L}])(ni|er|ert|era|du|dig|din|ditt|dina|rollen|tjänsten
 
 function claimCheck(output, { cv = "", ad = "", title = "", employer = "", extra = "", task = "", lang = "" } = {}) {
   if (task !== "cv" && task !== "letter") return [];
-  // The job's own title and employer may be named; so may anything the person wrote in their wishes
-  const own = [cv, extra, title, employer].join("\n"), cvText = fold(own), cvWords = new Set(tokens(own));
+  // The employer may be named, and so may anything the person wrote in their wishes. The ad's job title may not be
+  // used for the person: calling a visualiser a "technical artist" because the ad says so is a claim too.
+  const own = [cv, extra, employer].join("\n"), cvText = fold(own), cvWords = new Set(tokens(own));
   const sameLang = guessLangOf(cv) === (lang || guessLangOf(output));
   // Words the ad uses and the CV doesn't
   const adOnly = new Map();
@@ -297,7 +300,7 @@ function claimCheck(output, { cv = "", ad = "", title = "", employer = "", extra
     if (backed(w, cvWords, cvText)) continue;
     if (!adOnly.has(w)) adOnly.set(w, { raw, named, acronym: raw.length >= 2 && raw === raw.toUpperCase() && /\p{Lu}/u.test(raw) });
   }
-  const cvFigures = new Set(figures(cv).map(f => f.n)), adFigures = new Set(figures(ad).map(f => f.n));
+  const cvF = figures(cv), cvFigures = new Set(cvF.map(f => f.n)), cvYears = new Set(cvF.filter(f => f.years).map(f => f.n)), adFigures = new Set(figures(ad).map(f => f.n));
   const issues = [], seen = new Set();
   const lines = String(output || "").split(/\r?\n/);
   let nameSeen = false;
@@ -309,7 +312,8 @@ function claimCheck(output, { cv = "", ad = "", title = "", employer = "", extra
     nameSeen = false;
     const empTok = core(employer);
     const aboutThem = s => THEIRS.test(s) || (empTok.length && inSource(employer, core(s)));
-    const sentences = task === "letter" ? raw.split(/(?<=[.!?])\s+/).filter(s => MINE.test(s) && !aboutThem(s)) : [raw];
+    // In a letter: the person's own sentences, and in them the parts that aren't about the employer or the job
+    const sentences = task === "letter" ? raw.split(/(?<=[.!?])\s+/).filter(s => MINE.test(s)).flatMap(s => s.split(/\s*[,;:]\s*/)).filter(s => s && !aboutThem(s)) : [raw];
     for (const s of sentences) {
       const ws = wordsOf(s);
       let run = null;
@@ -332,7 +336,7 @@ function claimCheck(output, { cv = "", ad = "", title = "", employer = "", extra
       });
       flush();
       for (const f of figures(s.replace(/^\s*(?:#{1,6}\s*)?\d+[.)]\s+/, ""))) {   // "## 1." and "2)" are numbering, not figures
-        if (cvFigures.has(f.n) || (task === "letter" && adFigures.has(f.n))) continue;
+        if (f.years ? cvYears.has(f.n) : (cvFigures.has(f.n) || (task === "letter" && adFigures.has(f.n)))) continue;
         const key = "figure:" + f.n;
         if (!seen.has(key)) { seen.add(key); issues.push({ kind: "figure", text: f.raw, line: raw.trim().slice(0, 200) }); }
       }

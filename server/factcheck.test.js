@@ -185,6 +185,20 @@ test("real answers from the live model: the claims borrowed from the ad are caug
   assert.deepEqual(factCheck("Annonsen vill ha telefonrådgivning och erfarenhet av diabetes och astma.", { cv: c.cv, ad: c.job.text, year: 2026, task: "match" }).issues, []);
 });
 
+test("counted years must match the CV, the ad's title is not the person's, and languages count", () => {
+  const cv = "Mats Bergqvist\nUnderhållsingenjör, Westra Komponenter AB, 2019 - nu\n- Grundorsaksanalyser (5 varför)\nSpråk: svenska";
+  const src = { cv, ad: "Vi söker en teknisk artist med mycket god engelska.", title: "Teknisk artist", employer: "Volvia", year: 2026, task: "cv", lang: "sv" };
+  const t = s => factCheck(s, src).issues.map(i => i.kind + ":" + i.text);
+  assert.ok(t("## Profil\nUnderhållsingenjör med fem års erfarenhet.").includes("figure:fem"), "5 varför doesn't back five years");
+  assert.deepEqual(t("## Profil\nAnvänder 5 varför vid haverier."), []);
+  assert.ok(t("## Profil\nTeknisk artist med erfarenhet av underhåll.").some(x => /teknisk|artist/i.test(x)), "the ad's title is not the person's");
+  assert.ok(t("## Språk\nMycket god engelska").some(x => /engelska/.test(x)));
+  assert.deepEqual(t("## Språk\nSvenska"), []);
+  // A letter's own clause is read even when the same sentence ends on the job
+  const letter = { ...src, task: "letter", ad: "Meriterande är elbehörighet.", title: "Underhållsingenjör" };
+  assert.ok(factCheck("Hej!\n\nMin bakgrund som underhållsingenjör, tillsammans med elbehörigheten, ger mig det rollen kräver.\n\nMats", letter).issues.some(i => /elbehörighet/.test(i.text)));
+});
+
 test("in a letter only the person's own sentences are read, and the employer may be named", () => {
   const c = { cv: "Sara Holm\nInköpare, Sundvall Retail AB, 2020 – nu\n- Förhandlade ramavtal med åtta leverantörer\n- SAP MM", ad: "Halvarsson Home söker en inköpare som driver hållbarhetsarbetet och kan Amfori BSCI.", title: "Inköpare", employer: "Halvarsson Home", year: 2026, task: "letter", lang: "sv" };
   assert.deepEqual(factCheck("Hej!\n\nNi söker någon som driver hållbarhetsarbetet och kan Amfori BSCI. Jag har förhandlat ramavtal med åtta leverantörer på Sundvall Retail och vill gärna göra det hos Halvarsson Home.\n\nVänliga hälsningar\nSara Holm", c).issues, []);

@@ -128,6 +128,8 @@ const I18N = {
   "fc.k.school": ["School", "Skola"], "fc.k.degree": ["Degree", "Examen"],
   "fc.k.claim": ["From the ad", "Från annonsen"], "fc.k.figure": ["Figure", "Siffra"],
   "fc.again": ["Checked again after your edits.", "Kontrollerad igen efter dina ändringar."],
+  "fc.fixed1": ["The AI's first draft had one thing your CV doesn't back up, and it was taken out before you saw this.", "AI:ns första utkast hade en sak som ditt CV inte stöder, och den togs bort innan du fick se texten."],
+  "fc.fixed": ["The AI's first draft had {n} things your CV doesn't back up, and they were taken out before you saw this.", "AI:ns första utkast hade {n} saker som ditt CV inte stöder, och de togs bort innan du fick se texten."],
   "st.title": ["Style check: what still makes this sound machine written", "Stilkoll: det som fortfarande får texten att låta maskinskriven"],
   "st.even": ["Every job is about the same length. A real CV is lopsided: give the job closest to this one more detail and cut older ones down to a line. Use Edit text, or generate again.",
     "Alla tjänster är ungefär lika långa. Ett riktigt CV är ojämnt: ge tjänsten som ligger närmast det här jobbet mer detaljer och korta äldre till en rad. Använd Redigera text eller skapa igen."],

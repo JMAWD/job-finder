@@ -434,10 +434,11 @@ function applyHtml(job, big) {
 }
 // The server's fact check (server/factcheck.js). Answers saved before it existed have none, and show nothing.
 // After the person edits a text, the same code checks it again here in the browser (see recheck below).
-function factCheckHtml(check, edited) {
+function factCheckHtml(check, edited, fixed) {
   if (edited && !check) return `<p class="fc fc-warn" role="status">${esc(t("fc.unchecked"))}</p>`;
   if (!check || !Array.isArray(check.issues)) return "";
-  const again = edited ? ` ${esc(t("fc.again"))}` : "";
+  // The server's correction pass (server/pipeline.js) took things out before the person saw the text; say so
+  const again = edited ? ` ${esc(t("fc.again"))}` : fixed ? ` ${esc(t(fixed === 1 ? "fc.fixed1" : "fc.fixed", { n: fixed }))}` : "";
   if (!check.issues.length) return `<p class="fc fc-ok" role="status">${esc(t("fc.ok"))}${again}</p>`;
   return `<section class="fc fc-warn" role="alert"><p><b>${esc(check.issues.length === 1 ? t("fc.warn1") : t("fc.warn", { n: check.issues.length }))}</b>${again}</p>
     <ul>${check.issues.map(i => `<li><span class="fc-kind">${esc(t("fc.k." + i.kind))}</span>${esc(i.text)}</li>`).join("")}</ul>
@@ -486,7 +487,7 @@ function saveEdit() {
   const o = tlEntry(tl.id).out[tl.task], text = (tl.editDraft ?? "").replace(/\s+$/, "");
   tl.editing = false; tl.editDraft = null;
   if (!o || !text.trim() || text === o.text) return;
-  o.text = text; o.edited = new Date().toISOString(); delete o.cut;
+  o.text = text; o.edited = new Date().toISOString(); delete o.cut; delete o.fixed;
   const check = recheck(text), style = restyle(text);
   if (check) o.check = check; else delete o.check;
   if (style) o.style = style; else delete o.style;
@@ -542,7 +543,7 @@ function tailorHtml() {
         ${tl.error ? `<p class="tl-err" role="alert">${tl.error}</p>` : ""}
         ${out ? `${aiNoteHtml(task === "match" ? "ai.match" : task === "interview" ? "ai.interview" : "ai.write", t("tl.t." + task))}
           ${out.cut ? `<p class="tl-err" role="alert">${esc(t("tl.cut"))}</p>` : ""}
-          ${factCheckHtml(out.check, out.edited)}
+          ${factCheckHtml(out.check, out.edited, out.fixed)}
           ${styleHtml(out.style)}
           ${tl.editing ? `<div class="tl-edit"><label class="tl-label" for="tl-edit">${esc(t("tl.edit.label"))}</label>
             <textarea id="tl-edit" data-tl="edit-text" rows="22" lang="${out.lang === "en" ? "en" : "sv"}">${esc(tl.editDraft ?? out.text)}</textarea>
@@ -609,7 +610,7 @@ async function generate() {
       body: JSON.stringify({ code, task, lang: outLang, cv, extra, job: { title: tl.title, employer: tl.employer, text: ad } }) });
     const j = await r.json().catch(() => ({}));
     if (r.ok && j.text) {
-      e.out[task] = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.cut ? { cut: true } : {}), ...(cleanStyle(j.style) ? { style: cleanStyle(j.style) } : {}), ...(j.check && Array.isArray(j.check.issues) ? { check: { ok: !!j.check.ok, issues: j.check.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) } } : {}) };
+      e.out[task] = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.cut ? { cut: true } : {}), ...(+j.fixed > 0 ? { fixed: Math.min(99, +j.fixed) } : {}), ...(cleanStyle(j.style) ? { style: cleanStyle(j.style) } : {}), ...(j.check && Array.isArray(j.check.issues) ? { check: { ok: !!j.check.ok, issues: j.check.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) } } : {}) };
       e.lastTask = task; e.lang = outLang;
       saveTailor();
       if (!apps[id]?.status) setStatus(id, "Saved");

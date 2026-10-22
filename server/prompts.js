@@ -58,7 +58,7 @@ Använd exakt den här formen i Markdown:
 # Personens namn som det står i CV:t. Saknar CV:t namn, skriv [Ditt namn].
 En rad med de kontaktuppgifter som står i CV:t (ort, e-post, telefon, LinkedIn), åtskilda med " · ". Utelämna det som inte finns.
 ## Profil
-Tre meningar om vem personen är i yrket och vad hen har gjort som spelar roll för just det här jobbet. Bara fakta ur CV:t, och inga egenskaper som CV:t inte nämner.
+Tre meningar om vem personen är i yrket och vad hen har gjort som spelar roll för just det här jobbet. Bara fakta ur CV:t, och inga egenskaper som CV:t inte nämner. Presentera personen med en yrkestitel ur CV:t, aldrig med annonsens titel om den inte står i CV:t.
 ## Nyckelkompetenser
 6–10 kunskaper, verktyg eller metoder som står i CV:t, en per rad som börjar med "- ", det annonsen efterfrågar först. Ta aldrig med något för att annonsen nämner det.
 ## Erfarenhet
@@ -77,7 +77,7 @@ Use exactly this form in Markdown:
 # The person's name as the CV gives it. If the CV has no name, write [Your name].
 One line with the contact details the CV gives (town, email, phone, LinkedIn), separated by " · ". Leave out any it doesn't have.
 ## Profile
-Three sentences on who the person is in their work and what they have done that matters for this job. Only facts from the CV, and no personal qualities the CV doesn't name.
+Three sentences on who the person is in their work and what they have done that matters for this job. Only facts from the CV, and no personal qualities the CV doesn't name. Introduce the person with a job title from the CV, never with the ad's title unless the CV has it.
 ## Key skills
 6–10 skills, tools or methods that are in the CV, one per line starting with "- ", the ones the ad asks for first. Never include anything because the ad mentions it.
 ## Experience
@@ -93,14 +93,14 @@ Keep the CV to two pages at most by cutting older jobs down to one line, not by 
   // Job Tailor's letter rules: under 250 words and no placeholders, since the letter downloads ready to send
   letter: {
     sv: `Skriv ett personligt brev till den här tjänsten, högst 250 ord, färdigt att skicka.
-Överst, precis som i ett CV: personens namn som rubrik (# Namn) och på raden under de kontaktuppgifter som står i CV:t (ort, e-post, telefon), åtskilda med " · ". Sedan brevet.
+Överst, precis som i ett CV: personens namn som rubrik (# Namn) och på raden under de kontaktuppgifter som står i CV:t (ort, e-post, telefon), åtskilda med " · ". Bara det som står i CV:t; har CV:t ingen e-post eller telefon, skriv bara orten. Sedan brevet.
 Inga platshållare inom hakparenteser. Står en kontaktperson i annonsen, hälsa på hen med namn. Annars börja med "Hej!". Avsluta med "Vänliga hälsningar" och personens namn som det står i CV:t.
-Börja med varför just den här rollen och arbetsgivaren, inte med "Jag heter" eller "Jag söker härmed". Koppla 2–3 konkreta erfarenheter ur CV:t till det annonsen efterfrågar, med de detaljer och siffror CV:t faktiskt ger. Nämn inte det personen saknar; påstå det bara inte. Avsluta enkelt och utan överdrifter.
+Börja med något konkret ur annonsen som hänger ihop med något konkret personen har gjort, i en eller två enkla meningar. Inte "Jag heter", "Jag söker härmed", "Jag är intresserad av", "spännande utmaning" eller "perfekt match". Koppla 2–3 konkreta erfarenheter ur CV:t till det annonsen efterfrågar, med de detaljer och siffror CV:t faktiskt ger. Nämn inte det personen saknar; påstå det bara inte. Avsluta enkelt och utan överdrifter.
 Skriv bara namnraden, kontaktraden och brevet, utan ämnesrad eller kommentarer före eller efter.`,
     en: `Write a cover letter for this role, under 250 words, ready to send.
-At the top, as on a CV: the person's name as a heading (# Name) and on the line below the contact details the CV gives (town, email, phone), separated by " · ". Then the letter.
+At the top, as on a CV: the person's name as a heading (# Name) and on the line below the contact details the CV gives (town, email, phone), separated by " · ". Only what the CV has; if it has no email or phone, give only the town. Then the letter.
 No placeholders in brackets. If the ad names a contact person, greet them by name. Otherwise open with "Dear Hiring Manager,". Sign off with "Kind regards," and the person's name as the CV gives it.
-Open with why this role and employer, not with "My name is" or "I am writing to apply". Link 2–3 concrete experiences from the CV to what the ad asks for, with the details and figures the CV actually gives. Don't point out what the person lacks; just don't claim it. Close simply, without exaggeration.
+Open with something concrete from the ad that connects to something concrete the person has done, in one or two plain sentences. Not "My name is", "I am writing to apply", "I am interested in", "exactly the kind of" or "perfect match". Link 2–3 concrete experiences from the CV to what the ad asks for, with the details and figures the CV actually gives. Don't point out what the person lacks; just don't claim it. Close simply, without exaggeration.
 Write only the name line, the contact line and the letter, with no subject line or comments before or after it.`,
   },
   interview: {
@@ -205,6 +205,27 @@ function parseMentor(text) {
   } catch { return null; }
 }
 
+/* ---------- One correction pass for the CV and letter (pipeline.js) ----------
+   The fact check found something the CV doesn't back up. The model is shown exactly what, and asked to take it out
+   without changing anything else. */
+const KIND = {
+  sv: { employer: "arbetsgivare som inte står i CV:t", title: "titel som inte står i CV:t", school: "skola som inte står i CV:t", degree: "examen som inte står i CV:t",
+    dates: "datum som inte stämmer med CV:t", date: "datum som inte står i CV:t", claim: "från annonsen, inte från CV:t", figure: "siffra som inte står i CV:t" },
+  en: { employer: "an employer the CV doesn't have", title: "a job title the CV doesn't have", school: "a school the CV doesn't have", degree: "a degree the CV doesn't have",
+    dates: "dates that don't match the CV", date: "a date the CV doesn't have", claim: "from the ad, not from the CV", figure: "a figure the CV doesn't have" },
+};
+function repairPrompt(lang, task, { cv, text, issues }) {
+  const list = issues.map(i => `- "${i.text}" (${KIND[lang][i.kind] || i.kind}), on the line: ${i.line}`).join("\n");
+  const what = lang === "sv" ? (task === "cv" ? "ett CV" : "ett personligt brev") : (task === "cv" ? "a CV" : "a cover letter");
+  const ask = lang === "sv"
+    ? `Texten nedan är ${what} som du skrev utifrån personens CV. En kontroll i kod hittade det här i texten, som CV:t inte stöder:\n${list}\n\nSkriv om texten så att inget av det påstås om personen. Ta bort det, eller formulera om raden med bara det CV:t faktiskt säger; står samma sak i CV:t med andra ord, använd CV:ts ord. En punkt eller kunskap som bara bestod av det som ska bort tas bort helt. Ändra ingenting annat: samma form, samma rubriker, samma ordning och alla tjänster kvar. Svara med hela texten och ingenting annat.`
+    : `The text below is ${what} you wrote from the person's CV. A check in code found this in the text, which the CV doesn't back up:\n${list}\n\nRewrite the text so that none of it is claimed about the person. Take it out, or reword the line with only what the CV actually says; if the CV says the same thing in other words, use the CV's words. A bullet or skill that consisted only of what must go is removed entirely. Change nothing else: the same form, the same headings, the same order and every job kept. Answer with the whole text and nothing else.`;
+  return [
+    { role: "system", content: RULES[lang] },
+    { role: "user", content: `${ask}\n\n<cv>\n${cv}\n</cv>\n\n<text>\n${text}\n</text>` },
+  ];
+}
+
 // How much each task may write and how long it may take. A whole CV is longer than the other texts, so it gets more room.
 const OPTIONS = {
   cv: { maxTokens: 4000, temperature: 0.25, timeout: 105000 },   // a cooler temperature keeps it closer to the CV
@@ -212,4 +233,4 @@ const OPTIONS = {
   translate: { maxTokens: 6000, temperature: 0.1 },
 };
 
-module.exports = { PROMPTS, TASKS, AD_TASKS, CV_TASKS, OPTIONS, parseMentor };
+module.exports = { PROMPTS, TASKS, AD_TASKS, CV_TASKS, OPTIONS, parseMentor, repairPrompt };

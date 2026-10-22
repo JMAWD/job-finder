@@ -13,7 +13,9 @@ const CV = "Kvalitetsingenjör med åtta års erfarenhet av FMEA, 8D och leveran
 const AD = "Vi söker en kvalitetsingenjör som kan FMEA och vill driva förbättringsarbete i produktionen. ".repeat(3);
 const sent = [], logs = [];
 let aiReply = { status: 200, body: { choices: [{ message: { content: "## Det som matchar\n- FMEA" } }], usage: { prompt_tokens: 900, completion_tokens: 120 } } };
-global.fetch = async (url, opts) => { sent.push({ url, opts, body: JSON.parse(opts.body) }); return { ok: aiReply.status < 400, status: aiReply.status, json: async () => aiReply.body }; };
+// aiReplies, when set, answers the calls in turn (the first answer, then the correction call); otherwise aiReply answers all
+let aiReplies = null;
+global.fetch = async (url, opts) => { sent.push({ url, opts, body: JSON.parse(opts.body) }); const a = aiReplies && aiReplies.length ? aiReplies.shift() : aiReply; return { ok: a.status < 400, status: a.status, json: async () => a.body }; };
 const origLog = console.log; console.log = (...a) => logs.push(a.join(" "));
 const call = (body, { origin = "https://jobs.example", method = "POST" } = {}) =>
   handle({ httpMethod: method, headers: { Origin: origin, "content-type": "application/json" }, body: typeof body === "string" ? body : JSON.stringify(body) });
@@ -243,6 +245,38 @@ test("the CV and the letter come back with dashes taken out and a style check; o
   const i = json(await call(ok({ task: "interview" })));
   assert.match(i.text, /\u2014/); assert.equal(i.style, undefined);
   aiReply = { status: 200, body: { choices: [{ message: { content: "ok" } }] } };
+});
+test("a CV or letter that borrows from the ad gets one correction call, and the corrected text is returned", async () => {
+  const say = content => ({ status: 200, body: { choices: [{ message: { content }, finish_reason: "stop" }] } });
+  const cv = "Eva Lind\nGöteborg · eva.lind@example.com\n\nKvalitetsingenjör, Nordvik Automotive, 2018 – nu\n- Ledde FMEA och 8D för bromssystem\n- Utbildade kollegor i riskanalys\n\nUtbildning\nHögskoleingenjör, Chalmers, 2013 – 2016\n".repeat(1) + "Kunskaper: FMEA, 8D, Minitab. ".repeat(4);
+  const ad = "Acme söker en kvalitetsingenjör som kan FMEA, PPAP och ISO 9001 och vill arbeta nära inköp och konstruktion.";
+  _test.usage.clear(); sent.length = 0;
+  aiReplies = [say("# Eva Lind\nGöteborg · eva.lind@example.com · 070-999 11 22\n\n## Nyckelkompetenser\n- FMEA\n- ISO 9001\n\n## Erfarenhet\n### Kvalitetsingenjör, Nordvik Automotive (2018 - nu)\n- Ledde FMEA och 8D för bromssystem\n- Samarbetade med inköp och konstruktion"),
+    say("# Eva Lind\nGöteborg · eva.lind@example.com\n\n## Nyckelkompetenser\n- FMEA\n\n## Erfarenhet\n### Kvalitetsingenjör, Nordvik Automotive (2018 - nu)\n- Ledde FMEA och 8D för bromssystem")];
+  const b = json(await call(ok({ task: "cv", cv, job: { title: "Kvalitetsingenjör", employer: "Acme", text: ad } })));
+  assert.equal(sent.length, 2, "one answer and one correction call");
+  const fix = sent[1].body.messages[1].content;
+  assert.match(fix, /En kontroll i kod hittade/);
+  assert.match(fix, /"ISO"/); assert.match(fix, /inköp/);
+  assert.doesNotMatch(fix, /070-999/, "the made-up phone number was already removed in code");
+  assert.match(fix, /<cv>[\s\S]*Nordvik[\s\S]*<\/cv>/);
+  assert.deepEqual(b.check, { ok: true, issues: [] });
+  assert.ok(b.fixed >= 2, JSON.stringify(b));
+  assert.doesNotMatch(b.text, /ISO|inköp|070-999/);
+  assert.match(logs.at(-1), /"fixed":\d/);
+  assert.doesNotMatch(logs.at(-1), /ISO|inköp/);
+  // A correction that makes things worse, or drops a job, is not used
+  _test.usage.clear(); sent.length = 0;
+  aiReplies = [say("## Erfarenhet\n### Kvalitetsingenjör, Nordvik Automotive (2018 - nu)\n- Arbetade med ISO 9001"), say("## Erfarenhet\n- Arbetade med kvalitet")];
+  const w = json(await call(ok({ task: "cv", cv, job: { title: "Kvalitetsingenjör", employer: "Acme", text: ad } })));
+  assert.match(w.text, /### Kvalitetsingenjör, Nordvik/); assert.equal(w.fixed, undefined); assert.ok(w.check.issues.length > 0);
+  // The match check, interview prep, translation and the Mentor never get a correction call
+  for (const task of ["match", "interview"]) {
+    _test.usage.clear(); sent.length = 0; aiReplies = [say("ISO 9001 och PPAP efterfrågas men står inte i CV:t."), say("x")];
+    await call(ok({ task, cv, job: { title: "Kvalitetsingenjör", employer: "Acme", text: ad } }));
+    assert.equal(sent.length, 1, task);
+  }
+  aiReplies = null; aiReply = say("ok");
 });
 test("an answer the model stopped mid-way through is marked as cut off", async () => {
   _test.usage.clear();

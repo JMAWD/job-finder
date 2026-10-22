@@ -4,7 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert");
 const fs = require("node:fs");
 const path = require("node:path");
-const { stripDashes, styleCheck, tidyCv } = require("./style.js");
+const { stripDashes, styleCheck, tidyCv, keepContact } = require("./style.js");
 const { factCheck } = require("./factcheck.js");
 
 const EM = "\u2014", EN = "\u2013";
@@ -99,4 +99,20 @@ test("the tailored CV is tidied into one form: bullets, contact line, ranges", (
   assert.match(out, /### MSc Statistics, Lund University \(2017 - 2019\)\nThesis on forecasting/);   // education is left as written
   assert.match(out, /## Languages\nEnglish, Swedish/);
   assert.match(tidyCv("# Eva\n· Göteborg ·· eva@x.se ·\n## Profil\nx"), /^# Eva\nGöteborg · eva@x\.se\n/);
+});
+
+test("contact details the CV doesn't have are removed from the top of a CV or letter", () => {
+  const cv = "Maria Ekholm\nVästerås\n\nLegitimerad sjuksköterska";
+  assert.equal(keepContact("# Maria Ekholm\nVästerås · maria.ekholm@exempel.se · 070-123 45 67\n\nHej!", cv), "# Maria Ekholm\nVästerås\n\nHej!");
+  const full = "Mats Bergqvist\nTrollhättan\nTelefon: 070-412 88 31\nE-post: mats.bergqvist@example.se\nLinkedIn: linkedin.com/in/matsbergqvist";
+  const top = "# Mats Bergqvist\nTrollhättan · 070-412 88 31 · mats.bergqvist@example.se · linkedin.com/in/matsbergqvist\n## Profil";
+  assert.equal(keepContact(top, full), top);
+  assert.equal(keepContact("# Mats\n+46 70 412 88 31 · https://www.linkedin.com/in/matsbergqvist/\n## Profil", full), "# Mats\n+46 70 412 88 31 · https://www.linkedin.com/in/matsbergqvist/\n## Profil");
+  assert.equal(keepContact("# Eva\nmats@other.se\n## Profil", full), "# Eva\n## Profil");
+  assert.equal(keepContact("# Eva\n## Profil\nText", full), "# Eva\n## Profil\nText");   // no contact line, nothing to do
+});
+
+test("two jobs with different numbers of bullets are not called even", () => {
+  const two = "## Erfarenhet\n### A, X (2021 - nu)\n- Planerar in- och utleveranser för 30 kunder\n- Samordnar åkerier och bokar transporter\n- Tog fram ett nytt plockflöde\n### B, Y (2016 - 2021)\n- Plock, pack och inleverans i kyl- och frysmiljö\n- Skyddsombud 2019-2021";
+  assert.equal(styleCheck(two).even, false);
 });
