@@ -51,7 +51,10 @@ function stripDashes(text) {
 const BUZZWORDS = ["leverage", "leveraged", "leveraging", "results-driven", "results-oriented", "passionate", "dynamic", "spearheaded", "spearheading",
   "synergy", "synergies", "cutting-edge", "seamless", "seamlessly", "proven track record", "go-getter", "self-starter", "detail-oriented", "delve", "tapestry",
   "game-changer", "best-in-class", "world-class", "thrive in", "drivande", "resultatinriktad", "resultatorienterad", "lösningsorienterad", "brinner för",
-  "passionerad", "dynamisk", "dynamiska", "synergi", "synergier", "spjutspets", "världsklass"];
+  "passionerad", "dynamisk", "dynamiska", "synergi", "synergier", "spjutspets", "världsklass",
+  // filler that machine-written Swedish and English lean on
+  "säkerställa", "säkerställde", "säkerställer", "perfekt match", "bidra till", "spännande utmaning", "aligns with", "align with", "ensure", "ensured", "ensuring", "eager to",
+  "exactly the kind of", "learn and grow", "at the intersection of"];
 const fold = s => String(s || "").normalize("NFC").toLowerCase();
 const hasWord = (text, w) => new RegExp(`(?<![\\p{L}\\d])${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\p{L}\\d])`, "iu").test(text);
 
@@ -91,14 +94,79 @@ function styleCheck(text, { cv = "", ad = "", task = "cv" } = {}) {
   const out = String(text || "");
   const blocks = task === "cv" ? roleBlocks(out) : [];
   const v = variation(blocks.map(b => b.length));
-  const sameBullets = blocks.length >= 3 && blocks.every(b => b.bullets === blocks[0].bullets);
+  const sameBullets = blocks.length >= 3 && blocks[0].bullets > 0 && blocks.every(b => b.bullets === blocks[0].bullets);
+  // With only two jobs, different numbers of bullets is already uneven
+  const twoDiffer = blocks.length === 2 && blocks[0].bullets !== blocks[1].bullets;
   const source = [cv, ad].join("\n");
   const words = BUZZWORDS.filter(w => hasWord(out, w) && !hasWord(source, w));
   // Dashes still used as punctuation (only possible after the person's own edits, since answers are cleaned).
   // Date ranges and number ranges don't count.
   const rest = out.replace(DATE_RANGE, "").replace(/\d\s*[\u2013\u2014]\s*\d/g, "");
   const dashes = (rest.match(/[ \t][\u2013\u2014](?=[ \t])|\u2014/g) || []).length;
-  return { even: (v !== null && v < UNIFORM) || sameBullets, words, dashes };
+  return { even: (v !== null && v < UNIFORM && !twoDiffer) || sameBullets, words, dashes };
 }
 
-module.exports = { stripDashes, styleCheck, _test: { roleBlocks, variation, UNIFORM } };
+// The tailored CV's form, made consistent in code so the PDF always looks the same, whatever the model did:
+//   lines under a job become bullet points ("- "), and a long paragraph is split into one bullet per sentence;
+//   the contact line under the name loses a separator left at its start or end ("Malmö ·");
+//   blank lines between the bullets of one job go.
+// Only sections that hold jobs are touched; education, skills and languages are left as written.
+const NOT_JOBS = /utbildning|education|kurs|course|certifi|språk|language|kunskap|kompetens|skill|verktyg|tool|teknik|technolog|övrigt|other|intress|interest|referen|körkort|licen|profil|profile|sammanfattning|summary/i;
+const ABBREV = /(?:t\.ex|bl\.a|m\.m|m\.fl|e\.g|i\.e|ca|inkl|resp|etc|osv|dvs|nr|st)\.$/i;
+function sentencesOf(text) {
+  const parts = text.split(/(?<=[.!?])\s+(?=[\p{Lu}\d])/u), out = [];
+  for (const p of parts) { if (out.length && ABBREV.test(out[out.length - 1])) out[out.length - 1] += " " + p; else out.push(p); }
+  return out.map(x => x.trim()).filter(Boolean);
+}
+function tidyCv(md) {
+  const lines = String(md || "").replace(/\r/g, "").split("\n"), out = [];
+  let section = "", inJob = false, afterName = false;
+  for (const line of lines) {
+    const h = line.match(/^\s*(#{1,6})\s+(.*)/);
+    if (h) {
+      afterName = h[1].length === 1;   // the contact line is the line right under the name, never under a later heading
+      if (h[1].length <= 2) { section = h[2]; inJob = false; }
+      else inJob = !NOT_JOBS.test(section);
+      // Every range on a heading written the same way, so the years line up in the PDF: "2016 - 2018", "2018 - nu"
+      out.push(h[1].length >= 3 ? line.replace(/\b((?:19|20)\d\d)\s*-\s*((?:19|20)\d\d)\b/g, "$1 - $2") : line); continue;
+    }
+    if (afterName && line.trim()) {
+      afterName = false;
+      out.push(line.replace(/^[\s·|,;•-]+|[\s·|,;•-]+$/g, "").replace(/\s*·\s*(?:·\s*)+/g, " · "));
+      continue;
+    }
+    if (!inJob || !line.trim()) { out.push(line); continue; }
+    const item = line.match(/^\s*(?:[-*•]|\d+[.)])\s+(.*)/);
+    const text = (item ? item[1] : line).trim();
+    const parts = text.length > 140 ? sentencesOf(text) : [text];
+    // One sentence, no full stop, so every bullet ends the same way; a bullet of several sentences keeps its stops
+    for (const part of parts) out.push("- " + (sentencesOf(part).length > 1 || ABBREV.test(part) ? part : part.replace(/\.$/, "")));
+  }
+  // No blank lines between the bullets of one job
+  return out.filter((l, i) => !(l.trim() === "" && /^- /.test(out[i - 1] || "") && /^- /.test(out[i + 1] || ""))).join("\n");
+}
+
+// The contact line under the name keeps only what the CV has. An email, phone number or link the CV doesn't have was
+// made up, and is removed in code; so is a place the CV never names. A model has done exactly that in a live test.
+const digits = s => String(s).replace(/\D/g, "");
+function keepContact(md, cv) {
+  const lines = String(md || "").split("\n"), src = String(cv || "").toLowerCase(), srcDigits = digits(cv);
+  const i = lines.findIndex(l => /^\s*#\s/.test(l));
+  if (i < 0) return md;
+  const j = lines.findIndex((l, k) => k > i && l.trim());
+  if (j < 0 || /^\s*(#|[-*•]\s)/.test(lines[j])) return md;
+  const items = lines[j].split(/\s*[·|]\s*/).map(x => x.trim()).filter(Boolean);
+  const looksContact = items.some(x => /@|\d{5,}|\d{2,4}[ -]\d{2,3}|linkedin|github|https?:|www\./i.test(x));
+  if (!looksContact && items.length > 1 && !items.every(x => x.length < 40)) return md;   // a sentence, not a contact line
+  const kept = items.filter(x => {
+    if (/@/.test(x)) return src.includes(x.toLowerCase());
+    if (/\d{2,}[\d -]{4,}/.test(x) && digits(x).length >= 7) return srcDigits.includes(digits(x)) || srcDigits.includes(digits(x).replace(/^46/, "0"));
+    if (/linkedin|github|https?:|www\./i.test(x)) return src.includes(x.toLowerCase().replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""));
+    return src.includes(x.toLowerCase());
+  });
+  if (kept.length === items.length) return md;
+  if (kept.length) lines[j] = kept.join(" · "); else lines.splice(j, 1);
+  return lines.join("\n");
+}
+
+module.exports = { stripDashes, styleCheck, tidyCv, keepContact, _test: { roleBlocks, variation, UNIFORM, sentencesOf } };

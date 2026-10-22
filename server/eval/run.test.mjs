@@ -29,11 +29,14 @@ test("answers written the way the model writes them: honest ones pass, invented 
 
 test("the eval runs every case, task, language and run, and counts what was flagged", async () => {
   let calls = 0;
+  const invented = isEn => isEn ? "### Senior Quality Engineer, Bosch Rexroth (2009 – present)" : "### Senior kvalitetsingenjör, Bosch Rexroth (2009 – nu)";
   const ask = async messages => {
+    const isEn = /You help a job seeker/.test(messages[0].content);
+    // The correction call: this stand-in fails to fix anything, so what was flagged stays flagged
+    if (/A check in code found|En kontroll i kod hittade/.test(messages[1].content)) return invented(isEn);
     calls++;
     if (calls === 2) throw new Error("model answered 503");   // retried
-    const isEn = /You help a job seeker/.test(messages[0].content);
-    return calls % 4 === 0 ? (isEn ? "### Senior Quality Engineer, Bosch Rexroth (2009 – present)" : "### Senior kvalitetsingenjör, Bosch Rexroth (2009 – nu)") : "## Profil\n- FMEA";
+    return calls % 4 === 0 ? invented(isEn) : "## Profil\n- FMEA";
   };
   const results = await runEval({ cases: cases.slice(0, 2), tasks: ["cv", "letter"], langs: ["sv", "en"], runs: 2, ask, year: 2026 });
   assert.equal(results.length, 2 * 2 * 2 * 2);
@@ -44,4 +47,14 @@ test("the eval runs every case, task, language and run, and counts what was flag
   assert.equal(s.byKind.employer, s.flagged);
   assert.match(s.text, /Answers with nothing flagged: \d+ of 16/);
   assert.match(s.text, /- \[ \] \*\*quality-sv\*\*.*employer: `Bosch Rexroth`/);
+});
+
+test("the eval makes the same correction call as the server, and counts what it fixed", async () => {
+  const ask = async messages => /A check in code found|En kontroll i kod hittade/.test(messages[1].content)
+    ? "## Profil\n- FMEA"
+    : "## Profil\n- FMEA\n### Senior kvalitetsingenjör, Bosch Rexroth (2009 – nu)";
+  const results = await runEval({ cases: cases.slice(0, 1), tasks: ["cv"], langs: ["sv"], runs: 1, ask, year: 2026 });
+  assert.equal(results[0].issues.length, 0);
+  assert.ok(results[0].fixed >= 3, JSON.stringify(results[0]));
+  assert.doesNotMatch(results[0].text, /Bosch/);
 });

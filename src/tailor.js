@@ -154,7 +154,9 @@ function splitYears(s) {
   return m && m[1].trim() ? [m[1].trim(), m[2].trim()] : [s, ""];
 }
 
-function pdfBlob(md, { title = "", author = "", lang: textLang = "sv" } = {}) {
+function pdfBlob(md, { title = "", author = "", lang: textLang = "sv", letter = false } = {}) {
+  // A letter is read as running text, so it gets a slightly larger size, more line spacing and room between paragraphs
+  const BODY = letter ? { size: 10.6, lead: 15.4, para: 9 } : { size: 10, lead: 13.6, para: 6 };
   const PW = 595.28, PH = 841.89, L = 56, R = 56, TOP = 56, BOTTOM = 62, FULL = PW - L - R;
   const C = { ink: "0.13 0.15 0.17", muted: "0.39 0.42 0.45", accent: "0.11 0.35 0.41", rule: "0.78 0.81 0.83" };
   const pages = []; let pg, y, lost = 0;
@@ -283,7 +285,7 @@ function pdfBlob(md, { title = "", author = "", lang: textLang = "sv" } = {}) {
       block(h[2], { size: first ? 21 : 15, lead: first ? 25 : 19, font: "B", before: first ? 0 : 14, keep: 30 });
       contactNext = first;
     } else if (h && h[1].length === 2) {
-      block(h[2], { size: 9.8, lead: 13, font: "B", color: C.accent, tc: 0.9, upper: true, before: Math.max(15, gap), keep: 34 });
+      block(h[2], { size: 9.8, lead: 13, font: "B", color: C.accent, tc: 0.9, upper: true, before: Math.max(15, gap), keep: 56 });   // never alone at the foot of a page
       ruleAt(y - 0.5, C.rule, 0.5); y -= 5;
     } else if (h) {
       const [left, years] = splitYears(h[2].replace(/\*\*/g, ""));
@@ -294,7 +296,7 @@ function pdfBlob(md, { title = "", author = "", lang: textLang = "sv" } = {}) {
       block(raw.trim(), { size: 9.5, lead: 13, color: C.muted, before: 2 });
       y -= 5; ruleAt(y, C.accent, 0.9); y -= 6;
     } else {
-      block(raw.trim(), { before: gap ? 6 : 2 });
+      block(raw.trim(), { size: BODY.size, lead: BODY.lead, before: gap ? BODY.para : 2 });
     }
     if (!(h && h[1].length === 1)) contactNext = false;
     gap = 0;
@@ -432,10 +434,11 @@ function applyHtml(job, big) {
 }
 // The server's fact check (server/factcheck.js). Answers saved before it existed have none, and show nothing.
 // After the person edits a text, the same code checks it again here in the browser (see recheck below).
-function factCheckHtml(check, edited) {
+function factCheckHtml(check, edited, fixed) {
   if (edited && !check) return `<p class="fc fc-warn" role="status">${esc(t("fc.unchecked"))}</p>`;
   if (!check || !Array.isArray(check.issues)) return "";
-  const again = edited ? ` ${esc(t("fc.again"))}` : "";
+  // The server's correction pass (server/pipeline.js) took things out before the person saw the text; say so
+  const again = edited ? ` ${esc(t("fc.again"))}` : fixed ? ` ${esc(t(fixed === 1 ? "fc.fixed1" : "fc.fixed", { n: fixed }))}` : "";
   if (!check.issues.length) return `<p class="fc fc-ok" role="status">${esc(t("fc.ok"))}${again}</p>`;
   return `<section class="fc fc-warn" role="alert"><p><b>${esc(check.issues.length === 1 ? t("fc.warn1") : t("fc.warn", { n: check.issues.length }))}</b>${again}</p>
     <ul>${check.issues.map(i => `<li><span class="fc-kind">${esc(t("fc.k." + i.kind))}</span>${esc(i.text)}</li>`).join("")}</ul>
@@ -467,7 +470,8 @@ function recheck(text) {
   if (localCheck === undefined) localCheck = compiled(FACTCHECK_SRC, m => m.factCheck);
   if (!localCheck || !tl) return null;
   try {
-    const e = tlEntry(tl.id), r = localCheck(text, { cv: store.get("jf-cv", ""), ad: e.ad ?? tl.adText ?? "", title: tl.title, employer: tl.employer, extra: e.extra || "", year: new Date().getFullYear() });
+    const e = tlEntry(tl.id), o = e.out[tl.task];
+    const r = localCheck(text, { cv: store.get("jf-cv", ""), ad: e.ad ?? tl.adText ?? "", title: tl.title, employer: tl.employer, extra: e.extra || "", year: new Date().getFullYear(), task: tl.task, lang: o?.lang || e.lang || lang });
     return { ok: r.ok, issues: r.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) };
   } catch (err) { console.warn("The fact check failed", err); return null; }
 }
@@ -483,7 +487,7 @@ function saveEdit() {
   const o = tlEntry(tl.id).out[tl.task], text = (tl.editDraft ?? "").replace(/\s+$/, "");
   tl.editing = false; tl.editDraft = null;
   if (!o || !text.trim() || text === o.text) return;
-  o.text = text; o.edited = new Date().toISOString(); delete o.cut;
+  o.text = text; o.edited = new Date().toISOString(); delete o.cut; delete o.fixed;
   const check = recheck(text), style = restyle(text);
   if (check) o.check = check; else delete o.check;
   if (style) o.style = style; else delete o.style;
@@ -539,7 +543,7 @@ function tailorHtml() {
         ${tl.error ? `<p class="tl-err" role="alert">${tl.error}</p>` : ""}
         ${out ? `${aiNoteHtml(task === "match" ? "ai.match" : task === "interview" ? "ai.interview" : "ai.write", t("tl.t." + task))}
           ${out.cut ? `<p class="tl-err" role="alert">${esc(t("tl.cut"))}</p>` : ""}
-          ${factCheckHtml(out.check, out.edited)}
+          ${factCheckHtml(out.check, out.edited, out.fixed)}
           ${styleHtml(out.style)}
           ${tl.editing ? `<div class="tl-edit"><label class="tl-label" for="tl-edit">${esc(t("tl.edit.label"))}</label>
             <textarea id="tl-edit" data-tl="edit-text" rows="22" lang="${out.lang === "en" ? "en" : "sv"}">${esc(tl.editDraft ?? out.text)}</textarea>
@@ -606,7 +610,7 @@ async function generate() {
       body: JSON.stringify({ code, task, lang: outLang, cv, extra, job: { title: tl.title, employer: tl.employer, text: ad } }) });
     const j = await r.json().catch(() => ({}));
     if (r.ok && j.text) {
-      e.out[task] = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.cut ? { cut: true } : {}), ...(cleanStyle(j.style) ? { style: cleanStyle(j.style) } : {}), ...(j.check && Array.isArray(j.check.issues) ? { check: { ok: !!j.check.ok, issues: j.check.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) } } : {}) };
+      e.out[task] = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.cut ? { cut: true } : {}), ...(+j.fixed > 0 ? { fixed: Math.min(99, +j.fixed) } : {}), ...(cleanStyle(j.style) ? { style: cleanStyle(j.style) } : {}), ...(j.check && Array.isArray(j.check.issues) ? { check: { ok: !!j.check.ok, issues: j.check.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) } } : {}) };
       e.lastTask = task; e.lang = outLang;
       saveTailor();
       if (!apps[id]?.status) setStatus(id, "Saved");
@@ -633,7 +637,7 @@ function onTailorClick(e) {
     const o = tlEntry(tl.id).out[tl.task]; if (!o) return;
     const name = cvName(tlEntry(tl.id).out.cv?.text || "");
     const title = tl.task === "cv" ? `CV – ${name || tl.title}` : `${o.lang === "en" ? "Cover letter" : "Personligt brev"} – ${tl.employer || tl.title}`;
-    const pdf = pdfBlob(o.text, { title, author: name, lang: o.lang });
+    const pdf = pdfBlob(o.text, { title, author: name, lang: o.lang, letter: tl.task === "letter" });
     download(pdf.blob, docName(o, "pdf"));
     if (pdf.lost !== tl.pdfLost) { tl.pdfLost = pdf.lost; drawTailor('[data-tl="pdf"]'); }
   }

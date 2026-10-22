@@ -36,7 +36,8 @@ const FILL = new Set(["the", "a", "an", "of", "and", "och", "en", "ett", "&", "i
 const tokens = s => fold(s).replace(/[^a-z0-9+#&]+/g, " ").trim().split(/\s+/).filter(Boolean);
 const core = s => tokens(s).filter(t => !LEGAL.has(t) && !FILL.has(t));
 // Same word, allowing Swedish and English endings: kvalitetsingenjör / kvalitetsingenjören, engineer / engineers
-const sameWord = (a, b) => a === b || (Math.min(a.length, b.length) >= 5 && (a.startsWith(b) || b.startsWith(a)) && Math.abs(a.length - b.length) <= 3);
+const sameWord = (a, b) => a === b || (Math.min(a.length, b.length) >= 5 && (a.startsWith(b) || b.startsWith(a)) && Math.abs(a.length - b.length) <= 3)
+  || (Math.min(a.length, b.length) >= 3 && (a === b + "s" || b === a + "s"));   // a genitive: "Mälarstrand Vårds" is Mälarstrand Vård
 
 // Is every word of the phrase in the source, next to each other and in order?
 function inSource(phrase, src) {
@@ -180,13 +181,179 @@ function roleSegments(raw) {
   return [...new Set(segs)].filter(s => s.split(/\s+/).length <= 14);
 }
 
+/* ---------- Claims borrowed from the ad (tailored CV and cover letter only) ----------
+   The model's most common slip is to take what the ad asks for and write it into the person's CV: a standard, a tool,
+   a patient group, a steering group, a figure. The employer, title and date checks above can't see that, so this looks
+   at it directly. A word the ad uses that the CV doesn't, showing up in the CV or letter as the person's own, is listed.
+   So is a figure (a number or a number word) that the CV doesn't have. Like the rest, it only reports.
+
+   Named things (ISO, PPAP, Snowflake, Kafka, PCI DSS) are checked in any language. Ordinary words (kroniska,
+   kodgranskning, production) are only checked when the answer is in the same language as the CV, since a translated CV
+   uses words the original can't have. In a letter, only the person's own sentences are read ("I led", "jag har"),
+   not the ones about the job ("your programme", "tjänsten"). */
+
+// Words that say nothing on their own: function words, and the words every ad and CV use
+const COMMON = new Set(`och att som det den detta denna dessa har hade ska kan kunna vill med mot utan till från efter innan under över genom inom hos vid för fram eller
+samt även också inte mycket mer mest många flera andra annat annan alla allt varje vara varit blir blev bli finns fanns gärna minst cirka både bara sedan redan
+vår vårt våra ert era din ditt dina ditt sin sitt sina deras dess hans hennes vilka vilken vilket vars där här hur när vad varför
+the and for with that this these those from into onto over under within without about after before during between through while
+have has had will would should could must can may our your their its his her they them you we who which what where when how why
+also very more most many much other others such each every any some all both only just than then there here been being are was were
+erfarenhet erfarenheter erfaren erfarna experience experienced arbete arbeta arbetar arbetat arbetade work works worked working
+jobb jobbet jobba tjänst tjänsten tjänster roll rollen role position positions company companies företag företaget bolag bolaget
+team teamet teams kollegor kollega colleagues colleague kunder kund kunden customers customer clients client
+ansvar ansvara ansvarar ansvarade ansvarig responsible responsibility responsibilities uppgifter tasks
+kunskap kunskaper kunnig knowledge skills skill förmåga ability kompetens kompetenser competence
+söker söka sökande looking seeking apply ansökan application ansök
+krav kräver requirements required require meriterande merit plus advantage önskvärt preferred
+god goda gott bra stark starka strong good great excellent mycket utmärkt
+person personer people individ dig själv yourself someone
+utveckla utvecklar utveckling develop development utvecklas
+år åren year years månad månader month months vecka veckor week weeks dag dagar day days
+heltid deltid fulltime full-time parttime part-time tillsvidare permanent anställning employment start tillträde
+ny nya nytt new egen eget egna own hel hela whole entire
+stor stora stort large small liten små big
+vi oss man en ett ni du jag mig min mitt mina i på av om
+januari februari mars april maj juni juli augusti september oktober november december january february march may june july august october
+måndag tisdag onsdag torsdag fredag monday tuesday wednesday thursday friday
+leda leder ledde lett driva driver drev drivit bygga bygger byggde skapa skapar skapade planera planerar planerade stödja stötta hjälpa hjälper
+använda använder använde hantera hanterar hanterade samarbeta samarbetar genomföra genomför genomförde göra gör gjorde ta tar tog
+lead leads leading led manage manages managing managed build builds building built create creates creating created use uses using used
+make makes making made help helps helping helped support supports supporting supported handle handles handling handled deliver delivers delivering delivered
+plan plans planning planned run runs running ran take takes taking took get gets getting got bring brings bringing brought join joins joining joined`.split(/\s+/).map(w => fold(w)));
+const ACRONYM = /^[A-ZÅÄÖ0-9][A-ZÅÄÖ0-9&+#./-]*[A-ZÅÄÖ0-9+#]$/;
+const guessLangOf = text => {
+  const f = " " + fold(text).replace(/[^a-z ]+/g, " ") + " ";
+  const sv = (f.match(/ (och|att|som|for|med|ar|har|pa|till|av|det) /g) || []).length, en = (f.match(/ (and|the|to|with|for|is|are|of|in|on) /g) || []).length;
+  return en > sv * 1.3 ? "en" : "sv";
+};
+const stemOf = w => w.length >= 7 ? w.slice(0, Math.max(5, w.length - 3)) : w;
+// English endings and irregular past forms, so "leading" is "leads" and "built" is "building"
+const IRREGULAR = { built: "build", led: "lead", ran: "run", made: "make", wrote: "write", taught: "teach", brought: "bring", held: "hold", sold: "sell",
+  bought: "buy", began: "begin", grew: "grow", drove: "drive", spoke: "speak", chose: "choose", gave: "give", took: "take", kept: "keep", met: "meet", sent: "send", spent: "spend" };
+const enStem = w => { w = IRREGULAR[w] || w; for (const end of ["ments", "ment", "ings", "ing", "ers", "er", "ed", "es", "s"]) if (w.endsWith(end) && w.length - end.length >= 4) return w.slice(0, -end.length); return w; };
+// The words of a text, each with whether it is a named thing (an acronym, a word with digits, or a capitalised word
+// in the middle of a sentence)
+function wordsOf(text) {
+  const out = [];
+  for (const line of String(text || "").split(/\r?\n/)) {
+    let first = true;
+    for (const m of line.matchAll(/[\p{L}\d][\p{L}\d+#&]*(?:[./-][\p{L}\d+#&]+)*/gu)) {
+      const raw = m[0], w = fold(raw).replace(/[^a-z0-9+#&./-]/g, "");
+      const before = line.slice(0, m.index).trim();
+      const sentenceStart = first || /[.!?:•]$/.test(before) || /^[-*#\d.)\s]*$/.test(before);
+      first = false;
+      if (!w) continue;
+      const named = (raw.length >= 2 && ACRONYM.test(raw) && /[A-ZÅÄÖ]/.test(raw)) || (/\d/.test(raw) && /\p{L}/u.test(raw)) || (/^\p{Lu}/u.test(raw) && !sentenceStart) || /\p{Ll}\p{Lu}/u.test(raw);
+      out.push({ raw, w, named });
+    }
+  }
+  return out;
+}
+// Is the word backed by the source text? Exact, a Swedish or English ending, or the stem inside a compound.
+function backed(w, srcWords, srcText) {
+  if (srcWords.has(w)) return true;
+  const st = enStem(w);
+  for (const s of srcWords) if (sameWord(s, w) || (st.length >= 4 && enStem(s) === st)) return true;
+  if (w.length >= 7 && srcText.includes(stemOf(w))) return true;
+  // A Swedish compound made of parts the CV has: "specialistutbildning" from "specialist..." and "utbildning"
+  if (w.length >= 10) for (let i = 5; i <= w.length - 4; i++) {
+    const head = w.slice(0, i), tail = w.slice(i).replace(/^s(?=[a-z]{4})/, "");
+    if (srcText.includes(head) && (srcText.includes(tail) || COMMON.has(tail))) return true;
+  }
+  return false;
+}
+
+const NUMBER_WORDS = { tva: 2, tre: 3, fyra: 4, fem: 5, sex: 6, sju: 7, atta: 8, nio: 9, tio: 10, elva: 11, tolv: 12, femton: 15, tjugo: 20, trettio: 30,
+  two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, fifteen: 15, twenty: 20, thirty: 30 };
+// The figures in a text: standalone numbers (not years, not parts of 8D or Office 365-style names) and number words.
+// A figure followed by "år" or "years" is a count of years, which must match a count of years in the CV: "under fem år"
+// is not backed by "5 varför".
+const YEARS_AFTER = /^\s*(?:hela\s+|full\s+)?(?:ar|ars|aren|year|years)(?![a-z])/;
+function figures(text) {
+  const out = [], f = fold(text);
+  for (const m of String(text || "").matchAll(/(?<![\p{L}\d.,-])(\d{1,3}(?:[ \u00a0]\d{3})+|\d+(?:[.,]\d+)?)(?![\p{L}\d]|[.,]\d)/gu)) {
+    const raw = m[1], n = Number(raw.replace(/[ \u00a0]/g, "").replace(",", "."));
+    if (/^(19|20)\d\d$/.test(raw)) continue;   // years are the date check's job
+    out.push({ raw, n, years: YEARS_AFTER.test(f.slice(m.index + m[0].length, m.index + m[0].length + 14)) });
+  }
+  for (const m of f.matchAll(/(?<![a-z])(tva|tre|fyra|fem|sex|sju|atta|nio|tio|elva|tolv|femton|tjugo|trettio|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty)(?![a-z])/g))
+    out.push({ raw: m[1], n: NUMBER_WORDS[m[1]], years: YEARS_AFTER.test(f.slice(m.index + m[0].length, m.index + m[0].length + 14)) });
+  return out;
+}
+// In a letter, the person's own sentences: first person, and not about the employer or the job
+const MINE = /(?<![\p{L}])(jag|mig|min|mitt|mina|i|i'm|i've|i'd|my|me)(?![\p{L}])/iu;
+const THEIRS = /(?<![\p{L}])(ni|er|ert|era|du|dig|din|ditt|dina|rollen|tjänsten|jobbet|you|your|yours|the role|this role|the position|the job)(?![\p{L}])/iu;
+// A wish or a plan for the new job is not a claim about what the person has done
+const WISH = /(?<![\p{L}])(vill|ville|skulle|hoppas|gärna|ser fram emot|längtar|would|want|wants|hope|hoping|look forward|looking forward|keen|eager|glad to|like to|love to)(?![\p{L}])/iu;
+
+function claimCheck(output, { cv = "", ad = "", title = "", employer = "", extra = "", task = "", lang = "" } = {}) {
+  if (task !== "cv" && task !== "letter") return [];
+  // The employer may be named, and so may anything the person wrote in their wishes. The ad's job title may not be
+  // used for the person: calling a visualiser a "technical artist" because the ad says so is a claim too.
+  const own = [cv, extra, employer].join("\n"), cvText = fold(own), cvWords = new Set(tokens(own));
+  const sameLang = guessLangOf(cv) === (lang || guessLangOf(output));
+  // Words the ad uses and the CV doesn't
+  const adOnly = new Map();
+  const adText = String(ad || "").split(/\r?\n/).filter(l => !(/\p{L}{3}/u.test(l) && l === l.toUpperCase())).join("\n");   // all-caps headings are not terms
+  for (const { raw, w, named } of wordsOf(adText)) {
+    if (COMMON.has(w) || (!named && w.length < 5) || /^\d+$/.test(w)) continue;
+    if (!named && !sameLang) continue;
+    if (backed(w, cvWords, cvText)) continue;
+    if (!adOnly.has(w)) adOnly.set(w, { raw, named, acronym: raw.length >= 2 && raw === raw.toUpperCase() && /\p{Lu}/u.test(raw) });
+  }
+  const cvF = figures(cv), cvFigures = new Set(cvF.map(f => f.n)), cvYears = new Set(cvF.filter(f => f.years).map(f => f.n)), adFigures = new Set(figures(ad).map(f => f.n));
+  const issues = [], seen = new Set();
+  const lines = String(output || "").split(/\r?\n/);
+  let nameSeen = false;
+  for (const raw of lines) {
+    if (!raw.trim()) continue;
+    if (/^\s*#\s/.test(raw)) { nameSeen = true; continue; }
+    // The contact line under the name has phone numbers and addresses, not claims
+    if (nameSeen && /@|\d{3}[ -]?\d{2,3}[ -]?\d{2}|linkedin|github|·/i.test(raw) && !/^\s*[-*#]/.test(raw)) { nameSeen = false; continue; }
+    nameSeen = false;
+    const empTok = core(employer);
+    const aboutThem = s => THEIRS.test(s) || WISH.test(s) || (empTok.length && inSource(employer, core(s)));
+    // In a letter: the person's own sentences, and in them the parts that aren't about the employer or the job
+    const sentences = task === "letter" ? raw.split(/(?<=[.!?])\s+/).filter(s => MINE.test(s)).flatMap(s => s.split(/\s*[,;:]\s*/)).filter(s => s && !aboutThem(s)) : [raw];
+    for (const s of sentences) {
+      const ws = wordsOf(s);
+      let run = null;
+      const flush = () => {
+        if (!run) return;
+        const key = "claim:" + run.keys.join(" ");
+        if (!run.keys.every(k => seen.has("claim:" + k)) && !seen.has(key)) { seen.add(key); run.keys.forEach(k => seen.add("claim:" + k)); issues.push({ kind: "claim", text: run.words.join(" "), line: raw.trim().slice(0, 200) }); }
+        run = null;
+      };
+      ws.forEach(({ raw: word, w }, i) => {
+        let term = null;
+        for (const [t, info] of adOnly) {
+          const hit = info.acronym ? word === info.raw : (w === t || sameWord(w, t) || (t.length >= 5 && w.length > t.length && w.startsWith(stemOf(t))));
+          if (hit && !backed(w, cvWords, cvText)) { term = { t, shown: info.named ? info.raw : word }; break; }
+        }
+        if (!term) { if (!COMMON.has(w) || (run && run.gap)) flush(); else if (run) run.gap = true; return; }
+        if (run && run.gap) flush();
+        run = run || { keys: [], words: [] };
+        run.keys.push(term.t); run.words.push(term.shown); run.gap = false;
+      });
+      flush();
+      for (const f of figures(s.replace(/^\s*(?:#{1,6}\s*)?\d+[.)]\s+/, ""))) {   // "## 1." and "2)" are numbering, not figures
+        if (f.years ? cvYears.has(f.n) : (cvFigures.has(f.n) || (task === "letter" && adFigures.has(f.n)))) continue;
+        const key = "figure:" + f.n;
+        if (!seen.has(key)) { seen.add(key); issues.push({ kind: "figure", text: f.raw, line: raw.trim().slice(0, 200) }); }
+      }
+    }
+  }
+  return issues;
+}
+
 /**
  * Check an AI answer against the CV.
  * @param {string} output   the AI's text (Markdown)
- * @param {object} src      { cv, ad, title, employer, extra, year }
- * @returns {{ ok: boolean, issues: { kind: "employer"|"title"|"school"|"degree"|"date"|"dates", text: string, line: string }[] }}
+ * @param {object} src      { cv, ad, title, employer, extra, year, task, lang }; task "cv" or "letter" adds the claims check
+ * @returns {{ ok: boolean, issues: { kind: "employer"|"title"|"school"|"degree"|"date"|"dates"|"claim"|"figure", text: string, line: string }[] }}
  */
-function factCheck(output, { cv = "", ad = "", title = "", employer = "", extra = "", year = new Date().getFullYear() } = {}) {
+function factCheck(output, { cv = "", ad = "", title = "", employer = "", extra = "", year = new Date().getFullYear(), task = "", lang = "" } = {}) {
   const cvTok = core(cv), allTok = core([cv, ad, title, employer, extra].join("\n"));
   const jobTok = core([title, employer].join("\n"));
   const okYears = new Set([...years([cv, ad, title, extra].join("\n")), String(year), String(year + 1)]);
@@ -252,7 +419,10 @@ function factCheck(output, { cv = "", ad = "", title = "", employer = "", extra 
       if (!words.length || (words.length === 1 && NOT_EMPLOYER.has(words[0])) || words.every(w => /^\d+$/.test(w))) continue;
       if (isTitle(name)) continue;                          // "for Quality Engineer" is a title, checked below
       const worked = prep.includes(" ");
-      if (worked ? !inSource(name, cvTok) : !inSource(name, allTok)) flag("employer", name, raw);
+      // "Substance and Blender" may be two names the source has separately
+      const parts = name.split(/\s+(?:och|and|&)\s+/i);
+      const known = n => (worked ? inSource(n, cvTok) : inSource(n, allTok));
+      if (!known(name) && !(parts.length > 1 && parts.every(known))) flag("employer", name, raw);
     }
 
     // Titles after "worked as", "years as", "arbetat som" …
@@ -263,9 +433,13 @@ function factCheck(output, { cv = "", ad = "", title = "", employer = "", extra 
       if (t && isTitle(t) && !titleInSource(t, cvTok)) flag("title", t, raw);
     }
   }
-  const order = ["employer", "title", "school", "degree", "dates", "date"];
+  for (const i of claimCheck(output, { cv, ad, title, employer, extra, task, lang })) {
+    const key = i.kind + ":" + core(i.text).join(" ");
+    if (!seen.has(key)) { seen.add(key); issues.push(i); }
+  }
+  const order = ["employer", "title", "school", "degree", "dates", "date", "claim", "figure"];
   issues.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));   // stable, so lines keep their order within a kind
   return { ok: issues.length === 0, issues };
 }
 
-module.exports = { factCheck, _test: { inSource, titleInSource, tokens, isTitle, isNameLike, isGeneric, degreeLevels } };
+module.exports = { factCheck, _test: { inSource, titleInSource, tokens, isTitle, isNameLike, isGeneric, degreeLevels, claimCheck, figures } };
