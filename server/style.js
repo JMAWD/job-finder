@@ -124,7 +124,7 @@ function tidyCv(md) {
   for (const line of lines) {
     const h = line.match(/^\s*(#{1,6})\s+(.*)/);
     if (h) {
-      if (h[1].length === 1) afterName = true;
+      afterName = h[1].length === 1;   // the contact line is the line right under the name, never under a later heading
       if (h[1].length <= 2) { section = h[2]; inJob = false; }
       else inJob = !NOT_JOBS.test(section);
       // Every range on a heading written the same way, so the years line up in the PDF: "2016 - 2018", "2018 - nu"
@@ -139,7 +139,8 @@ function tidyCv(md) {
     const item = line.match(/^\s*(?:[-*•]|\d+[.)])\s+(.*)/);
     const text = (item ? item[1] : line).trim();
     const parts = text.length > 140 ? sentencesOf(text) : [text];
-    for (const part of parts) out.push("- " + part);
+    // One sentence, no full stop, so every bullet ends the same way; a bullet of several sentences keeps its stops
+    for (const part of parts) out.push("- " + (sentencesOf(part).length > 1 || ABBREV.test(part) ? part : part.replace(/\.$/, "")));
   }
   // No blank lines between the bullets of one job
   return out.filter((l, i) => !(l.trim() === "" && /^- /.test(out[i - 1] || "") && /^- /.test(out[i + 1] || ""))).join("\n");

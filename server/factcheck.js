@@ -417,7 +417,10 @@ function factCheck(output, { cv = "", ad = "", title = "", employer = "", extra 
       if (!words.length || (words.length === 1 && NOT_EMPLOYER.has(words[0])) || words.every(w => /^\d+$/.test(w))) continue;
       if (isTitle(name)) continue;                          // "for Quality Engineer" is a title, checked below
       const worked = prep.includes(" ");
-      if (worked ? !inSource(name, cvTok) : !inSource(name, allTok)) flag("employer", name, raw);
+      // "Substance and Blender" may be two names the source has separately
+      const parts = name.split(/\s+(?:och|and|&)\s+/i);
+      const known = n => (worked ? inSource(n, cvTok) : inSource(n, allTok));
+      if (!known(name) && !(parts.length > 1 && parts.every(known))) flag("employer", name, raw);
     }
 
     // Titles after "worked as", "years as", "arbetat som" …

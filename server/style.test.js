@@ -94,7 +94,9 @@ test("the tailored CV is tidied into one form: bullets, contact line, ranges", (
   const md = "# Priya Natarajan\nMalmö ·\n\n## Profile\nData analyst.\n\n## Key skills\n- SQL\n\n## Experience\n### Data Analyst, Sundvall Retail (2022-2024)\nBuilt the weekly sales dashboard that 120 store managers use, and kept it running through two system changes. Developed a forecasting model in Python, e.g. for seasonal stock, with pandas and Prophet. Automated the monthly reports.\n\n- Already a bullet\n\n### Business Analyst, Österlind Medical (2019 - 2022)\n2) Numbered line\n\n## Education\n### MSc Statistics, Lund University (2017-2019)\nThesis on forecasting\n\n## Languages\nEnglish, Swedish";
   const out = tidyCv(md);
   assert.match(out, /^# Priya Natarajan\nMalmö\n/);
-  assert.match(out, /### Data Analyst, Sundvall Retail \(2022 - 2024\)\n- Built the weekly sales dashboard that 120 store managers use, and kept it running through two system changes\.\n- Developed a forecasting model in Python, e\.g\. for seasonal stock, with pandas and Prophet\.\n- Automated the monthly reports\.\n- Already a bullet\n/);
+  assert.match(out, /### Data Analyst, Sundvall Retail \(2022 - 2024\)\n- Built the weekly sales dashboard that 120 store managers use, and kept it running through two system changes\n- Developed a forecasting model in Python, e\.g\. for seasonal stock, with pandas and Prophet\n- Automated the monthly reports\n- Already a bullet\n/);
+  // With no contact line, the first line under the next heading is left alone
+  assert.match(tidyCv("# A\n## Erfarenhet\n### X, Y (2010 - 2014)\n- Service ute hos kunder.\n- Körde maskiner. Gjorde mätning."), /\n- Service ute hos kunder\n- Körde maskiner\. Gjorde mätning\.$/);
   assert.match(out, /### Business Analyst, Österlind Medical \(2019 - 2022\)\n- Numbered line/);
   assert.match(out, /### MSc Statistics, Lund University \(2017 - 2019\)\nThesis on forecasting/);   // education is left as written
   assert.match(out, /## Languages\nEnglish, Swedish/);
