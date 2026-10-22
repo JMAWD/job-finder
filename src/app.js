@@ -127,6 +127,12 @@ const I18N = {
   "fc.k.employer": ["Employer", "Arbetsgivare"], "fc.k.title": ["Job title", "Titel"], "fc.k.date": ["Date", "Datum"], "fc.k.dates": ["Dates for a role", "Datum för en tjänst"],
   "fc.k.school": ["School", "Skola"], "fc.k.degree": ["Degree", "Examen"],
   "fc.again": ["Checked again after your edits.", "Kontrollerad igen efter dina ändringar."],
+  "st.title": ["Style check: what still makes this sound machine written", "Stilkoll: det som fortfarande får texten att låta maskinskriven"],
+  "st.even": ["Every job is about the same length. A real CV is lopsided: give the job closest to this one more detail and cut older ones down to a line. Use Edit text, or generate again.",
+    "Alla tjänster är ungefär lika långa. Ett riktigt CV är ojämnt: ge tjänsten som ligger närmast det här jobbet mer detaljer och korta äldre till en rad. Använd Redigera text eller skapa igen."],
+  "st.words": ["Buzzwords that aren't in your CV or the ad: {words}. Say what you actually did instead.", "Modeord som inte står i ditt CV eller i annonsen: {words}. Skriv hellre vad du faktiskt gjorde."],
+  "st.dash1": ["A dash is used as punctuation. A comma or a full stop reads more like you.", "Ett tankstreck används som skiljetecken. Ett kommatecken eller en punkt låter mer som du."],
+  "st.dashes": ["{n} dashes are used as punctuation. A comma or a full stop reads more like you.", "{n} tankstreck används som skiljetecken. Ett kommatecken eller en punkt låter mer som du."],
   "fc.unchecked": ["Your edits couldn't be checked in this browser. Read the employers, job titles and dates through yourself before you send it.", "Dina ändringar kunde inte kontrolleras i den här webbläsaren. Läs igenom arbetsgivare, titlar och datum själv innan du skickar."],
 
   // Mentor tab

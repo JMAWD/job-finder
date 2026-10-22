@@ -21,6 +21,7 @@ import { fileURLToPath } from "node:url";
 const require = createRequire(import.meta.url);
 const { PROMPTS, OPTIONS } = require("../prompts.js");
 const { factCheck } = require("../factcheck.js");
+const { stripDashes, styleCheck } = require("../style.js");
 const here = path.dirname(fileURLToPath(import.meta.url));
 
 // The same room to write as the server gives each task (prompts.js OPTIONS), so a whole CV isn't cut short here either
@@ -47,8 +48,12 @@ export async function runEval({ cases, tasks, langs, runs, ask, year = new Date(
         try { text = await ask(PROMPTS[task](lang, { cv: c.cv, job: c.job, extra: "" }), task); error = ""; }
         catch (e) { error = String(e.message || e); await new Promise(r => setTimeout(r, 2000 * attempt)); }
       }
+      // The same clean-up and style check the server runs on a CV or letter before anyone sees it
+      const sent = text && (task === "cv" || task === "letter");
+      if (sent) text = stripDashes(text);
       const check = text ? factCheck(text, { cv: c.cv, ad: c.job.text, title: c.job.title, employer: c.job.employer, extra: "", year }) : null;
-      results.push({ case: c.id, task, lang, run, text, error, issues: check ? check.issues : [] });
+      const style = sent ? styleCheck(text, { cv: c.cv, ad: c.job.text, task }) : null;
+      results.push({ case: c.id, task, lang, run, text, error, issues: check ? check.issues : [], ...(style ? { style } : {}) });
       log(`${results.length}/${jobs.length} ${c.id} ${task} ${lang} #${run}: ${error ? "error " + error : check.issues.length ? check.issues.length + " flagged" : "clean"}`);
     }
   };
@@ -72,6 +77,7 @@ export function summarise(results, { model = "", date = new Date().toISOString()
     `**Answers with nothing flagged: ${done.length - flagged.length} of ${done.length} (${pct(done.length - flagged.length, done.length)}).**`, "",
     "| Task | Answers | With a flag |", "|---|---|---|",
     ...Object.entries(byTask).map(([t, v]) => `| ${t} | ${v.answers} | ${v.flagged} (${pct(v.flagged, v.answers)}) |`), "",
+    `Style check: ${done.filter(r => r.task === "cv" && r.style?.even).length} of ${done.filter(r => r.task === "cv").length} tailored CVs had jobs of even length; ${done.filter(r => r.style?.words?.length).length} CVs or letters used a buzzword (${[...new Set(done.flatMap(r => r.style?.words || []))].join(", ") || "none"}).`, "",
     "| Kind | Flags |", "|---|---|",
     ...(Object.keys(byKind).length ? Object.entries(byKind).map(([k, n]) => `| ${k} | ${n} |`) : ["| none | 0 |"]), "",
     "## Everything that was flagged", "",

@@ -441,18 +441,41 @@ function factCheckHtml(check, edited) {
     <ul>${check.issues.map(i => `<li><span class="fc-kind">${esc(t("fc.k." + i.kind))}</span>${esc(i.text)}</li>`).join("")}</ul>
     <p class="tl-hint">${esc(t("fc.how"))}</p></section>`;
 }
-// server/factcheck.js, built into the page by build.py and compiled on first use. A browser too old for its patterns
-// goes without, and the panel says the edits weren't checked.
+// The style check (server/style.js): what still makes a CV or letter sound machine written after the server has taken
+// the dashes out. Jobs of even length, buzzwords the CV and ad don't use, and dashes the person typed in themselves.
+function styleHtml(st) {
+  if (!st) return "";
+  const notes = [];
+  if (st.even) notes.push(t("st.even"));
+  if (st.words?.length) notes.push(t("st.words", { words: st.words.join(", ") }));
+  if (st.dashes) notes.push(t(st.dashes === 1 ? "st.dash1" : "st.dashes", { n: st.dashes }));
+  if (!notes.length) return "";
+  return `<section class="fc fc-style" role="status"><p><b>${esc(t("st.title"))}</b></p><ul>${notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul></section>`;
+}
+const cleanStyle = st => st && typeof st === "object" ? { even: !!st.even, words: (Array.isArray(st.words) ? st.words : []).slice(0, 10).map(w => String(w).slice(0, 40)), dashes: +st.dashes || 0 } : null;
+
+// server/factcheck.js and server/style.js, built into the page by build.py and compiled on first use. A browser too old
+// for their patterns goes without, and the panel says the edits weren't checked.
 const FACTCHECK_SRC = /*__FACTCHECK__*/;
-let localCheck;
+const STYLE_SRC = /*__STYLE__*/;
+let localCheck, localStyle;
+function compiled(src, pick) {
+  try { const module = { exports: {} }; new Function("module", "require", src)(module, () => TITLES); return pick(module.exports) || null; }
+  catch (err) { console.warn("A check can't run in this browser", err); return null; }
+}
 function recheck(text) {
-  if (localCheck === undefined) {
-    try { const module = { exports: {} }; new Function("module", "require", FACTCHECK_SRC)(module, () => TITLES); localCheck = module.exports.factCheck || null; }
-    catch (err) { console.warn("The fact check can't run in this browser", err); localCheck = null; }
-  }
+  if (localCheck === undefined) localCheck = compiled(FACTCHECK_SRC, m => m.factCheck);
   if (!localCheck || !tl) return null;
-  const e = tlEntry(tl.id), r = localCheck(text, { cv: store.get("jf-cv", ""), ad: e.ad ?? tl.adText ?? "", title: tl.title, employer: tl.employer, extra: e.extra || "", year: new Date().getFullYear() });
-  return { ok: r.ok, issues: r.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) };
+  try {
+    const e = tlEntry(tl.id), r = localCheck(text, { cv: store.get("jf-cv", ""), ad: e.ad ?? tl.adText ?? "", title: tl.title, employer: tl.employer, extra: e.extra || "", year: new Date().getFullYear() });
+    return { ok: r.ok, issues: r.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) };
+  } catch (err) { console.warn("The fact check failed", err); return null; }
+}
+function restyle(text) {
+  if (localStyle === undefined) localStyle = compiled(STYLE_SRC, m => m.styleCheck);
+  if (!localStyle || !tl || !DOC_TASKS.has(tl.task)) return null;
+  try { const e = tlEntry(tl.id); return cleanStyle(localStyle(text, { cv: store.get("jf-cv", ""), ad: e.ad ?? tl.adText ?? "", task: tl.task })); }
+  catch (err) { console.warn("The style check failed", err); return null; }
 }
 // Saves what the person typed in Edit text, and checks it again
 function saveEdit() {
@@ -461,8 +484,9 @@ function saveEdit() {
   tl.editing = false; tl.editDraft = null;
   if (!o || !text.trim() || text === o.text) return;
   o.text = text; o.edited = new Date().toISOString(); delete o.cut;
-  const check = recheck(text);
+  const check = recheck(text), style = restyle(text);
   if (check) o.check = check; else delete o.check;
+  if (style) o.style = style; else delete o.style;
   saveTailor();
 }
 // The file name for a download: "cv-eva-lind-acme-robotics.pdf", or the task, employer and job when there's no name
@@ -516,6 +540,7 @@ function tailorHtml() {
         ${out ? `${aiNoteHtml(task === "match" ? "ai.match" : task === "interview" ? "ai.interview" : "ai.write", t("tl.t." + task))}
           ${out.cut ? `<p class="tl-err" role="alert">${esc(t("tl.cut"))}</p>` : ""}
           ${factCheckHtml(out.check, out.edited)}
+          ${styleHtml(out.style)}
           ${tl.editing ? `<div class="tl-edit"><label class="tl-label" for="tl-edit">${esc(t("tl.edit.label"))}</label>
             <textarea id="tl-edit" data-tl="edit-text" rows="22" lang="${out.lang === "en" ? "en" : "sv"}">${esc(tl.editDraft ?? out.text)}</textarea>
             <p class="tl-hint">${esc(t("tl.edit.hint"))}</p>
@@ -581,7 +606,7 @@ async function generate() {
       body: JSON.stringify({ code, task, lang: outLang, cv, extra, job: { title: tl.title, employer: tl.employer, text: ad } }) });
     const j = await r.json().catch(() => ({}));
     if (r.ok && j.text) {
-      e.out[task] = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.cut ? { cut: true } : {}), ...(j.check && Array.isArray(j.check.issues) ? { check: { ok: !!j.check.ok, issues: j.check.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) } } : {}) };
+      e.out[task] = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.cut ? { cut: true } : {}), ...(cleanStyle(j.style) ? { style: cleanStyle(j.style) } : {}), ...(j.check && Array.isArray(j.check.issues) ? { check: { ok: !!j.check.ok, issues: j.check.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) } } : {}) };
       e.lastTask = task; e.lang = outLang;
       saveTailor();
       if (!apps[id]?.status) setStatus(id, "Saved");
