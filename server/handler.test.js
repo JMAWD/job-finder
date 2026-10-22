@@ -270,6 +270,12 @@ test("a CV or letter that borrows from the ad gets one correction call, and the 
   aiReplies = [say("## Erfarenhet\n### Kvalitetsingenjör, Nordvik Automotive (2018 - nu)\n- Arbetade med ISO 9001"), say("## Erfarenhet\n- Arbetade med kvalitet")];
   const w = json(await call(ok({ task: "cv", cv, job: { title: "Kvalitetsingenjör", employer: "Acme", text: ad } })));
   assert.match(w.text, /### Kvalitetsingenjör, Nordvik/); assert.equal(w.fixed, undefined); assert.ok(w.check.issues.length > 0);
+  // A correction that guts a letter is not used either
+  _test.usage.clear(); sent.length = 0;
+  const long = "# Eva Lind\nGöteborg\n\nHej!\n\n" + "Jag ledde FMEA och 8D för bromssystem på Nordvik Automotive. ".repeat(6) + "Jag har arbetat med ISO 9001 i flera år.\n\nVänliga hälsningar\nEva Lind";
+  aiReplies = [say(long), say("# Eva Lind\nGöteborg\n\nHej!\n\nJag ledde FMEA.\n\nVänliga hälsningar\nEva Lind")];
+  const g = json(await call(ok({ task: "letter", cv, job: { title: "Kvalitetsingenjör", employer: "Acme", text: ad } })));
+  assert.match(g.text, /ISO 9001/); assert.equal(g.fixed, undefined);
   // The match check, interview prep, translation and the Mentor never get a correction call
   for (const task of ["match", "interview"]) {
     _test.usage.clear(); sent.length = 0; aiReplies = [say("ISO 9001 och PPAP efterfrågas men står inte i CV:t."), say("x")];

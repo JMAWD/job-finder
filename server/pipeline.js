@@ -41,7 +41,11 @@ async function finish({ text, task, lang, cv = "", ad = "", job = {}, extra = ""
       const t2 = clean(r.text, { task, cv }), c2 = factCheck(t2, src);
       // Every job must still be there, except one whose heading was itself flagged (an invented employer or title)
       const flaggedJobs = new Set(check.issues.map(i => i.line).filter(l => /^\s*###\s/.test(l))).size;
-      if (c2.issues.length < check.issues.length && (task !== "cv" || jobHeadings(t2) >= jobHeadings(out) - flaggedJobs)) {
+      // A corrected letter keeps at least three quarters of its words: one cut down to a few lines is worse than one
+      // with a flag the person can fix
+      const words = t => String(t).split(/\s+/).filter(Boolean).length;
+      const keepsShape = task === "cv" ? jobHeadings(t2) >= jobHeadings(out) - flaggedJobs : words(t2) >= words(out) * 0.75;
+      if (c2.issues.length < check.issues.length && keepsShape) {
         fixed = check.issues.length - c2.issues.length; out = t2; check = c2;
       }
     }

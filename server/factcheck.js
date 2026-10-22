@@ -284,6 +284,8 @@ function figures(text) {
 // In a letter, the person's own sentences: first person, and not about the employer or the job
 const MINE = /(?<![\p{L}])(jag|mig|min|mitt|mina|i|i'm|i've|i'd|my|me)(?![\p{L}])/iu;
 const THEIRS = /(?<![\p{L}])(ni|er|ert|era|du|dig|din|ditt|dina|rollen|tjänsten|jobbet|you|your|yours|the role|this role|the position|the job)(?![\p{L}])/iu;
+// A wish or a plan for the new job is not a claim about what the person has done
+const WISH = /(?<![\p{L}])(vill|ville|skulle|hoppas|gärna|ser fram emot|längtar|would|want|wants|hope|hoping|look forward|looking forward|keen|eager|glad to|like to|love to)(?![\p{L}])/iu;
 
 function claimCheck(output, { cv = "", ad = "", title = "", employer = "", extra = "", task = "", lang = "" } = {}) {
   if (task !== "cv" && task !== "letter") return [];
@@ -311,7 +313,7 @@ function claimCheck(output, { cv = "", ad = "", title = "", employer = "", extra
     if (nameSeen && /@|\d{3}[ -]?\d{2,3}[ -]?\d{2}|linkedin|github|·/i.test(raw) && !/^\s*[-*#]/.test(raw)) { nameSeen = false; continue; }
     nameSeen = false;
     const empTok = core(employer);
-    const aboutThem = s => THEIRS.test(s) || (empTok.length && inSource(employer, core(s)));
+    const aboutThem = s => THEIRS.test(s) || WISH.test(s) || (empTok.length && inSource(employer, core(s)));
     // In a letter: the person's own sentences, and in them the parts that aren't about the employer or the job
     const sentences = task === "letter" ? raw.split(/(?<=[.!?])\s+/).filter(s => MINE.test(s)).flatMap(s => s.split(/\s*[,;:]\s*/)).filter(s => s && !aboutThem(s)) : [raw];
     for (const s of sentences) {

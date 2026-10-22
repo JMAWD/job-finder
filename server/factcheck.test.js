@@ -199,6 +199,12 @@ test("counted years must match the CV, the ad's title is not the person's, and l
   assert.ok(factCheck("Hej!\n\nMin bakgrund som underhållsingenjör, tillsammans med elbehörigheten, ger mig det rollen kräver.\n\nMats", letter).issues.some(i => /elbehörighet/.test(i.text)));
 });
 
+test("in a letter, a wish about the new job is not a claim", () => {
+  const src = { cv: "Maria Ekholm\nDistriktssköterska, Hemsjukvården, 2015 – 2019\n- Omvårdnad av 25 patienter i hemmet", ad: "Vårdcentralen söker en sjuksköterska för telefonrådgivning och patienter med diabetes.", employer: "Mälarstrand Vård", title: "Sjuksköterska", year: 2026, task: "letter", lang: "sv" };
+  assert.deepEqual(factCheck("Hej!\n\nJag skulle gärna arbeta med telefonrådgivning och patienter med diabetes hos er.\n\nVänliga hälsningar\nMaria", src).issues, []);
+  assert.ok(factCheck("Hej!\n\nJag har arbetat med telefonrådgivning och diabetes i många år.\n\nVänliga hälsningar\nMaria", src).issues.some(i => /telefonrådgivning/.test(i.text)));
+});
+
 test("in a letter only the person's own sentences are read, and the employer may be named", () => {
   const c = { cv: "Sara Holm\nInköpare, Sundvall Retail AB, 2020 – nu\n- Förhandlade ramavtal med åtta leverantörer\n- SAP MM", ad: "Halvarsson Home söker en inköpare som driver hållbarhetsarbetet och kan Amfori BSCI.", title: "Inköpare", employer: "Halvarsson Home", year: 2026, task: "letter", lang: "sv" };
   assert.deepEqual(factCheck("Hej!\n\nNi söker någon som driver hållbarhetsarbetet och kan Amfori BSCI. Jag har förhandlat ramavtal med åtta leverantörer på Sundvall Retail och vill gärna göra det hos Halvarsson Home.\n\nVänliga hälsningar\nSara Holm", c).issues, []);
