@@ -154,7 +154,9 @@ function splitYears(s) {
   return m && m[1].trim() ? [m[1].trim(), m[2].trim()] : [s, ""];
 }
 
-function pdfBlob(md, { title = "", author = "", lang: textLang = "sv" } = {}) {
+function pdfBlob(md, { title = "", author = "", lang: textLang = "sv", letter = false } = {}) {
+  // A letter is read as running text, so it gets a slightly larger size, more line spacing and room between paragraphs
+  const BODY = letter ? { size: 10.6, lead: 15.4, para: 9 } : { size: 10, lead: 13.6, para: 6 };
   const PW = 595.28, PH = 841.89, L = 56, R = 56, TOP = 56, BOTTOM = 62, FULL = PW - L - R;
   const C = { ink: "0.13 0.15 0.17", muted: "0.39 0.42 0.45", accent: "0.11 0.35 0.41", rule: "0.78 0.81 0.83" };
   const pages = []; let pg, y, lost = 0;
@@ -283,7 +285,7 @@ function pdfBlob(md, { title = "", author = "", lang: textLang = "sv" } = {}) {
       block(h[2], { size: first ? 21 : 15, lead: first ? 25 : 19, font: "B", before: first ? 0 : 14, keep: 30 });
       contactNext = first;
     } else if (h && h[1].length === 2) {
-      block(h[2], { size: 9.8, lead: 13, font: "B", color: C.accent, tc: 0.9, upper: true, before: Math.max(15, gap), keep: 34 });
+      block(h[2], { size: 9.8, lead: 13, font: "B", color: C.accent, tc: 0.9, upper: true, before: Math.max(15, gap), keep: 56 });   // never alone at the foot of a page
       ruleAt(y - 0.5, C.rule, 0.5); y -= 5;
     } else if (h) {
       const [left, years] = splitYears(h[2].replace(/\*\*/g, ""));
@@ -294,7 +296,7 @@ function pdfBlob(md, { title = "", author = "", lang: textLang = "sv" } = {}) {
       block(raw.trim(), { size: 9.5, lead: 13, color: C.muted, before: 2 });
       y -= 5; ruleAt(y, C.accent, 0.9); y -= 6;
     } else {
-      block(raw.trim(), { before: gap ? 6 : 2 });
+      block(raw.trim(), { size: BODY.size, lead: BODY.lead, before: gap ? BODY.para : 2 });
     }
     if (!(h && h[1].length === 1)) contactNext = false;
     gap = 0;
@@ -634,7 +636,7 @@ function onTailorClick(e) {
     const o = tlEntry(tl.id).out[tl.task]; if (!o) return;
     const name = cvName(tlEntry(tl.id).out.cv?.text || "");
     const title = tl.task === "cv" ? `CV – ${name || tl.title}` : `${o.lang === "en" ? "Cover letter" : "Personligt brev"} – ${tl.employer || tl.title}`;
-    const pdf = pdfBlob(o.text, { title, author: name, lang: o.lang });
+    const pdf = pdfBlob(o.text, { title, author: name, lang: o.lang, letter: tl.task === "letter" });
     download(pdf.blob, docName(o, "pdf"));
     if (pdf.lost !== tl.pdfLost) { tl.pdfLost = pdf.lost; drawTailor('[data-tl="pdf"]'); }
   }

@@ -93,13 +93,15 @@ Keep the CV to two pages at most by cutting older jobs down to one line, not by 
   // Job Tailor's letter rules: under 250 words and no placeholders, since the letter downloads ready to send
   letter: {
     sv: `Skriv ett personligt brev till den här tjänsten, högst 250 ord, färdigt att skicka.
+Överst, precis som i ett CV: personens namn som rubrik (# Namn) och på raden under de kontaktuppgifter som står i CV:t (ort, e-post, telefon), åtskilda med " · ". Sedan brevet.
 Inga platshållare inom hakparenteser. Står en kontaktperson i annonsen, hälsa på hen med namn. Annars börja med "Hej!". Avsluta med "Vänliga hälsningar" och personens namn som det står i CV:t.
 Börja med varför just den här rollen och arbetsgivaren, inte med "Jag heter" eller "Jag söker härmed". Koppla 2–3 konkreta erfarenheter ur CV:t till det annonsen efterfrågar, med de detaljer och siffror CV:t faktiskt ger. Nämn inte det personen saknar; påstå det bara inte. Avsluta enkelt och utan överdrifter.
-Skriv bara brevet, utan rubrik, ämnesrad eller kommentarer före eller efter.`,
+Skriv bara namnraden, kontaktraden och brevet, utan ämnesrad eller kommentarer före eller efter.`,
     en: `Write a cover letter for this role, under 250 words, ready to send.
+At the top, as on a CV: the person's name as a heading (# Name) and on the line below the contact details the CV gives (town, email, phone), separated by " · ". Then the letter.
 No placeholders in brackets. If the ad names a contact person, greet them by name. Otherwise open with "Dear Hiring Manager,". Sign off with "Kind regards," and the person's name as the CV gives it.
 Open with why this role and employer, not with "My name is" or "I am writing to apply". Link 2–3 concrete experiences from the CV to what the ad asks for, with the details and figures the CV actually gives. Don't point out what the person lacks; just don't claim it. Close simply, without exaggeration.
-Write only the letter, with no heading, subject line or comments before or after it.`,
+Write only the name line, the contact line and the letter, with no subject line or comments before or after it.`,
   },
   interview: {
     sv: `Förbered personen inför en intervju för den här tjänsten.

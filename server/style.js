@@ -51,7 +51,9 @@ function stripDashes(text) {
 const BUZZWORDS = ["leverage", "leveraged", "leveraging", "results-driven", "results-oriented", "passionate", "dynamic", "spearheaded", "spearheading",
   "synergy", "synergies", "cutting-edge", "seamless", "seamlessly", "proven track record", "go-getter", "self-starter", "detail-oriented", "delve", "tapestry",
   "game-changer", "best-in-class", "world-class", "thrive in", "drivande", "resultatinriktad", "resultatorienterad", "lösningsorienterad", "brinner för",
-  "passionerad", "dynamisk", "dynamiska", "synergi", "synergier", "spjutspets", "världsklass"];
+  "passionerad", "dynamisk", "dynamiska", "synergi", "synergier", "spjutspets", "världsklass",
+  // filler that machine-written Swedish and English lean on
+  "säkerställa", "säkerställde", "säkerställer", "perfekt match", "bidra till", "aligns with", "align with", "ensure", "ensured", "ensuring", "eager to"];
 const fold = s => String(s || "").normalize("NFC").toLowerCase();
 const hasWord = (text, w) => new RegExp(`(?<![\\p{L}\\d])${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\p{L}\\d])`, "iu").test(text);
 

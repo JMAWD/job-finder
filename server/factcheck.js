@@ -303,9 +303,9 @@ function claimCheck(output, { cv = "", ad = "", title = "", employer = "", extra
   let nameSeen = false;
   for (const raw of lines) {
     if (!raw.trim()) continue;
-    if (task === "cv" && /^\s*#\s/.test(raw)) { nameSeen = true; continue; }
+    if (/^\s*#\s/.test(raw)) { nameSeen = true; continue; }
     // The contact line under the name has phone numbers and addresses, not claims
-    if (task === "cv" && nameSeen && /@|\d{3}[ -]?\d{2,3}[ -]?\d{2}|linkedin|github|·/i.test(raw) && !/^\s*[-*#]/.test(raw)) { nameSeen = false; continue; }
+    if (nameSeen && /@|\d{3}[ -]?\d{2,3}[ -]?\d{2}|linkedin|github|·/i.test(raw) && !/^\s*[-*#]/.test(raw)) { nameSeen = false; continue; }
     nameSeen = false;
     const empTok = core(employer);
     const aboutThem = s => THEIRS.test(s) || (empTok.length && inSource(employer, core(s)));
