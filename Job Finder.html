@@ -472,10 +472,15 @@ body:has(.tailor[open]) { overflow: hidden; }
 .tl-err { margin: 0; color: var(--signal); font-weight: 600; font-size: 13.5px; }
 .tl-out { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 6px 22px 16px; box-shadow: var(--shadow); font-size: 14.5px; line-height: 1.6; max-width: 80ch; overflow-wrap: anywhere; }
 .tl-out:focus { outline: none; }
+.tl-out h3 { font-family: var(--font-display); font-size: 21px; line-height: 1.2; margin: 14px 0 2px; }
 .tl-out h4 { font-family: var(--font-display); font-size: 15.5px; margin: 16px 0 4px; }
+.tl-out h5 { font-size: 14.5px; font-weight: 700; margin: 12px 0 2px; }
 .tl-out p { margin: 8px 0; }
 .tl-out ul, .tl-out ol { margin: 6px 0; padding-left: 22px; }
 .tl-out li { margin: 3px 0; }
+.tl-edit { display: grid; gap: 8px; max-width: 80ch; }
+.tl-edit textarea { width: 100%; min-height: 360px; resize: vertical; font-family: var(--font-mono); font-size: 13px; line-height: 1.5; }
+.tl-fill { color: var(--ink); font-weight: 600; }
 .tl-privacy { border-top: 1px solid var(--line); padding-top: 12px; }
 .tl-headapply { margin-top: 10px; }
 .tl-headapply .btn { color: var(--mast-ink); border-color: var(--mast-line); }
@@ -870,7 +875,7 @@ section > .mk-tiles { margin: 0 0 14px; }
 <script>
 "use strict";
 /* ---------- Settings filled in by the build ---------- */
-const ABOUT = {"author": "John Mawdsley", "linkedin": "https://www.linkedin.com/in/john-billy-mawdsley-0000b069/", "github": "https://github.com/JMAWD", "repo": "https://github.com/JMAWD/job-finder", "version": "1.5", "tailor": "https://jobfinderaokuqyuj-tailor.functions.fnc.fr-par.scw.cloud"};   // { author, linkedin, github, repo, version, tailor }  (tailor = the tailoring server address, empty turns step 2 off)
+const ABOUT = {"author": "John Mawdsley", "linkedin": "https://www.linkedin.com/in/john-billy-mawdsley-0000b069/", "github": "https://github.com/JMAWD", "repo": "https://github.com/JMAWD/job-finder", "version": "1.6", "tailor": "https://jobfinderaokuqyuj-tailor.functions.fnc.fr-par.scw.cloud"};   // { author, linkedin, github, repo, version, tailor }  (tailor = the tailoring server address, empty turns step 2 off)
 const MUNIS = [["Ale","Västra Götaland"],["Alingsås","Västra Götaland"],["Alvesta","Kronoberg"],["Aneby","Jönköping"],["Arboga","Västmanland"],["Arjeplog","Norrbotten"],["Arvidsjaur","Norrbotten"],["Arvika","Värmland"],["Askersund","Örebro"],["Avesta","Dalarna"],["Bengtsfors","Västra Götaland"],["Berg","Jämtland"],["Bjurholm","Västerbotten"],["Bjuv","Skåne"],["Boden","Norrbotten"],["Bollebygd","Västra Götaland"],["Bollnäs","Gävleborg"],["Borgholm","Kalmar"],["Borlänge","Dalarna"],["Borås","Västra Götaland"],["Botkyrka","Stockholm"],["Boxholm","Östergötland"],["Bromölla","Skåne"],["Bräcke","Jämtland"],["Burlöv","Skåne"],["Båstad","Skåne"],["Dals-Ed","Västra Götaland"],["Danderyd","Stockholm"],["Degerfors","Örebro"],["Dorotea","Västerbotten"],["Eda","Värmland"],["Ekerö","Stockholm"],["Eksjö","Jönköping"],["Emmaboda","Kalmar"],["Enköping","Uppsala"],["Eskilstuna","Södermanland"],["Eslöv","Skåne"],["Essunga","Västra Götaland"],["Fagersta","Västmanland"],["Falkenberg","Halland"],["Falköping","Västra Götaland"],["Falun","Dalarna"],["Filipstad","Värmland"],["Finspång","Östergötland"],["Flen","Södermanland"],["Forshaga","Värmland"],["Färgelanda","Västra Götaland"],["Gagnef","Dalarna"],["Gislaved","Jönköping"],["Gnesta","Södermanland"],["Gnosjö","Jönköping"],["Göteborg","Västra Götaland"],["Gotland","Gotland"],["Grums","Värmland"],["Grästorp","Västra Götaland"],["Gullspång","Västra Götaland"],["Gällivare","Norrbotten"],["Gävle","Gävleborg"],["Götene","Västra Götaland"],["Habo","Jönköping"],["Hagfors","Värmland"],["Hallsberg","Örebro"],["Hallstahammar","Västmanland"],["Halmstad","Halland"],["Hammarö","Värmland"],["Haninge","Stockholm"],["Haparanda","Norrbotten"],["Heby","Uppsala"],["Hedemora","Dalarna"],["Helsingborg","Skåne"],["Herrljunga","Västra Götaland"],["Hjo","Västra Götaland"],["Hofors","Gävleborg"],["Huddinge","Stockholm"],["Hudiksvall","Gävleborg"],["Hultsfred","Kalmar"],["Hylte","Halland"],["Håbo","Uppsala"],["Hällefors","Örebro"],["Härjedalen","Jämtland"],["Härnösand","Västernorrland"],["Härryda","Västra Götaland"],["Hässleholm","Skåne"],["Höganäs","Skåne"],["Högsby","Kalmar"],["Hörby","Skåne"],["Höör","Skåne"],["Jokkmokk","Norrbotten"],["Järfälla","Stockholm"],["Jönköping","Jönköping"],["Kalix","Norrbotten"],["Kalmar","Kalmar"],["Karlsborg","Västra Götaland"],["Karlshamn","Blekinge"],["Karlskoga","Örebro"],["Karlskrona","Blekinge"],["Karlstad","Värmland"],["Katrineholm","Södermanland"],["Kil","Värmland"],["Kinda","Östergötland"],["Kiruna","Norrbotten"],["Klippan","Skåne"],["Knivsta","Uppsala"],["Kramfors","Västernorrland"],["Kristianstad","Skåne"],["Kristinehamn","Värmland"],["Krokom","Jämtland"],["Kumla","Örebro"],["Kungsbacka","Halland"],["Kungsör","Västmanland"],["Kungälv","Västra Götaland"],["Kävlinge","Skåne"],["Köping","Västmanland"],["Laholm","Halland"],["Landskrona","Skåne"],["Laxå","Örebro"],["Lekeberg","Örebro"],["Leksand","Dalarna"],["Lerum","Västra Götaland"],["Lessebo","Kronoberg"],["Lidingö","Stockholm"],["Lidköping","Västra Götaland"],["Lilla Edet","Västra Götaland"],["Lindesberg","Örebro"],["Linköping","Östergötland"],["Ljungby","Kronoberg"],["Ljusdal","Gävleborg"],["Ljusnarsberg","Örebro"],["Lomma","Skåne"],["Ludvika","Dalarna"],["Luleå","Norrbotten"],["Lund","Skåne"],["Lycksele","Västerbotten"],["Lysekil","Västra Götaland"],["Malmö","Skåne"],["Malung-Sälen","Dalarna"],["Malå","Västerbotten"],["Mariestad","Västra Götaland"],["Mark","Västra Götaland"],["Markaryd","Kronoberg"],["Mellerud","Västra Götaland"],["Mjölby","Östergötland"],["Mora","Dalarna"],["Motala","Östergötland"],["Mullsjö","Jönköping"],["Munkedal","Västra Götaland"],["Munkfors","Värmland"],["Mölndal","Västra Götaland"],["Mönsterås","Kalmar"],["Mörbylånga","Kalmar"],["Nacka","Stockholm"],["Nora","Örebro"],["Norberg","Västmanland"],["Nordanstig","Gävleborg"],["Nordmaling","Västerbotten"],["Norrköping","Östergötland"],["Norrtälje","Stockholm"],["Norsjö","Västerbotten"],["Nybro","Kalmar"],["Nykvarn","Stockholm"],["Nyköping","Södermanland"],["Nynäshamn","Stockholm"],["Nässjö","Jönköping"],["Ockelbo","Gävleborg"],["Olofström","Blekinge"],["Orsa","Dalarna"],["Orust","Västra Götaland"],["Osby","Skåne"],["Oskarshamn","Kalmar"],["Ovanåker","Gävleborg"],["Oxelösund","Södermanland"],["Pajala","Norrbotten"],["Partille","Västra Götaland"],["Perstorp","Skåne"],["Piteå","Norrbotten"],["Ragunda","Jämtland"],["Robertsfors","Västerbotten"],["Ronneby","Blekinge"],["Rättvik","Dalarna"],["Sala","Västmanland"],["Salem","Stockholm"],["Sandviken","Gävleborg"],["Sigtuna","Stockholm"],["Simrishamn","Skåne"],["Sjöbo","Skåne"],["Skara","Västra Götaland"],["Skellefteå","Västerbotten"],["Skinnskatteberg","Västmanland"],["Skurup","Skåne"],["Skövde","Västra Götaland"],["Smedjebacken","Dalarna"],["Sollefteå","Västernorrland"],["Sollentuna","Stockholm"],["Solna","Stockholm"],["Sorsele","Västerbotten"],["Sotenäs","Västra Götaland"],["Staffanstorp","Skåne"],["Stenungsund","Västra Götaland"],["Stockholm","Stockholm"],["Storfors","Värmland"],["Storuman","Västerbotten"],["Strängnäs","Södermanland"],["Strömstad","Västra Götaland"],["Strömsund","Jämtland"],["Sundbyberg","Stockholm"],["Sundsvall","Västernorrland"],["Sunne","Värmland"],["Surahammar","Västmanland"],["Svalöv","Skåne"],["Svedala","Skåne"],["Svenljunga","Västra Götaland"],["Säffle","Värmland"],["Säter","Dalarna"],["Sävsjö","Jönköping"],["Söderhamn","Gävleborg"],["Söderköping","Östergötland"],["Södertälje","Stockholm"],["Sölvesborg","Blekinge"],["Tanum","Västra Götaland"],["Tibro","Västra Götaland"],["Tidaholm","Västra Götaland"],["Tierp","Uppsala"],["Timrå","Västernorrland"],["Tingsryd","Kronoberg"],["Tjörn","Västra Götaland"],["Tomelilla","Skåne"],["Torsby","Värmland"],["Torsås","Kalmar"],["Tranemo","Västra Götaland"],["Tranås","Jönköping"],["Trelleborg","Skåne"],["Trollhättan","Västra Götaland"],["Trosa","Södermanland"],["Tyresö","Stockholm"],["Täby","Stockholm"],["Töreboda","Västra Götaland"],["Uddevalla","Västra Götaland"],["Ulricehamn","Västra Götaland"],["Umeå","Västerbotten"],["Upplands Väsby","Stockholm"],["Upplands-Bro","Stockholm"],["Uppsala","Uppsala"],["Uppvidinge","Kronoberg"],["Vadstena","Östergötland"],["Vaggeryd","Jönköping"],["Valdemarsvik","Östergötland"],["Vallentuna","Stockholm"],["Vansbro","Dalarna"],["Vara","Västra Götaland"],["Varberg","Halland"],["Vaxholm","Stockholm"],["Vellinge","Skåne"],["Vetlanda","Jönköping"],["Vilhelmina","Västerbotten"],["Vimmerby","Kalmar"],["Vindeln","Västerbotten"],["Vingåker","Södermanland"],["Vårgårda","Västra Götaland"],["Vänersborg","Västra Götaland"],["Vännäs","Västerbotten"],["Värmdö","Stockholm"],["Värnamo","Jönköping"],["Västervik","Kalmar"],["Västerås","Västmanland"],["Växjö","Kronoberg"],["Ydre","Östergötland"],["Ystad","Skåne"],["Åmål","Västra Götaland"],["Ånge","Västernorrland"],["Åre","Jämtland"],["Årjäng","Värmland"],["Åsele","Västerbotten"],["Åstorp","Skåne"],["Åtvidaberg","Östergötland"],["Älmhult","Kronoberg"],["Älvdalen","Dalarna"],["Älvkarleby","Uppsala"],["Älvsbyn","Norrbotten"],["Ängelholm","Skåne"],["Öckerö","Västra Götaland"],["Ödeshög","Östergötland"],["Örebro","Örebro"],["Örkelljunga","Skåne"],["Örnsköldsvik","Västernorrland"],["Östersund","Jämtland"],["Österåker","Stockholm"],["Östhammar","Uppsala"],["Östra Göinge","Skåne"],["Överkalix","Norrbotten"],["Övertorneå","Norrbotten"]];   // [municipality, county] for every Swedish municipality
 const TITLES = [[["project manager","project leader","project lead"],["projektledare"]],[["it project manager","it project leader"],["IT-projektledare"]],[["construction project manager"],["byggprojektledare"]],[["project coordinator"],["projektkoordinator"]],[["project engineer"],["projektingenjör"]],[["product owner"],["produktägare"]],[["product manager"],["produktchef"]],[["software engineer","software developer","developer","programmer","system developer","systems developer"],["systemutvecklare","mjukvaruutvecklare"]],[["web developer","frontend developer","front-end developer"],["webbutvecklare"]],[["software tester","tester","test engineer","qa engineer"],["testare","testingenjör"]],[["it technician","it support","helpdesk technician","service desk technician"],["IT-tekniker"]],[["system administrator","systems administrator","sysadmin"],["systemadministratör"]],[["network technician","network engineer"],["nätverkstekniker"]],[["data analyst"],["dataanalytiker"]],[["business analyst"],["verksamhetsanalytiker"]],[["engineer"],["ingenjör"]],[["mechanical engineer"],["maskiningenjör"]],[["electrical engineer"],["elingenjör"]],[["electronics engineer"],["elektronikingenjör"]],[["civil engineer","construction engineer"],["byggingenjör"]],[["design engineer"],["konstruktör"]],[["quality engineer"],["kvalitetsingenjör"]],[["quality manager"],["kvalitetschef"]],[["production engineer","manufacturing engineer"],["produktionstekniker","produktionsingenjör"]],[["process engineer"],["processingenjör"]],[["automation engineer"],["automationsingenjör"]],[["maintenance technician"],["underhållstekniker"]],[["maintenance engineer"],["underhållsingenjör"]],[["service technician","field service technician"],["servicetekniker"]],[["technician"],["tekniker"]],[["electrician"],["elektriker"]],[["welder"],["svetsare"]],[["mechanic"],["mekaniker"]],[["car mechanic","auto mechanic","vehicle mechanic"],["bilmekaniker"]],[["machine operator","production operator","operator"],["operatör","maskinoperatör"]],[["cnc operator","cnc machinist"],["CNC-operatör"]],[["assembler","assembly worker"],["montör"]],[["warehouse worker","warehouse operative","warehouse associate","picker"],["lagerarbetare","lagermedarbetare"]],[["forklift driver","forklift operator"],["truckförare"]],[["truck driver","lorry driver","hgv driver"],["lastbilschaufför"]],[["driver"],["chaufför"]],[["bus driver"],["bussförare"]],[["taxi driver"],["taxiförare"]],[["train driver"],["lokförare"]],[["delivery driver"],["budbilsförare"]],[["postman","mail carrier"],["brevbärare"]],[["carpenter"],["snickare"]],[["plumber"],["rörmokare","VVS-montör"]],[["painter"],["målare"]],[["bricklayer"],["murare"]],[["roofer"],["takläggare"]],[["construction worker"],["byggnadsarbetare"]],[["crane operator"],["kranförare"]],[["site manager"],["platschef"]],[["foreman","supervisor"],["arbetsledare"]],[["team leader","team lead"],["teamledare","gruppledare"]],[["store manager","shop manager"],["butikschef"]],[["shop assistant","sales assistant","retail assistant"],["butikssäljare","butiksmedarbetare"]],[["salesperson","sales representative","sales rep"],["säljare"]],[["sales manager"],["försäljningschef"]],[["customer service representative","customer service agent","customer support agent"],["kundtjänstmedarbetare"]],[["administrator","office administrator"],["administratör"]],[["office assistant"],["kontorsassistent"]],[["accountant","bookkeeper"],["redovisningsekonom"]],[["payroll administrator","payroll specialist"],["löneadministratör"]],[["economist"],["ekonom"]],[["buyer","purchaser","procurement officer"],["inköpare"]],[["recruiter"],["rekryterare"]],[["marketing manager"],["marknadschef"]],[["marketing coordinator"],["marknadskoordinator"]],[["communications officer","communications specialist"],["kommunikatör"]],[["graphic designer"],["grafisk formgivare"]],[["editor"],["redaktör"]],[["photographer"],["fotograf"]],[["lawyer"],["jurist","advokat"]],[["translator"],["översättare"]],[["interpreter"],["tolk"]],[["real estate agent","estate agent"],["fastighetsmäklare"]],[["teacher"],["lärare"]],[["preschool teacher","kindergarten teacher"],["förskollärare"]],[["childcare worker","nursery assistant"],["barnskötare"]],[["teaching assistant"],["elevassistent"]],[["special needs teacher","special education teacher"],["speciallärare"]],[["headteacher","head teacher","school principal"],["rektor"]],[["lecturer"],["lektor"]],[["researcher"],["forskare"]],[["phd student","doctoral student"],["doktorand"]],[["postdoc"],["postdoktor"]],[["nurse","registered nurse"],["sjuksköterska"]],[["assistant nurse","nursing assistant","enrolled nurse"],["undersköterska"]],[["care worker","care assistant","carer","caregiver"],["vårdbiträde"]],[["doctor","physician"],["läkare"]],[["dentist"],["tandläkare"]],[["dental nurse"],["tandsköterska"]],[["dental hygienist"],["tandhygienist"]],[["pharmacist"],["apotekare","receptarie"]],[["psychologist"],["psykolog"]],[["physiotherapist","physical therapist"],["fysioterapeut"]],[["occupational therapist"],["arbetsterapeut"]],[["midwife"],["barnmorska"]],[["social worker"],["socialsekreterare"]],[["laboratory technician","lab technician"],["laboratorieassistent"]],[["biomedical scientist"],["biomedicinsk analytiker"]],[["veterinarian"],["veterinär"]],[["veterinary nurse"],["djursjukskötare"]],[["cleaner"],["lokalvårdare","städare"]],[["janitor","caretaker"],["fastighetsskötare","vaktmästare"]],[["security guard","security officer"],["väktare"]],[["cook"],["kock"]],[["waiter","waitress"],["servitör"]],[["dishwasher","kitchen porter"],["diskare"]],[["kitchen assistant"],["köksbiträde"]],[["baker"],["bagare"]],[["butcher"],["slaktare"]],[["hairdresser"],["frisör"]],[["gardener"],["trädgårdsarbetare"]]];   // [[english titles], [swedish words]] for common jobs, from src/titles.txt
 
@@ -960,12 +965,20 @@ const I18N = {
   "tl.what": ["What to write", "Vad ska skrivas"],
   "tl.t.match": ["Match check", "Matchning"], "tl.t.cv": ["Tailored CV", "Anpassat CV"], "tl.t.letter": ["Cover letter", "Personligt brev"], "tl.t.interview": ["Interview prep", "Intervjuförberedelse"],
   "tl.d.match": ["How well your CV fits this ad, what's missing, and which words from the ad to use where they're true.", "Hur väl ditt CV passar annonsen, vad som saknas och vilka ord från annonsen du kan använda där de stämmer."],
-  "tl.d.cv": ["A new profile text, key skills and rewritten bullet points aimed at this job. Copy the parts you like into your own CV.", "En ny profiltext, nyckelkompetenser och omskrivna punkter riktade mot jobbet. Kopiera det du gillar till ditt eget CV."],
+  "tl.d.cv": ["Your whole CV rewritten for this job: profile, key skills, every job and your education, ready to download as a PDF or Word file. Read it through and fix anything that isn't right with Edit text before you send it.", "Hela ditt CV omskrivet för det här jobbet: profil, nyckelkompetenser, alla tjänster och din utbildning, färdigt att ladda ner som PDF eller Word-fil. Läs igenom det och rätta det som inte stämmer med Redigera text innan du skickar det."],
   "tl.d.letter": ["A cover letter of 250–350 words built only on what's in your CV.", "Ett personligt brev på 250–350 ord som bara bygger på det som står i ditt CV."],
   "tl.d.interview": ["Likely questions with points for your answers, the hardest ones for you, and questions to ask them.", "Troliga frågor med stödpunkter för dina svar, de svåraste för just dig och frågor att ställa till dem."],
   "tl.go": ["Generate", "Skapa"], "tl.again": ["Generate again", "Skapa igen"], "tl.busy": ["Writing…", "Skriver…"],
   "tl.wait": ["Usually 20–60 seconds · {s} s", "Brukar ta 20–60 sekunder · {s} s"],
   "tl.word": ["Download as Word", "Ladda ner som Word"], "tl.made": ["Made {date}", "Skapad {date}"],
+  "tl.pdfdl": ["Download PDF", "Ladda ner PDF"], "tl.edited": ["edited {date}", "ändrad {date}"],
+  "tl.edit": ["Edit text", "Redigera text"], "tl.edit.label": ["Edit the text", "Redigera texten"],
+  "tl.edit.hint": ["Lines that start with # are headings (# your name, ## a section, ### a job) and lines that start with - are bullet points. **Bold** stays bold in the PDF and the Word file.",
+    "Rader som börjar med # är rubriker (# ditt namn, ## ett avsnitt, ### en tjänst) och rader som börjar med - är punkter. **Fetstil** blir fet i PDF:en och Word-filen."],
+  "tl.edit.save": ["Save changes", "Spara ändringarna"], "tl.edit.cancel": ["Cancel", "Avbryt"],
+  "tl.cut": ["The AI stopped before the end, so the last part may be missing. Generate again, or add what's missing with Edit text.", "AI:n slutade innan texten var klar, så sista delen kan saknas. Skapa igen, eller lägg till det som saknas med Redigera text."],
+  "tl.fill": ["Fill in the parts in [brackets] with Edit text before you download.", "Fyll i delarna inom [hakparenteser] med Redigera text innan du laddar ner."],
+  "tl.pdflost": ["{n} characters in this text can't be shown in a PDF and became \"?\". Download the Word file instead, or change those characters with Edit text.", "{n} tecken i texten kan inte visas i en PDF och blev \"?\". Ladda ner Word-filen i stället, eller ändra tecknen med Redigera text."],
   "tl.applyon": ["Apply on {site}", "Sök på {site}"],
   "tl.markq": ["Sent your application?", "Har du skickat ansökan?"], "tl.mark": ["Mark as applied", "Markera som sökt"],
   "tl.marked": ["Marked as applied. You'll find it under My applications.", "Markerad som sökt. Du hittar den under Mina ansökningar."],
@@ -982,11 +995,14 @@ const I18N = {
   "tl.e.timeout": ["It took too long to get an answer. Try again.", "Det tog för lång tid att få svar. Försök igen."],
   "tl.e.network": ["Couldn't reach the tailoring server. Check your connection and try again.", "Kunde inte nå servern. Kontrollera din uppkoppling och försök igen."],
   "tl.e.other": ["Something went wrong with the request. Try again.", "Något gick fel med förfrågan. Försök igen."],
-  "fc.ok": ["Fact check passed: every employer, job title and date in this text is in your CV.", "Faktakollen godkänd: alla arbetsgivare, titlar och datum i texten finns i ditt CV."],
+  "fc.ok": ["Fact check passed: every employer, job title, school, degree and date in this text is in your CV.", "Faktakollen godkänd: alla arbetsgivare, titlar, skolor, examina och datum i texten finns i ditt CV."],
   "fc.warn1": ["Fact check: one thing here is not in your CV. Remove or correct it before you use the text.", "Faktakoll: en sak här finns inte i ditt CV. Ta bort eller rätta den innan du använder texten."],
   "fc.warn": ["Fact check: {n} things here are not in your CV. Remove or correct them before you use the text.", "Faktakoll: {n} saker här finns inte i ditt CV. Ta bort eller rätta dem innan du använder texten."],
-  "fc.how": ["Checked by plain code against your CV, not by the AI. It looks only at employers, job titles and dates.", "Kontrollerat med vanlig kod mot ditt CV, inte av AI:n. Den tittar bara på arbetsgivare, titlar och datum."],
+  "fc.how": ["Checked by plain code against your CV, not by the AI. It looks only at employers, job titles, schools, degrees and dates.", "Kontrollerat med vanlig kod mot ditt CV, inte av AI:n. Den tittar bara på arbetsgivare, titlar, skolor, examina och datum."],
   "fc.k.employer": ["Employer", "Arbetsgivare"], "fc.k.title": ["Job title", "Titel"], "fc.k.date": ["Date", "Datum"], "fc.k.dates": ["Dates for a role", "Datum för en tjänst"],
+  "fc.k.school": ["School", "Skola"], "fc.k.degree": ["Degree", "Examen"],
+  "fc.again": ["Checked again after your edits.", "Kontrollerad igen efter dina ändringar."],
+  "fc.unchecked": ["Your edits couldn't be checked in this browser. Read the employers, job titles and dates through yourself before you send it.", "Dina ändringar kunde inte kontrolleras i den här webbläsaren. Läs igenom arbetsgivare, titlar och datum själv innan du skickar."],
 
   // Mentor tab
   "mt.eyebrow": ["Mentor · career advice", "Mentor · karriärråd"], "mt.h1": ["Your next step", "Ditt nästa steg"],
@@ -2569,6 +2585,7 @@ function initWelcome() {
    The CV and access code are kept in this browser. Translation sends only the ad text; Generate sends the CV,
    ad and any extra wishes to the tailoring server, which forwards them to an AI model hosted in the EU. */
 const TASKS = ["match", "cv", "letter", "interview"];
+const DOC_TASKS = new Set(["cv", "letter"]);   // the texts that go to the employer, so they download as a PDF with no title of ours
 const TAILOR_TIMEOUT = 110000;
 let tl = null;   // the open job: { id, title, employer, muni, url, src, task, busy, ctrl }
 let tailorStore = store.get("jf-tailor", {});   // ad id -> { ad, extra, out: { task: { text, at, model, lang, check } } }
@@ -2579,14 +2596,15 @@ const translations = new Map();   // translated ads stay in memory for this page
 
 const RULE = /^\s*([-*_])(\s*\1){2,}\s*$/;   // a "---" divider line, left out everywhere
 // Small Markdown reader for the AI's answers: headings, lists, bold, italics. Everything is escaped first.
+// "#" (the name on a tailored CV) becomes h3, "##" h4 and "###" or deeper h5.
 function mdHtml(text) {
   const out = []; let list = null;
   const inline = s => s.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(^|[\s(])\*(\S[^*]*?)\*(?=[\s).,;:!?]|$)/g, "$1<i>$2</i>");
   const close = () => { if (list) { out.push(`</${list}>`); list = null; } };
   for (const l of esc(text).split("\n")) {
     if (RULE.test(l)) { close(); continue; }
-    const h = l.match(/^\s*#{1,6}\s+(.*)/), ul = l.match(/^\s*[-*•]\s+(.*)/), ol = l.match(/^\s*\d+[.)]\s+(.*)/);
-    if (h) { close(); out.push(`<h4>${inline(h[1])}</h4>`); }
+    const h = l.match(/^\s*(#{1,6})\s+(.*)/), ul = l.match(/^\s*[-*•]\s+(.*)/), ol = l.match(/^\s*\d+[.)]\s+(.*)/);
+    if (h) { close(); const tag = h[1].length === 1 ? "h3" : h[1].length === 2 ? "h4" : "h5"; out.push(`<${tag}>${inline(h[2])}</${tag}>`); }
     else if (ul || ol) { const tag = ul ? "ul" : "ol"; if (list !== tag) { close(); out.push(`<${tag}>`); list = tag; } out.push(`<li>${inline((ul || ol)[1])}</li>`); }
     else if (!l.trim()) close();
     else { close(); out.push(`<p>${inline(l)}</p>`); }
@@ -2658,11 +2676,12 @@ function docxBlob(md, title, textLang) {
     const bold = /^\*\*.*\*\*$/.test(part), txt = bold ? part.slice(2, -2) : part;
     return `<w:r><w:rPr>${base}${bold ? "<w:b/>" : ""}</w:rPr><w:t xml:space="preserve">${x(txt)}</w:t></w:r>`;
   }).join("");
-  const paras = [`<w:p><w:pPr><w:spacing w:after="200"/></w:pPr>${runs(title, '<w:b/><w:sz w:val="32"/>')}</w:p>`];
+  // A CV or cover letter is sent as it is, so it gets no title of ours; the match check and interview prep do
+  const paras = title ? [`<w:p><w:pPr><w:spacing w:after="200"/></w:pPr>${runs(title, '<w:b/><w:sz w:val="32"/>')}</w:p>`] : [];
   for (const line of md.split("\n")) {
-    const h = line.match(/^\s*#{1,6}\s+(.*)/), ul = line.match(/^\s*[-*•]\s+(.*)/), ol = line.match(/^\s*(\d+)[.)]\s+(.*)/);
+    const h = line.match(/^\s*(#{1,6})\s+(.*)/), ul = line.match(/^\s*[-*•]\s+(.*)/), ol = line.match(/^\s*(\d+)[.)]\s+(.*)/);
     if (!line.trim() || RULE.test(line)) continue;
-    if (h) paras.push(`<w:p><w:pPr><w:spacing w:before="240" w:after="80"/><w:keepNext/></w:pPr>${runs(h[1], '<w:b/><w:sz w:val="26"/>')}</w:p>`);
+    if (h) { const lv = h[1].length; paras.push(`<w:p><w:pPr><w:spacing w:before="${lv === 1 ? 0 : lv === 2 ? 240 : 160}" w:after="${lv === 1 ? 40 : 80}"/><w:keepNext/></w:pPr>${runs(h[2], `<w:b/><w:sz w:val="${lv === 1 ? 40 : lv === 2 ? 26 : 22}"/>`)}</w:p>`); }
     else if (ul) paras.push(`<w:p><w:pPr><w:ind w:left="360" w:hanging="240"/><w:spacing w:after="60"/></w:pPr>${runs("• " + ul[1])}</w:p>`);
     else if (ol) paras.push(`<w:p><w:pPr><w:ind w:left="360" w:hanging="300"/><w:spacing w:after="60"/></w:pPr>${runs(ol[1] + ". " + ol[2])}</w:p>`);
     else paras.push(`<w:p><w:pPr><w:spacing w:after="120"/></w:pPr>${runs(line.trim())}</w:p>`);
@@ -2678,6 +2697,221 @@ function docxBlob(md, title, textLang) {
     ["word/styles.xml", enc.encode(styles)],
   ]);
 }
+
+/* ---------- Writing a PDF from the AI's answer, in the browser with no library ----------
+   Uses the PDF viewer's own Helvetica, so no font is embedded and the file stays small. Those fonts cover Swedish and the
+   other Western European letters (WinAnsi); anything else is drawn as "?" and counted, so the panel can suggest Word instead.
+   A tailored CV gets a CV layout: the name large, the contact line under it, section headings, and each job's years
+   right-aligned on its heading line. Email addresses and web links can be clicked. */
+const HELV = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,0,556,0,222,556,333,1000,556,556,333,1000,667,333,1000,0,611,0,0,222,222,333,333,350,556,1000,333,1000,500,333,944,0,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500];
+const HELV_B = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,0,556,0,278,556,500,1000,556,556,333,1000,667,333,1000,0,611,0,0,278,278,500,500,350,556,1000,333,1000,556,333,944,0,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556];
+// Characters outside Latin-1 that WinAnsi still has (curly quotes, dashes, bullet, euro …), and near matches for a few others
+const WIN = new Map([[0x20ac, 0x80], [0x201a, 0x82], [0x192, 0x83], [0x201e, 0x84], [0x2026, 0x85], [0x2020, 0x86], [0x2021, 0x87], [0x2c6, 0x88], [0x2030, 0x89], [0x160, 0x8a],
+  [0x2039, 0x8b], [0x152, 0x8c], [0x17d, 0x8e], [0x2018, 0x91], [0x2019, 0x92], [0x201c, 0x93], [0x201d, 0x94], [0x2022, 0x95], [0x2013, 0x96], [0x2014, 0x97], [0x2dc, 0x98],
+  [0x2122, 0x99], [0x161, 0x9a], [0x203a, 0x9b], [0x153, 0x9c], [0x17e, 0x9e], [0x178, 0x9f]]);
+const NEAR = { "\u2010": "-", "\u2011": "-", "\u2012": "-", "\u2212": "-", "\u2032": "'", "\u2033": '"', "\u00ad": "", "\u200b": "", "\u2009": " ", "\u202f": " ", "\u2007": " ",
+  "\u0141": "L", "\u0142": "l", "\u0110": "D", "\u0111": "d", "\u0131": "i", "\u2192": "->", "\u2264": "<=", "\u2265": ">=", "\u25cf": "\u2022", "\u25aa": "\u2022" };
+const latin = c => (c >= 32 && c < 127) || (c >= 0xa0 && c <= 0xff);
+function winAnsi(s) {   // the text as WinAnsi bytes (one char per byte), and how many characters had to become "?"
+  let out = "", lost = 0;
+  for (const ch of String(s)) {
+    const c = ch.codePointAt(0);
+    if (c === 9) { out += " "; continue; }
+    if (c < 32) continue;
+    if (latin(c)) { out += ch; continue; }
+    if (WIN.has(c)) { out += String.fromCharCode(WIN.get(c)); continue; }
+    const near = NEAR[ch] ?? ch.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+    if (near && [...near].every(b => latin(b.codePointAt(0)) || WIN.has(b.codePointAt(0)))) { out += [...near].map(b => latin(b.codePointAt(0)) ? b : String.fromCharCode(WIN.get(b.codePointAt(0)))).join(""); continue; }
+    out += "?"; lost++;
+  }
+  return { text: out, lost };
+}
+const pdfStr = s => s.replace(/[\\()]/g, "\\$&");
+const utf16 = s => "<FEFF" + [...String(s)].map(ch => { const c = ch.codePointAt(0); return c > 0xffff ? "003F" : c.toString(16).toUpperCase().padStart(4, "0"); }).join("") + ">";
+const glyphW = (code, font) => (font === "B" ? HELV_B : HELV)[code - 32] || 556;
+// "### Quality Engineer, Nordvik (2018–now)" -> the role on the left and its years on the right
+function splitYears(s) {
+  const m = s.match(/^(.*?)[\s,·|]*\(([^()]*\b(?:19|20)\d\d\b[^()]*)\)\s*$/) || s.match(/^(.*?)\s*[·|,–]\s*((?:[\p{L}.]+\s+)?(?:19|20)\d\d(?:\s*[–—-]\s*(?:[\p{L}.]+\s+)?(?:(?:19|20)\d\d|[\p{L}]+))?)\s*$/u);
+  return m && m[1].trim() ? [m[1].trim(), m[2].trim()] : [s, ""];
+}
+
+function pdfBlob(md, { title = "", author = "", lang: textLang = "sv" } = {}) {
+  const PW = 595.28, PH = 841.89, L = 56, R = 56, TOP = 56, BOTTOM = 62, FULL = PW - L - R;
+  const C = { ink: "0.13 0.15 0.17", muted: "0.39 0.42 0.45", accent: "0.11 0.35 0.41", rule: "0.78 0.81 0.83" };
+  const pages = []; let pg, y, lost = 0;
+  const newPage = () => { pg = { ops: [], annots: [] }; pages.push(pg); y = PH - TOP; };
+  newPage();
+  const atTop = () => y === PH - TOP;
+
+  // Markdown inline (**bold**, *italic*, [link](url), `code`) -> runs of text in one font
+  function runs(s, font, upper, count = true) {
+    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, txt, url) => txt === url ? url : `${txt} (${url})`).replace(/`/g, "");
+    const out = [];
+    for (const part of s.split(/(\*\*[^*]+\*\*|__[^_]+__|\*[^*\s][^*]*\*)/)) {
+      if (!part) continue;
+      const bold = /^(\*\*|__).*(\*\*|__)$/.test(part) && part.length > 4, ital = !bold && /^\*.*\*$/.test(part) && part.length > 2;
+      const txt = bold ? part.slice(2, -2) : ital ? part.slice(1, -1) : part;
+      const enc = winAnsi(upper ? txt.toLocaleUpperCase(textLang === "en" ? "en" : "sv") : txt); if (count) lost += enc.lost;
+      out.push({ t: enc.text, f: font === "B" || bold ? "B" : ital ? "I" : font });
+    }
+    return out;
+  }
+  // Runs -> words that each know their width; a word can mix fonts ("**FMEA**,")
+  function words(rs, size, tc) {
+    const out = []; let cur = null, space = false;
+    for (const r of rs) for (const ch of r.t) {
+      if (ch === " ") { if (cur) { out.push(cur); cur = null; } space = true; continue; }
+      if (!cur) { cur = { segs: [], w: 0, space: space && out.length > 0 }; space = false; }
+      const last = cur.segs[cur.segs.length - 1];
+      if (last && last.f === r.f) last.t += ch; else cur.segs.push({ t: ch, f: r.f });
+      cur.w += glyphW(ch.charCodeAt(0), r.f) * size / 1000 + tc;
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+  // Greedy line breaking; a word longer than the line (a long link) is cut where it has to be
+  function wrap(ws, width, size, tc) {
+    const sp = glyphW(32, "R") * size / 1000 + tc, lines = []; let line = [], w = 0;
+    const push = wd => { const s = line.length > 0 && wd.space; line.push({ ...wd, space: s }); w += (s ? sp : 0) + wd.w; };
+    for (const wd of ws) {
+      if (line.length && w + (wd.space ? sp : 0) + wd.w > width) { lines.push(line); line = []; w = 0; }
+      if (!line.length && wd.w > width) {
+        let piece = { segs: [], w: 0, space: false };
+        for (const s of wd.segs) for (const ch of s.t) {
+          const cw = glyphW(ch.charCodeAt(0), s.f) * size / 1000 + tc;
+          if (piece.w + cw > width && piece.w) { lines.push([piece]); piece = { segs: [], w: 0, space: false }; }
+          const last = piece.segs[piece.segs.length - 1];
+          if (last && last.f === s.f) last.t += ch; else piece.segs.push({ t: ch, f: s.f });
+          piece.w += cw;
+        }
+        line = [piece]; w = piece.w; continue;
+      }
+      push(wd);
+    }
+    if (line.length) lines.push(line);
+    return lines.length ? lines : [[]];
+  }
+  const LINK = /^(?:(?:https?:\/\/|www\.)\S+|(?:linkedin|github)\.com\/\S+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+)$/i;
+  function draw(line, x, base, size, color, tc = 0) {
+    const segs = [];
+    let cx = x;
+    for (const wd of line) {
+      if (wd.space) { const last = segs[segs.length - 1]; if (last) last.t += " "; else segs.push({ t: " ", f: wd.segs[0]?.f || "R" }); cx += glyphW(32, "R") * size / 1000 + tc; }
+      const text = wd.segs.map(s => s.t).join("").replace(/[.,;:)]+$/, "");
+      if (LINK.test(text)) {
+        const w = [...text].reduce((n, ch, i) => n + glyphW(ch.charCodeAt(0), wd.segs[0].f) * size / 1000 + tc, 0);
+        pg.annots.push({ rect: [cx, base - 2.5, cx + w, base + size * 0.85], uri: /@/.test(text) && !/^https?:/i.test(text) ? "mailto:" + text : /^https?:/i.test(text) ? text : "https://" + text });
+      }
+      for (const s of wd.segs) { const last = segs[segs.length - 1]; if (last && last.f === s.f) last.t += s.t; else segs.push({ ...s }); }
+      cx += wd.w;
+    }
+    if (!segs.length) return;
+    pg.ops.push(`BT ${color} rg${tc ? ` ${tc} Tc` : ""} ${x.toFixed(2)} ${base.toFixed(2)} Td ${segs.map(s => `/${s.f} ${size} Tf (${pdfStr(s.t)}) Tj`).join(" ")}${tc ? " 0 Tc" : ""} ET`);
+  }
+  const ruleAt = (yy, color, width = 0.6) => pg.ops.push(`q ${width} w ${color} RG ${L} ${yy.toFixed(2)} m ${(PW - R).toFixed(2)} ${yy.toFixed(2)} l S Q`);
+  const textW = (rs, size, tc) => words(rs, size, tc).reduce((n, w, i) => n + w.w + (i && w.space ? glyphW(32, "R") * size / 1000 + tc : 0), 0);
+
+  // One block of text: wraps it, moves to a new page when needed, and keeps a heading with what follows it
+  function block(text, { size = 10, lead = 13.6, font = "R", color = C.ink, x = L, width = FULL, tc = 0, upper = false, before = 0, keep = 0, marker = "", markerX = L, right = "" }) {
+    const rightRuns = right ? runs(right, "R") : null, rightW = right ? textW(rightRuns, size - 1, 0) : 0;
+    const lines = wrap(words(runs(text, font, upper), size, tc), width - (right ? rightW + 14 : 0), size, tc);
+    if (!atTop()) y -= before;
+    if (y - lead * Math.min(lines.length, 2) - keep < BOTTOM) newPage();
+    lines.forEach((line, i) => {
+      if (y - lead < BOTTOM) newPage();
+      const base = y - size;
+      if (i === 0 && marker) draw(words(runs(marker, "R"), size, 0), markerX, base, size, color);
+      draw(line, x, base, size, color, tc);
+      if (i === 0 && right) draw(wrap(words(rightRuns, size - 1, 0), FULL, size - 1, 0)[0], PW - R - rightW, base, size - 1, C.muted);
+      y -= lead;
+    });
+  }
+
+  // A run of short bullet points right under a section heading (key skills, tools, languages) goes into two or three
+  // columns, so the CV stays short. Bullets under a job stay in one column.
+  let list = [], listGap = 0, listCols = false, lastHead = 0;
+  function flushList() {
+    if (!list.length) return;
+    const items = list, lead = 13.6, widest = Math.max(...items.map(t => textW(runs(t, "R", false, false), 10, 0)));
+    const cols = items.length < 4 || !listCols ? 1 : widest + 31 <= FULL / 3 ? 3 : widest + 31 <= FULL / 2 ? 2 : 1;
+    list = [];
+    if (cols === 1) { items.forEach((t, i) => block(t, { x: L + 13, width: FULL - 13, marker: "•", markerX: L + 2, before: i === 0 && listGap ? 3 : 1.5 })); return; }
+    const rows = Math.ceil(items.length / cols), colW = FULL / cols;
+    if (!atTop()) y -= listGap ? 3 : 1.5;
+    if (y - lead * Math.min(rows, 2) < BOTTOM) newPage();
+    for (let r = 0; r < rows; r++) {
+      if (y - lead < BOTTOM) newPage();
+      for (let c = 0; c < cols; c++) {
+        const t = items[c * rows + r]; if (t == null) continue;
+        draw(words(runs("•", "R"), 10, 0), L + c * colW + 2, y - 10, 10, C.ink);
+        draw(wrap(words(runs(t, "R"), 10, 0), colW - 13, 10, 0)[0], L + c * colW + 13, y - 10, 10, C.ink);
+      }
+      y -= lead;
+    }
+  }
+
+  const src = String(md || "").replace(/\r/g, "").split("\n");
+  let gap = 0, seen = 0, contactNext = false;
+  for (const raw of src) {
+    if (RULE.test(raw)) continue;
+    if (!raw.trim()) { gap = 5; continue; }
+    const h = raw.match(/^\s*(#{1,6})\s+(.*)/), ul = raw.match(/^\s*[-*•]\s+(.*)/), ol = raw.match(/^\s*(\d+)[.)]\s+(.*)/);
+    if (ul && !h) { if (!list.length) { listGap = gap; listCols = lastHead === 2; } list.push(ul[1]); gap = 0; seen++; contactNext = false; continue; }
+    flushList();
+    const first = seen++ === 0;
+    lastHead = h ? h[1].length : 0;
+    if (h && h[1].length === 1) {
+      block(h[2], { size: first ? 21 : 15, lead: first ? 25 : 19, font: "B", before: first ? 0 : 14, keep: 30 });
+      contactNext = first;
+    } else if (h && h[1].length === 2) {
+      block(h[2], { size: 9.8, lead: 13, font: "B", color: C.accent, tc: 0.9, upper: true, before: Math.max(15, gap), keep: 34 });
+      ruleAt(y - 0.5, C.rule, 0.5); y -= 5;
+    } else if (h) {
+      const [left, years] = splitYears(h[2].replace(/\*\*/g, ""));
+      block(left, { size: 10.5, lead: 14, font: "B", before: Math.max(8, gap), keep: 24, right: years });
+    } else if (ol) {
+      block(ol[2], { x: L + 17, width: FULL - 17, marker: ol[1] + ".", markerX: L, before: gap ? 3 : 1.5 });
+    } else if (contactNext) {
+      block(raw.trim(), { size: 9.5, lead: 13, color: C.muted, before: 2 });
+      y -= 5; ruleAt(y, C.accent, 0.9); y -= 6;
+    } else {
+      block(raw.trim(), { before: gap ? 6 : 2 });
+    }
+    if (!(h && h[1].length === 1)) contactNext = false;
+    gap = 0;
+  }
+  flushList();
+  // Page numbers, only when there is more than one page
+  if (pages.length > 1) pages.forEach((p, i) => {
+    const label = `${i + 1} / ${pages.length}`, w = [...label].reduce((n, ch) => n + glyphW(ch.charCodeAt(0), "R") * 8 / 1000, 0);
+    p.ops.push(`BT ${C.muted} rg ${(PW - R - w).toFixed(2)} 34 Td /R 8 Tf (${label}) Tj ET`);
+  });
+
+  // The file: catalog, pages, three standard fonts, one content stream and the link annotations per page
+  const objs = [], add = s => objs.push(s);
+  add(null); add(null);
+  for (const [k, name] of [["R", "Helvetica"], ["B", "Helvetica-Bold"], ["I", "Helvetica-Oblique"]]) add(`<< /Type /Font /Subtype /Type1 /BaseFont /${name} /Encoding /WinAnsiEncoding >>`);
+  const kids = [];
+  for (const p of pages) {
+    const content = p.ops.join("\n"), cRef = add(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+    const aRefs = p.annots.map(a => add(`<< /Type /Annot /Subtype /Link /Rect [${a.rect.map(n => n.toFixed(2)).join(" ")}] /Border [0 0 0] /A << /S /URI /URI (${pdfStr(encodeURI(a.uri))}) >> >>`));
+    kids.push(add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /Font << /R 3 0 R /B 4 0 R /I 5 0 R >> >> /Contents ${cRef} 0 R${aRefs.length ? ` /Annots [${aRefs.map(n => n + " 0 R").join(" ")}]` : ""} >>`));
+  }
+  objs[0] = `<< /Type /Catalog /Pages 2 0 R /Lang (${textLang === "en" ? "en-GB" : "sv-SE"}) >>`;
+  objs[1] = `<< /Type /Pages /Kids [${kids.map(k => k + " 0 R").join(" ")}] /Count ${kids.length} >>`;
+  const stamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
+  const info = add(`<< /Title ${utf16(title)} /Author ${utf16(author)} /Creator (Job Finder) /Producer (Job Finder) /CreationDate (D:${stamp}Z) >>`);
+  let out = "%PDF-1.4\n%\xe2\xe3\xcf\xd3\n";
+  const offsets = objs.map((o, i) => { const at = out.length; out += `${i + 1} 0 obj\n${o}\nendobj\n`; return at; });
+  const xref = out.length;
+  out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n${offsets.map(o => String(o).padStart(10, "0") + " 00000 n \n").join("")}`;
+  out += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R /Info ${info} 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  const bytes = new Uint8Array(out.length);
+  for (let i = 0; i < out.length; i++) bytes[i] = out.charCodeAt(i) & 0xff;
+  return { blob: new Blob([bytes], { type: "application/pdf" }), lost, pages: pages.length };
+}
+// The name a tailored CV starts with ("# Eva Lind"), unless it's still the [Your name] placeholder
+const cvName = md => { const m = String(md || "").match(/^\s*#\s+(.+)$/m); return m && !/\[/.test(m[1]) ? m[1].replace(/\*\*/g, "").trim() : ""; };
 
 /* ---------- The panel ---------- */
 const guessLang = text => {
@@ -2778,12 +3012,50 @@ function applyHtml(job, big) {
   return `<a class="btn ${big ? "" : "ghost "}sm" href="${esc(href)}" target="_blank" rel="noopener" data-tl="apply">${esc(label)}</a>`;
 }
 // The server's fact check (server/factcheck.js). Answers saved before it existed have none, and show nothing.
-function factCheckHtml(check) {
+// After the person edits a text, the same code checks it again here in the browser (see recheck below).
+function factCheckHtml(check, edited) {
+  if (edited && !check) return `<p class="fc fc-warn" role="status">${esc(t("fc.unchecked"))}</p>`;
   if (!check || !Array.isArray(check.issues)) return "";
-  if (!check.issues.length) return `<p class="fc fc-ok" role="status">${esc(t("fc.ok"))}</p>`;
-  return `<section class="fc fc-warn" role="alert"><p><b>${esc(check.issues.length === 1 ? t("fc.warn1") : t("fc.warn", { n: check.issues.length }))}</b></p>
+  const again = edited ? ` ${esc(t("fc.again"))}` : "";
+  if (!check.issues.length) return `<p class="fc fc-ok" role="status">${esc(t("fc.ok"))}${again}</p>`;
+  return `<section class="fc fc-warn" role="alert"><p><b>${esc(check.issues.length === 1 ? t("fc.warn1") : t("fc.warn", { n: check.issues.length }))}</b>${again}</p>
     <ul>${check.issues.map(i => `<li><span class="fc-kind">${esc(t("fc.k." + i.kind))}</span>${esc(i.text)}</li>`).join("")}</ul>
     <p class="tl-hint">${esc(t("fc.how"))}</p></section>`;
+}
+// server/factcheck.js, built into the page by build.py and compiled on first use. A browser too old for its patterns
+// goes without, and the panel says the edits weren't checked.
+const FACTCHECK_SRC = "\"use strict\";\n/*\n  Fact check for step 2: reads a text the AI wrote (tailored CV, cover letter, match check, interview prep) and lists every\n  employer, job title and date in it that the person's own CV doesn't back up.\n\n  It is plain code, not a second AI call, so the model can't argue its way past it. It runs on every answer the server\n  returns, and the same function is used by the property tests (server/factcheck.test.js) and the eval (server/eval/run.mjs).\n\n  What it looks at:\n    dates      every year (and month + year) must appear in the CV, the ad or the person's own wishes. This year and next\n               year are allowed, since a letter may say when the person can start.\n    role lines headings, bold lines and short dated lines such as \"### Kvalitetsingenjör, Volvo Cars (2019–2023)\".\n               Each title and employer on a dated line must be in the CV, and the years must be the ones the CV gives\n               for that employer. The ad's own title and employer are allowed only on undated lines (a heading about\n               the job being applied for), never as a past role.\n    employers  names after \"at / på / hos / vid / för …\" must be in the CV or the ad. After \"worked at / arbetat på …\"\n               they must be in the CV.\n    titles     \"worked as / years as / arbetat som / år som …\" must be followed by a title that is in the CV.\n    degrees    a degree on a role line (### BSc Mechanical Engineering, Chalmers (2013–2016)) may be translated, but its\n               level must be one the CV has: an MSc or an MBA is flagged when the CV only has a bachelor's degree. The\n               school next to it must be in the CV, and its years must be the ones the CV gives for that school.\n\n  Words are compared without case or accents, legal suffixes (AB, Inc, Ltd …) are ignored, and Swedish endings are\n  tolerated (\"kvalitetsingenjören\" matches \"kvalitetsingenjör\"). English and Swedish titles from src/titles.txt\n  (copied to titles.json by build.py) count as the same title, so an English CV for a Swedish CV is not flagged.\n  Places with an English and a Swedish name (Gothenburg and Göteborg) count as the same place.\n  It does not judge skills, figures or wording; those are covered by the prompt and by reading the result.\n*/\n\nlet TITLES = [];\ntry { TITLES = require(\"./titles.json\"); } catch { /* the checker still works, it just can't match translated titles */ }\n\nconst fold = s => String(s || \"\").normalize(\"NFKD\").replace(/[̀-ͯ]/g, \"\").toLowerCase();\nconst LEGAL = new Set([\"ab\", \"publ\", \"inc\", \"ltd\", \"llc\", \"gmbh\", \"oy\", \"oyj\", \"as\", \"asa\", \"plc\", \"corp\", \"co\", \"kb\", \"hb\", \"bv\", \"nv\", \"sa\", \"srl\", \"spa\", \"group\", \"koncernen\", \"sverige\", \"sweden\", \"nordic\", \"nordics\"]);\nconst FILL = new Set([\"the\", \"a\", \"an\", \"of\", \"and\", \"och\", \"en\", \"ett\", \"&\", \"i\", \"in\", \"som\", \"as\", \"at\", \"pa\", \"hos\", \"vid\", \"for\", \"with\", \"med\", \"inom\", \"till\", \"to\"]);\nconst tokens = s => fold(s).replace(/[^a-z0-9+#&]+/g, \" \").trim().split(/\\s+/).filter(Boolean);\nconst core = s => tokens(s).filter(t => !LEGAL.has(t) && !FILL.has(t));\n// Same word, allowing Swedish and English endings: kvalitetsingenjör / kvalitetsingenjören, engineer / engineers\nconst sameWord = (a, b) => a === b || (Math.min(a.length, b.length) >= 5 && (a.startsWith(b) || b.startsWith(a)) && Math.abs(a.length - b.length) <= 3);\n\n// Is every word of the phrase in the source, next to each other and in order?\nfunction inSource(phrase, src) {\n  const p = core(phrase);\n  if (!p.length) return true;\n  outer: for (let i = 0; i + p.length <= src.length; i++) {\n    for (let j = 0; j < p.length; j++) if (!sameWord(p[j], src[i + j])) continue outer;\n    return true;\n  }\n  return false;\n}\n// English title words and the Swedish word parts they become, so \"Production Technician\" matches \"Produktionstekniker\".\n// Every English word has to translate, so \"Senior Quality Engineer\" does not match \"Kvalitetsingenjör\".\nconst WORD_SV = { engineer: [\"ingenjor\"], technician: [\"tekniker\"], manager: [\"chef\", \"ansvarig\"], leader: [\"ledare\"], lead: [\"ledare\"], head: [\"chef\"],\n  developer: [\"utvecklare\"], analyst: [\"analytiker\"], consultant: [\"konsult\"], coordinator: [\"koordinator\", \"samordnare\"], specialist: [\"specialist\"],\n  designer: [\"designer\"], architect: [\"arkitekt\"], assistant: [\"assistent\"], administrator: [\"administrator\"], buyer: [\"inkopare\"], planner: [\"planerare\"],\n  operator: [\"operator\"], mechanic: [\"mekaniker\"], teacher: [\"larare\"], nurse: [\"sjukskoterska\"], researcher: [\"forskare\"], scientist: [\"forskare\"],\n  tester: [\"testare\"], advisor: [\"radgivare\"], adviser: [\"radgivare\"], supervisor: [\"arbetsledare\"], salesperson: [\"saljare\"], seller: [\"saljare\"], owner: [\"agare\"],\n  quality: [\"kvalitet\"], production: [\"produktion\"], project: [\"projekt\"], product: [\"produkt\"], process: [\"process\"], test: [\"test\"], software: [\"mjukvaru\", \"system\"],\n  system: [\"system\"], systems: [\"system\"], sales: [\"salj\", \"forsaljnings\"], purchasing: [\"inkops\"], service: [\"service\"], maintenance: [\"underhalls\"], design: [\"design\", \"konstruktions\"],\n  development: [\"utvecklings\"], electrical: [\"el\"], mechanical: [\"maskin\", \"mekanik\"], construction: [\"bygg\"], site: [\"plats\"], logistics: [\"logistik\"], supply: [\"forsorjnings\"],\n  supplier: [\"leverantors\"], customer: [\"kund\"], support: [\"support\"], it: [\"it\"], data: [\"data\"], finance: [\"ekonomi\"], economics: [\"ekonomi\"], hr: [\"hr\", \"personal\"],\n  marketing: [\"marknads\"], communications: [\"kommunikations\"], communication: [\"kommunikations\"], safety: [\"sakerhets\"], security: [\"sakerhets\"], environmental: [\"miljo\"],\n  environment: [\"miljo\"], business: [\"affars\"], account: [\"kund\"], key: [\"key\"], line: [\"linje\"], shift: [\"skift\"], team: [\"team\", \"grupp\"], group: [\"grupp\"],\n  department: [\"avdelnings\"], office: [\"kontors\"], store: [\"butiks\"], warehouse: [\"lager\"], workshop: [\"verkstads\"], school: [\"skol\"], automation: [\"automations\"], embedded: [\"inbyggda\"],\n  verification: [\"verifierings\"], validation: [\"validerings\"], calculation: [\"kalkyl\"], cost: [\"kostnads\"], controller: [\"controller\"], accountant: [\"redovisningsekonom\", \"ekonom\"],\n  electrician: [\"elektriker\"], carpenter: [\"snickare\"], driver: [\"forare\", \"chauffor\"], welder: [\"svetsare\"], machinist: [\"maskinoperator\"], cook: [\"kock\"], chef: [\"kock\"] };\nfunction translations(words) {\n  let out = [\"\"];\n  for (const w of words) {\n    const sv = WORD_SV[w];\n    if (!sv || !sv.length) return [];\n    out = out.flatMap(o => sv.flatMap(s => o ? [o + s, o + \"s\" + s, o + \"-\" + s] : [s]));\n  }\n  return out;\n}\nconst enMatches = (en, svWord) => translations(en).some(c => sameWord(c, svWord));\n\n// The phrase, or a translation of it, is in the source. \"senior\" and \"junior\" only count if the source has them too.\nfunction titleInSource(phrase, src) {\n  if (inSource(phrase, src)) return true;\n  const words = core(phrase);\n  if (words.length && words.length <= 3) {\n    if (src.some(t => enMatches(words, t))) return true;                    // English title, Swedish CV\n    if (words.length === 1)                                                   // Swedish title, English CV\n      for (let n = 1; n <= 3; n++) for (let i = 0; i + n <= src.length; i++) if (enMatches(src.slice(i, i + n), words[0])) return true;\n  }\n  const p = core(phrase).join(\" \");\n  for (const [en, sv] of TITLES) {\n    const all = [...en, ...sv];\n    if (!all.some(w => core(w).join(\" \") === p)) continue;\n    if (all.some(w => inSource(w, src))) return true;\n  }\n  return false;\n}\n\n// Places whose English and Swedish names differ, so \"Göteborg\" in a Swedish CV made from an English one isn't flagged\nconst PLACES = [[\"goteborg\", \"gothenburg\"], [\"kopenhamn\", \"copenhagen\", \"kobenhavn\"], [\"helsingfors\", \"helsinki\"], [\"abo\", \"turku\"], [\"skane\", \"scania\"],\n  [\"munchen\", \"munich\"], [\"koln\", \"cologne\"], [\"wien\", \"vienna\"], [\"prag\", \"prague\"], [\"warszawa\", \"warsaw\"], [\"rom\", \"rome\"], [\"bryssel\", \"brussels\"],\n  [\"lissabon\", \"lisbon\"], [\"moskva\", \"moscow\"], [\"aten\", \"athens\"], [\"geneve\", \"geneva\"], [\"haag\", \"hague\"], [\"antwerpen\", \"antwerp\"], [\"nurnberg\", \"nuremberg\"],\n  [\"tyskland\", \"germany\"], [\"norge\", \"norway\"], [\"danmark\", \"denmark\"], [\"frankrike\", \"france\"], [\"spanien\", \"spain\"], [\"italien\", \"italy\"], [\"polen\", \"poland\"],\n  [\"nederlanderna\", \"netherlands\"], [\"storbritannien\", \"united kingdom\", \"uk\"], [\"usa\", \"united states\", \"us\"], [\"kina\", \"china\"], [\"indien\", \"india\"]];\nconst PLACE_OF = new Map(PLACES.flatMap(g => g.map(n => [n, g])));\nconst nameInSource = (phrase, src) => inSource(phrase, src) || (PLACE_OF.get(core(phrase).join(\" \")) || []).some(n => inSource(n, src));\n\n// Degree words by level, in English and Swedish. A degree may be translated, but its level must be one the CV has.\nconst DEGREE = { bachelor: [\"bsc\", \"ba\", \"beng\", \"bba\", \"bachelor\", \"bachelors\", \"kandidat\", \"kandidatexamen\", \"hogskoleingenjor\", \"hogskoleingenjorsexamen\", \"hogskoleexamen\"],\n  master: [\"msc\", \"ma\", \"meng\", \"master\", \"masters\", \"magister\", \"magisterexamen\", \"masterexamen\", \"civilingenjor\", \"civilingenjorsexamen\", \"civilekonom\", \"civilekonomexamen\"],\n  mba: [\"mba\", \"emba\"], doctor: [\"phd\", \"doctorate\", \"doctoral\", \"doktor\", \"doktorsexamen\", \"licentiate\", \"licentiat\", \"licentiatexamen\"],\n  yh: [\"yh\", \"yrkeshogskola\", \"yrkeshogskoleexamen\", \"yrkeshogskoleutbildning\"] };\nconst LEVEL_OF = new Map(Object.entries(DEGREE).flatMap(([level, ws]) => ws.map(w => [w, level])));\n// The degree levels a phrase names. \"Scrum Master\" and \"master data\" are work, not degrees.\nconst NOT_DEGREE = /(?:scrum\\s+master|master\\s+data|master\\s+planner|master\\s+scheduler)/gi;\nconst degreeLevels = s => new Set(tokens(String(s || \"\").replace(NOT_DEGREE, \" \")).map(w => LEVEL_OF.get(w)).filter(Boolean));\n\nconst MONTHS = { jan: 1, januari: 1, january: 1, feb: 2, februari: 2, february: 2, mar: 3, mars: 3, march: 3, apr: 4, april: 4, maj: 5, may: 5,\n  jun: 6, juni: 6, june: 6, jul: 7, juli: 7, july: 7, aug: 8, augusti: 8, august: 8, sep: 9, sept: 9, september: 9,\n  okt: 10, oct: 10, oktober: 10, october: 10, nov: 11, november: 11, dec: 12, december: 12 };\nconst YEAR = /(?<![\\d.,])(19[5-9]\\d|20[0-4]\\d)(?![\\d.,]*\\d)/g;\nconst MONTH_YEAR = /\\b(jan(?:uari|uary)?|feb(?:ruari|ruary)?|mar(?:s|ch)?|apr(?:il)?|maj|may|jun[ei]?|jul[iy]?|aug(?:usti|ust)?|sep(?:t|tember)?|o[kc]t(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\.?\\s+(19[5-9]\\d|20[0-4]\\d)\\b|\\b(19[5-9]\\d|20[0-4]\\d)-(0[1-9]|1[0-2])\\b|\\b(0?[1-9]|1[0-2])\\/(19[5-9]\\d|20[0-4]\\d)\\b/gi;\n// Whole words, also for Swedish letters (\\b in JavaScript only knows a-z)\nconst words = list => `(?<![\\\\p{L}\\\\d])(?:${list.join(\"|\")})(?![\\\\p{L}\\\\d])`;\nconst OPEN = new RegExp(words([\"present\", \"now\", \"current\", \"today\", \"ongoing\", \"nu\", \"idag\", \"i dag\", \"pågående\", \"nuvarande\", \"tills vidare\"]), \"iu\");\nconst RANGE = /(19[5-9]\\d|20[0-4]\\d)\\s*(?:–|—|-|to|till)\\s*((?:19[5-9]\\d|20[0-4]\\d)|present|now|current|today|ongoing|nu|idag|pågående|nuvarande)?/i;\n\nconst years = s => new Set([...fold(s).matchAll(YEAR)].map(m => m[1]));\nfunction monthYears(s) {\n  const out = new Set();\n  for (const m of fold(s).matchAll(MONTH_YEAR)) {\n    if (m[1]) out.add(`${m[2]}-${MONTHS[m[1].replace(/\\.$/, \"\")] || MONTHS[m[1].slice(0, 3)]}`);\n    else if (m[3]) out.add(`${m[3]}-${+m[4]}`);\n    else out.add(`${m[6]}-${+m[5]}`);\n  }\n  return out;\n}\n\n// Words that end a job title, in English and Swedish (Swedish titles are compounds, so the end of the word counts)\nconst TITLE_END = /(engineer|ingenjor|manager|chef|ledare|leader|lead|head|director|direktor|tekniker|technician|analyst|analytiker|specialist|konsult|consultant|developer|utvecklare|designer|coordinator|koordinator|samordnare|officer|assistant|assistent|administrator|administrator|architect|arkitekt|owner|agare|saljare|salesperson|representative|scientist|forskare|researcher|larare|teacher|nurse|skoterska|operator|montor|mekaniker|mechanic|buyer|inkopare|planner|planerare|controller|ekonom|accountant|revisor|auditor|intern|praktikant|trainee|advisor|radgivare|strateg|strategist|tester|testare|programmer|programmerare|handlaggare|officer|supervisor|arbetsledare|foreman|expert|partner|founder|grundare|vd|ceo|cto|cfo|coo|cio|president|support|agent|writer|skribent|redaktor|editor|journalist|lakare|doctor|pedagog|kock|chef|electrician|elektriker|snickare|carpenter|driver|forare|chauffor|ombud|mentor|coach|instructor|instruktor|scrum master|product owner|produktagare)$/;\nconst TITLE_START = /^(?:senior |junior |lead |principal |chief |vice )?(?:head|chief|director|manager|vp|vice president|lead|chef|ansvarig) (?:of|for|over|för|av|i)\\s/;\nconst isTitle = s => { const t = core(s), all = tokens(s).join(\" \"); return t.length > 0 && t.length <= 6 && (TITLE_END.test(t.join(\" \")) || TITLE_START.test(all + \" \")); };\n// Section words the AI uses in its own headings; a heading made only of these is not a role\nconst GENERIC = new Set([\"profile\", \"profil\", \"profiltext\", \"summary\", \"sammanfattning\", \"new\", \"ny\", \"skills\", \"kompetenser\", \"nyckelkompetenser\", \"key\", \"kunskaper\",\n  \"experience\", \"erfarenhet\", \"erfarenheter\", \"rewritten\", \"omskrivna\", \"bullet\", \"points\", \"punkter\", \"education\", \"utbildning\", \"what\", \"vad\", \"cut\", \"shorten\", \"ta\", \"bort\",\n  \"korta\", \"kortas\", \"could\", \"be\", \"kan\", \"match\", \"matches\", \"matchar\", \"missing\", \"saknas\", \"weak\", \"svagt\", \"verdict\", \"bedomning\", \"samlad\", \"overall\", \"questions\", \"fragor\",\n  \"likely\", \"troliga\", \"hardest\", \"svaraste\", \"ask\", \"stalla\", \"words\", \"ord\", \"terms\", \"begrepp\", \"cover\", \"letter\", \"personligt\", \"brev\", \"relevant\", \"most\", \"mest\", \"roles\",\n  \"roller\", \"tjanster\", \"work\", \"arbete\", \"history\", \"historik\", \"employment\", \"anstallningar\", \"role\", \"roll\", \"tjanst\", \"dear\", \"hej\", \"kind\", \"regards\", \"halsningar\", \"vanliga\",\n  \"interview\", \"intervju\", \"prep\", \"forberedelse\", \"tips\", \"strengths\", \"styrkor\", \"gaps\", \"luckor\", \"background\", \"bakgrund\", \"career\", \"karriar\", \"current\", \"nuvarande\", \"previous\", \"tidigare\"]);\nconst isGeneric = s => { const t = core(s).filter(w => !/^\\d+$/.test(w)); return !t.length || t.every(w => GENERIC.has(w)); };\n// A name: every word starts with a capital letter or digit, or it is all capitals, or it has a legal suffix.\n// Swedish school names keep the institution word in lower case (\"Linköpings universitet\"), so those words don't count.\nconst INSTITUTION = new Set([\"universitet\", \"universitetet\", \"hogskola\", \"hogskolan\", \"tekniska\", \"folkhogskola\", \"yrkeshogskola\", \"gymnasium\", \"gymnasiet\"]);\nconst isNameLike = s => {\n  const w = s.replace(/[()[\\]\"“”'’]/g, \" \").trim().split(/\\s+/).filter(x => x && !FILL.has(fold(x)) && !INSTITUTION.has(fold(x)));\n  return w.length > 0 && w.length <= 6 && w.every(x => /^[\\p{Lu}\\d]/u.test(x));\n};\n// Capitalised words that are not employers\nconst NOT_EMPLOYER = new Set([\"i\", \"jag\", \"we\", \"vi\", \"you\", \"du\", \"ni\", \"my\", \"min\", \"mitt\", \"your\", \"ditt\", \"linkedin\", \"teams\", \"zoom\", \"sweden\", \"sverige\", \"europe\", \"europa\",\n  \"eu\", \"monday\", \"tuesday\", \"wednesday\", \"thursday\", \"friday\", \"mandag\", \"tisdag\", \"onsdag\", \"torsdag\", \"fredag\", \"the\", \"this\", \"that\", \"den\", \"det\", \"denna\", \"detta\", \"er\", \"era\",\n  \"markdown\", \"cv\", \"ai\", \"excel\", \"word\", \"office\", \"powerpoint\", \"python\", \"sql\", \"java\"]);\n\n// \"worked at\" needs the employer in the CV; plain \"at\" also accepts the ad. Each word may start with a capital letter.\nconst anyCase = w => w.split(\" \").map(x => `[${x[0].toUpperCase()}${x[0]}]${x.slice(1)}`).join(\" \");\nconst WORKED_AT = [\"worked at\", \"worked for\", \"working at\", \"employed at\", \"employed by\", \"arbetat på\", \"arbetat hos\", \"arbetade på\", \"arbetade hos\", \"arbetat för\",\n  \"arbetade för\", \"jobbat på\", \"jobbat hos\", \"jobbade på\", \"jobbade hos\", \"anställd på\", \"anställd hos\", \"anställd vid\", \"anställd av\"];\nconst AT = [\"at\", \"på\", \"hos\", \"vid\", \"för\", \"for\", \"with\", \"from\", \"från\", \"inom\"];\nconst EMPLOYER_AFTER = new RegExp(`(?:^|[\\\\s(])(${[...WORKED_AT, ...AT].map(anyCase).join(\"|\")})\\\\s+((?:[\\\\p{Lu}\\\\d][\\\\p{L}\\\\d&'’.+-]*)(?:\\\\s+(?:[\\\\p{Lu}\\\\d][\\\\p{L}\\\\d&'’.+-]*|&|of|och|and|de|la))*)`, \"gu\");\n\nconst plain = line => line.replace(/!\\[[^\\]]*\\]\\([^)]*\\)/g, \"\").replace(/\\[([^\\]]*)\\]\\([^)]*\\)/g, \"$1\").replace(/[*_`~]/g, \"\").replace(/^\\s*(?:#{1,6}\\s+|>\\s*|[-+•]\\s+|\\d+[.)]\\s+)+/, \"\").trim();\nconst SPLIT = new RegExp(`\\\\s*(?:,|;|\\\\||·|•|–|—|\\\\s-\\\\s|@|\\\\(|\\\\)|:|\\\\/|${words([\"at\", \"på\", \"hos\", \"vid\", \"for\", \"för\", \"with\", \"inom\"])})\\\\s*`, \"iu\");\nconst OPEN_ALL = new RegExp(OPEN.source, \"giu\"), SINCE = new RegExp(words([\"sedan\", \"since\", \"from\", \"från\", \"until\", \"till\", \"to\"]), \"giu\");\nconst stripDates = s => s.replace(MONTH_YEAR, \" \").replace(/(19[5-9]\\d|20[0-4]\\d)/g, \" \").replace(OPEN_ALL, \" \").replace(SINCE, \" \");\n\n// The candidate role text on a line: a heading, a bold lead, or a short line with a year range\nfunction roleSegments(raw) {\n  const segs = [];\n  const heading = /^\\s*#{1,6}\\s+/.test(raw);\n  if (heading) segs.push(plain(raw));\n  for (const m of raw.matchAll(/\\*\\*([^*]+)\\*\\*|__([^_]+)__/g)) segs.push((m[1] || m[2]).trim());\n  const p = plain(raw);\n  if (!heading && RANGE.test(p) && p.split(/\\s+/).length <= 14) segs.push(p);\n  return [...new Set(segs)].filter(s => s.split(/\\s+/).length <= 14);\n}\n\n/**\n * Check an AI answer against the CV.\n * @param {string} output   the AI's text (Markdown)\n * @param {object} src      { cv, ad, title, employer, extra, year }\n * @returns {{ ok: boolean, issues: { kind: \"employer\"|\"title\"|\"school\"|\"degree\"|\"date\"|\"dates\", text: string, line: string }[] }}\n */\nfunction factCheck(output, { cv = \"\", ad = \"\", title = \"\", employer = \"\", extra = \"\", year = new Date().getFullYear() } = {}) {\n  const cvTok = core(cv), allTok = core([cv, ad, title, employer, extra].join(\"\\n\"));\n  const jobTok = core([title, employer].join(\"\\n\"));\n  const okYears = new Set([...years([cv, ad, title, extra].join(\"\\n\")), String(year), String(year + 1)]);\n  const srcMonths = monthYears([cv, ad, extra].join(\"\\n\"));\n  const cvLines = cv.split(/\\r?\\n/), cvLevels = degreeLevels(cv);\n  const issues = [], seen = new Set();\n  const flag = (kind, text, line) => {\n    text = text.replace(/\\s+/g, \" \").trim().replace(/^[^\\p{L}\\d]+|[^\\p{L}\\d.+#&)]+$/gu, \"\");\n    const key = kind + \":\" + core(text).join(\" \");\n    if (!text || seen.has(key)) return;\n    seen.add(key); issues.push({ kind, text, line: line.trim().slice(0, 200) });\n  };\n\n  for (const raw of String(output || \"\").split(/\\r?\\n/)) {\n    if (!raw.trim()) continue;\n    const line = plain(raw);\n\n    // Dates\n    for (const y of years(line)) if (!okYears.has(y)) flag(\"date\", y, raw);\n    for (const my of monthYears(line)) {\n      const [y] = my.split(\"-\");\n      if (okYears.has(y) && !srcMonths.has(my) && +y < year) flag(\"date\", line.match(new RegExp(`[^\\\\s]*\\\\s*${y}`))?.[0] || my, raw);\n    }\n\n    // Role lines: titles and employers next to each other, often with dates\n    for (const seg of roleSegments(raw)) {\n      const dated = RANGE.test(seg) || years(seg).size > 0 || OPEN.test(seg);\n      const parts = stripDates(seg).split(SPLIT).map(s => s.trim()).filter(s => /\\p{L}/u.test(s) && !isGeneric(s));\n      if (!dated && parts.length < 2) continue;\n      const found = [], school = parts.some(part => degreeLevels(part).size);   // names next to a degree are schools\n      for (const part of parts) {\n        const levels = degreeLevels(part);\n        if (levels.size) {                                     // a degree: translated is fine, a higher level is not\n          if (!inSource(part, cvTok) && ![...levels].every(l => cvLevels.has(l))) flag(\"degree\", part, raw);\n          continue;\n        }\n        const title = isTitle(part), name = isNameLike(part);\n        if (!title && !name) continue;\n        if (title ? titleInSource(part, cvTok) : nameInSource(part, cvTok)) { found.push({ part, title }); continue; }\n        if (!dated && inSource(part, jobTok)) continue;        // a heading about the job being applied for\n        flag(title ? \"title\" : school ? \"school\" : \"employer\", part, raw);\n      }\n      // The dates on a role line must be the ones the CV gives for that employer or title\n      if (dated && found.length) {\n        const near = new Set(), lines = [];\n        // Tie the dates to the employer when the line names one the CV has, otherwise to the title\n        const anchor = found.find(f => !f.title) || found[0];\n        cvLines.forEach((l, i) => { if (anchor.title ? titleInSource(anchor.part, core(l)) : nameInSource(anchor.part, core(l))) lines.push(i); });\n        for (const i of lines) for (let j = Math.max(0, i - 2); j <= Math.min(cvLines.length - 1, i + 2); j++) near.add(j);\n        const nearText = [...near].map(i => cvLines[i]).join(\"\\n\");\n        if (lines.length) {\n          const nearYears = years(nearText);\n          for (const y of years(seg)) if (okYears.has(y) && !nearYears.has(y)) flag(\"dates\", `${anchor.part} ${y}`, raw);\n          if (OPEN.test(seg) && !OPEN.test(nearText) && nearYears.size) flag(\"dates\", `${anchor.part} ${seg.match(OPEN)[0]}`, raw);\n        }\n      }\n    }\n\n    // Employers after a preposition (the name itself must start with a capital letter, so no \"i\" flag here)\n    for (const m of line.split(/(?<=[.!?])\\s+/).flatMap(sentence => [...sentence.matchAll(EMPLOYER_AFTER)])) {\n      const prep = fold(m[1]), name = m[2].replace(/[.'’-]+$/, \"\");\n      const words = core(name);\n      if (!words.length || (words.length === 1 && NOT_EMPLOYER.has(words[0])) || words.every(w => /^\\d+$/.test(w))) continue;\n      if (isTitle(name)) continue;                          // \"for Quality Engineer\" is a title, checked below\n      const worked = prep.includes(\" \");\n      if (worked ? !inSource(name, cvTok) : !inSource(name, allTok)) flag(\"employer\", name, raw);\n    }\n\n    // Titles after \"worked as\", \"years as\", \"arbetat som\" …\n    for (const m of line.matchAll(/(?<![\\p{L}])(?:worked|working|served|serving|employed|years?|tenure|time|my (?:current |previous |last |former )?role|arbetat|arbetade|jobbat|jobbade|anställd|verksam|år|åren|tiden|min (?:nuvarande |tidigare |senaste )?roll)\\s+(?:as|som)\\s+(?:an?\\s+|en\\s+|ett\\s+)?([\\p{L}-]+(?:\\s+[\\p{L}-]+){0,3})/giu)) {\n      const words = m[1].split(/\\s+/);\n      const stop = words.findIndex(w => /^(at|på|hos|vid|i|in|inom|with|med|för|for|and|och|where|där|since|sedan|during|under|på)$/i.test(w));\n      const t = (stop === -1 ? words : words.slice(0, stop)).join(\" \");\n      if (t && isTitle(t) && !titleInSource(t, cvTok)) flag(\"title\", t, raw);\n    }\n  }\n  const order = [\"employer\", \"title\", \"school\", \"degree\", \"dates\", \"date\"];\n  issues.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));   // stable, so lines keep their order within a kind\n  return { ok: issues.length === 0, issues };\n}\n\nmodule.exports = { factCheck, _test: { inSource, titleInSource, tokens, isTitle, isNameLike, isGeneric, degreeLevels } };\n";
+let localCheck;
+function recheck(text) {
+  if (localCheck === undefined) {
+    try { const module = { exports: {} }; new Function("module", "require", FACTCHECK_SRC)(module, () => TITLES); localCheck = module.exports.factCheck || null; }
+    catch (err) { console.warn("The fact check can't run in this browser", err); localCheck = null; }
+  }
+  if (!localCheck || !tl) return null;
+  const e = tlEntry(tl.id), r = localCheck(text, { cv: store.get("jf-cv", ""), ad: e.ad ?? tl.adText ?? "", title: tl.title, employer: tl.employer, extra: e.extra || "", year: new Date().getFullYear() });
+  return { ok: r.ok, issues: r.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) };
+}
+// Saves what the person typed in Edit text, and checks it again
+function saveEdit() {
+  if (!tl?.editing) return;
+  const o = tlEntry(tl.id).out[tl.task], text = (tl.editDraft ?? "").replace(/\s+$/, "");
+  tl.editing = false; tl.editDraft = null;
+  if (!o || !text.trim() || text === o.text) return;
+  o.text = text; o.edited = new Date().toISOString(); delete o.cut;
+  const check = recheck(text);
+  if (check) o.check = check; else delete o.check;
+  saveTailor();
+}
+// The file name for a download: "cv-eva-lind-acme-robotics.pdf", or the task, employer and job when there's no name
+function docName(o, ext) {
+  const name = DOC_TASKS.has(tl.task) ? cvName(tlEntry(tl.id).out.cv?.text || "") : "";
+  const kind = tl.task === "cv" ? "cv" : tl.task === "letter" ? (o.lang === "en" ? "cover-letter" : "personligt-brev") : t("tl.t." + tl.task);
+  return [kind, ...(name ? [name, tl.employer] : [tl.employer, tl.title])].map(slugify).filter(Boolean).join("-").replace(/-+/g, "-") + "." + ext;
+}
+function download(blob, name) {
+  const url = URL.createObjectURL(blob), link = document.createElement("a");
+  link.href = url; link.download = name;
+  document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 function appliedHtml(id) {
   const st = apps[id]?.status;
@@ -2823,10 +3095,17 @@ function tailorHtml() {
         ${out ? "" : `<p class="tl-hint">${esc(t("ai.before"))}</p>`}
         ${tl.error ? `<p class="tl-err" role="alert">${tl.error}</p>` : ""}
         ${out ? `${aiNoteHtml(task === "match" ? "ai.match" : task === "interview" ? "ai.interview" : "ai.write", t("tl.t." + task))}
-          ${factCheckHtml(out.check)}
-          <div class="tl-out" tabindex="-1">${mdHtml(out.text)}</div>
-          <div class="row"><button class="btn ghost sm" type="button" data-tl="copy">${esc(t("copy"))}</button><button class="btn ghost sm" type="button" data-tl="word">${esc(t("tl.word"))}</button>${applyHtml(job, true)}
-          <span class="tl-hint">${esc(t("tl.made", { date: fmtDate(localDay(new Date(out.at))) }))}</span></div>
+          ${out.cut ? `<p class="tl-err" role="alert">${esc(t("tl.cut"))}</p>` : ""}
+          ${factCheckHtml(out.check, out.edited)}
+          ${tl.editing ? `<div class="tl-edit"><label class="tl-label" for="tl-edit">${esc(t("tl.edit.label"))}</label>
+            <textarea id="tl-edit" data-tl="edit-text" rows="22" lang="${out.lang === "en" ? "en" : "sv"}">${esc(tl.editDraft ?? out.text)}</textarea>
+            <p class="tl-hint">${esc(t("tl.edit.hint"))}</p>
+            <div class="row"><button class="btn sm" type="button" data-tl="save">${esc(t("tl.edit.save"))}</button><button class="btn ghost sm" type="button" data-tl="cancel">${esc(t("tl.edit.cancel"))}</button></div></div>`
+          : `<div class="tl-out" tabindex="-1">${mdHtml(out.text)}</div>
+          <div class="row">${DOC_TASKS.has(task) ? `<button class="btn sm" type="button" data-tl="pdf">${esc(t("tl.pdfdl"))}</button>` : ""}<button class="btn ghost sm" type="button" data-tl="word">${esc(t("tl.word"))}</button><button class="btn ghost sm" type="button" data-tl="edit">${esc(t("tl.edit"))}</button><button class="btn ghost sm" type="button" data-tl="copy">${esc(t("copy"))}</button>${applyHtml(job, true)}
+          <span class="tl-hint">${esc(t("tl.made", { date: fmtDate(localDay(new Date(out.at))) }))}${out.edited ? ` · ${esc(t("tl.edited", { date: fmtDate(localDay(new Date(out.edited))) }))}` : ""}</span></div>
+          ${DOC_TASKS.has(task) && /\[[^\]\n]{2,60}\]/.test(out.text) ? `<p class="tl-hint tl-fill">${esc(t("tl.fill"))}</p>` : ""}
+          ${tl.pdfLost ? `<p class="tl-hint" role="status">${esc(t("tl.pdflost", { n: tl.pdfLost }))}</p>` : ""}`}
           ${appliedHtml(job.id)}` : appliedHtml(job.id)}
       </section>
       <p class="tl-hint tl-privacy">${esc(t("tl.privacy"))}</p>
@@ -2834,6 +3113,7 @@ function tailorHtml() {
 }
 function flushTailor() {
   if (!tl) return;
+  if (tl.editing) { const ta = $("tl-edit"); if (ta) tl.editDraft = ta.value; }
   for (const k of ["cv", "code", "ad", "extra", "lang"]) { clearTimeout(tlTimers[k]); const el = $("tl-" + k); if (el) saveField(k, el.value); }
 }
 function drawTailor(focusSel) {
@@ -2845,7 +3125,7 @@ function drawTailor(focusSel) {
 }
 async function openTailor(id, from) {
   const job = jobFor(id); if (!job) return;
-  tl = { ...job, task: tailorStore[id]?.lastTask || "match", busy: false, status: "", error: "", from };
+  tl = { ...job, task: tailorStore[id]?.lastTask || "match", busy: false, status: "", error: "", from, editing: false, editDraft: null, pdfLost: 0 };
   const d = $("tailor");
   drawTailor();
   if (!d.open) d.showModal();
@@ -2871,7 +3151,7 @@ async function generate() {
   if (cv.length < 200) return stop("tl.e.cv", "#tl-cv");
   if (ad.length < 100) return stop("tl.e.ad", "#tl-ad");
   store.set("jf-cv", cv); store.set("jf-code", code); e.ad = ad; e.extra = extra; e.lang = outLang; saveTailor();
-  tl.busy = true; tl.error = ""; tl.status = t("tl.wait", { s: 0 });
+  tl.busy = true; tl.error = ""; tl.status = t("tl.wait", { s: 0 }); tl.editing = false; tl.editDraft = null; tl.pdfLost = 0;
   drawTailor('[data-tl="go"]');
   const started = Date.now(), tick = setInterval(() => { if (tl?.id === id && tl.busy) { tl.status = t("tl.wait", { s: Math.round((Date.now() - started) / 1000) }); const s = $("tl-status"); if (s) s.textContent = tl.status; } }, 1000);
   const ctrl = new AbortController(); tl.ctrl = ctrl;
@@ -2882,7 +3162,7 @@ async function generate() {
       body: JSON.stringify({ code, task, lang: outLang, cv, extra, job: { title: tl.title, employer: tl.employer, text: ad } }) });
     const j = await r.json().catch(() => ({}));
     if (r.ok && j.text) {
-      e.out[task] = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.check && Array.isArray(j.check.issues) ? { check: { ok: !!j.check.ok, issues: j.check.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) } } : {}) };
+      e.out[task] = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.cut ? { cut: true } : {}), ...(j.check && Array.isArray(j.check.issues) ? { check: { ok: !!j.check.ok, issues: j.check.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) } } : {}) };
       e.lastTask = task; e.lang = outLang;
       saveTailor();
       if (!apps[id]?.status) setStatus(id, "Saved");
@@ -2901,7 +3181,18 @@ function onTailorClick(e) {
   const el = e.target.closest("[data-tl]"); if (!el || !tl) return;
   const k = el.dataset.tl;
   if (k === "close") closeTailor();
-  else if (k === "task") { tl.task = el.dataset.task; tl.error = ""; tlEntry(tl.id).lastTask = tl.task; saveTailor(); drawTailor(`[data-task="${tl.task}"]`); }
+  else if (k === "task") { flushTailor(); saveEdit(); tl.task = el.dataset.task; tl.error = ""; tl.pdfLost = 0; tlEntry(tl.id).lastTask = tl.task; saveTailor(); drawTailor(`[data-task="${tl.task}"]`); }
+  else if (k === "edit") { tl.editing = true; tl.editDraft = null; tl.pdfLost = 0; drawTailor("#tl-edit"); }
+  else if (k === "save") { flushTailor(); saveEdit(); drawTailor(".fc"); }
+  else if (k === "cancel") { tl.editing = false; tl.editDraft = null; drawTailor('[data-tl="edit"]'); }
+  else if (k === "pdf") {
+    const o = tlEntry(tl.id).out[tl.task]; if (!o) return;
+    const name = cvName(tlEntry(tl.id).out.cv?.text || "");
+    const title = tl.task === "cv" ? `CV – ${name || tl.title}` : `${o.lang === "en" ? "Cover letter" : "Personligt brev"} – ${tl.employer || tl.title}`;
+    const pdf = pdfBlob(o.text, { title, author: name, lang: o.lang });
+    download(pdf.blob, docName(o, "pdf"));
+    if (pdf.lost !== tl.pdfLost) { tl.pdfLost = pdf.lost; drawTailor('[data-tl="pdf"]'); }
+  }
   else if (k === "go") generate();
   else if (k === "refetch") refetchAd();
   else if (k === "load") $("tl-file").click();
@@ -2915,10 +3206,8 @@ function onTailorClick(e) {
   else if (k === "copy") { const o = tlEntry(tl.id).out[tl.task]; if (o) copyText(plainText(o.text), el); }
   else if (k === "word") {
     const o = tlEntry(tl.id).out[tl.task]; if (!o) return;
-    const title = `${t("tl.t." + tl.task)}: ${tl.title}${tl.employer ? `, ${tl.employer}` : ""}`;
-    const url = URL.createObjectURL(docxBlob(o.text, title, o.lang)), link = document.createElement("a");
-    link.href = url; link.download = `${slugify(t("tl.t." + tl.task))}-${slugify(tl.employer || "")}-${slugify(tl.title)}.docx`.replace(/-+/g, "-");
-    document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+    const title = DOC_TASKS.has(tl.task) ? "" : `${t("tl.t." + tl.task)}: ${tl.title}${tl.employer ? `, ${tl.employer}` : ""}`;
+    download(docxBlob(o.text, title, o.lang), docName(o, "docx"));
   }
 }
 const tlTimers = {};
@@ -2933,7 +3222,9 @@ function saveField(k, v) {
   saveTailor();
 }
 function onTailorInput(e) {
-  const el = e.target, k = el.dataset.tl; if (!["cv", "code", "ad", "extra", "lang"].includes(k) || !tl) return;
+  const el = e.target, k = el.dataset.tl;
+  if (k === "edit-text" && tl) { tl.editDraft = el.value; return; }
+  if (!["cv", "code", "ad", "extra", "lang"].includes(k) || !tl) return;
   clearTimeout(tlTimers[k]);
   tlTimers[k] = setTimeout(() => saveField(k, el.value), k === "lang" ? 0 : 400);
 }
@@ -2955,7 +3246,7 @@ function initTailor() {
   d.addEventListener("input", onTailorInput);
   d.addEventListener("change", e => { if (e.target.id === "tl-file") onTailorFile(e); else onTailorInput(e); });
   d.addEventListener("close", () => {
-    flushTailor();
+    flushTailor(); saveEdit();   // closing the panel keeps what was typed in Edit text
     if (tl?.ctrl) tl.ctrl.abort();
     const id = tl?.id, from = tl?.from; tl = null; d.innerHTML = "";
     const back = id && document.querySelector(`${from === "apps" ? "#apps" : "#list"} [data-tailor="${CSS.escape(id)}"]`); if (back) back.focus();

@@ -18,7 +18,7 @@
     ACCESS_CODES      comma-separated SHA-256 hashes of the beta access codes (make them with make-codes.mjs)
 */
 const crypto = require("crypto");
-const { PROMPTS, TASKS, AD_TASKS, CV_TASKS, parseMentor } = require("./prompts.js");
+const { PROMPTS, TASKS, AD_TASKS, CV_TASKS, OPTIONS, parseMentor } = require("./prompts.js");
 const { factCheck } = require("./factcheck.js");
 
 const MAX_CV = 20000, MAX_AD = 20000, MAX_EXTRA = 2000;
@@ -78,7 +78,8 @@ async function callModel(messages, model, { maxTokens = 2500, temperature = 0.4,
     const j = await r.json();
     const text = j?.choices?.[0]?.message?.content;
     if (typeof text !== "string" || !text.trim()) return { error: "ai_empty" };
-    return { text: text.trim(), model, tokens: j.usage ? { in: j.usage.prompt_tokens, out: j.usage.completion_tokens } : null };
+    // "length" means the model hit max_tokens and stopped mid-text, so the person is told the end is missing
+    return { text: text.trim(), model, cut: j?.choices?.[0]?.finish_reason === "length", tokens: j.usage ? { in: j.usage.prompt_tokens, out: j.usage.completion_tokens } : null };
   } catch (e) {
     return { error: e.name === "AbortError" ? "ai_timeout" : "ai_unreachable" };
   } finally { clearTimeout(timer); }
@@ -113,17 +114,16 @@ async function handle(event) {
   const extra = typeof req.extra === "string" ? req.extra.slice(0, MAX_EXTRA) : "";
   const started = Date.now();
   const model = req.model && list("AI_MODELS").includes(req.model) ? req.model : (env("AI_MODEL") || "mistral-medium-3.5-128b");
-  const mentor = task === "mentor", translation = task === "translate";
-  const options = mentor ? { maxTokens: 4000, temperature: 0.3, timeout: 110000 } : translation ? { maxTokens: 6000, temperature: 0.1 } : undefined;
-  const out = await callModel(PROMPTS[task](lang, { cv, job, extra, year: new Date().getFullYear() }), model, options);
+  const mentor = task === "mentor";
+  const out = await callModel(PROMPTS[task](lang, { cv, job, extra, year: new Date().getFullYear() }), model, OPTIONS[task]);
   const data = mentor && !out.error ? parseMentor(out.text) : null;
   if (mentor && !out.error && !data) out.error = "ai_bad_format";
-  // Every written answer is checked in code for employers, job titles and dates that the CV doesn't back up (see factcheck.js)
+  // Every written answer is checked in code for employers, job titles, schools, degrees and dates the CV doesn't back up (see factcheck.js)
   const check = !out.error && needsCv && needsAd ? factCheck(out.text, { cv, ad, title: job.title, employer: job.employer, extra, year: new Date().getFullYear() }) : null;
   // Only sizes, timings and how many things the check flagged are logged, never the CV, the ad or the flagged words
-  console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null, ...(check ? { flagged: check.issues.length } : {}) }));
+  console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null, ...(out.cut ? { cut: true } : {}), ...(check ? { flagged: check.issues.length } : {}) }));
   if (out.error) return fail(out.error === "ai_busy" ? 503 : 502, out.error, okOrigin);
-  return reply(200, mentor ? { data, model: out.model, tokens: out.tokens } : { text: out.text, model: out.model, tokens: out.tokens, ...(check ? { check } : {}) }, okOrigin);
+  return reply(200, mentor ? { data, model: out.model, tokens: out.tokens } : { text: out.text, model: out.model, tokens: out.tokens, ...(out.cut ? { cut: true } : {}), ...(check ? { check } : {}) }, okOrigin);
 }
 
 module.exports = { handle, _test: { usage, sha256 } };

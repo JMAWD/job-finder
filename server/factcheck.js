@@ -16,10 +16,14 @@
     employers  names after "at / på / hos / vid / för …" must be in the CV or the ad. After "worked at / arbetat på …"
                they must be in the CV.
     titles     "worked as / years as / arbetat som / år som …" must be followed by a title that is in the CV.
+    degrees    a degree on a role line (### BSc Mechanical Engineering, Chalmers (2013–2016)) may be translated, but its
+               level must be one the CV has: an MSc or an MBA is flagged when the CV only has a bachelor's degree. The
+               school next to it must be in the CV, and its years must be the ones the CV gives for that school.
 
   Words are compared without case or accents, legal suffixes (AB, Inc, Ltd …) are ignored, and Swedish endings are
   tolerated ("kvalitetsingenjören" matches "kvalitetsingenjör"). English and Swedish titles from src/titles.txt
   (copied to titles.json by build.py) count as the same title, so an English CV for a Swedish CV is not flagged.
+  Places with an English and a Swedish name (Gothenburg and Göteborg) count as the same place.
   It does not judge skills, figures or wording; those are covered by the prompt and by reading the result.
 */
 
@@ -89,6 +93,25 @@ function titleInSource(phrase, src) {
   return false;
 }
 
+// Places whose English and Swedish names differ, so "Göteborg" in a Swedish CV made from an English one isn't flagged
+const PLACES = [["goteborg", "gothenburg"], ["kopenhamn", "copenhagen", "kobenhavn"], ["helsingfors", "helsinki"], ["abo", "turku"], ["skane", "scania"],
+  ["munchen", "munich"], ["koln", "cologne"], ["wien", "vienna"], ["prag", "prague"], ["warszawa", "warsaw"], ["rom", "rome"], ["bryssel", "brussels"],
+  ["lissabon", "lisbon"], ["moskva", "moscow"], ["aten", "athens"], ["geneve", "geneva"], ["haag", "hague"], ["antwerpen", "antwerp"], ["nurnberg", "nuremberg"],
+  ["tyskland", "germany"], ["norge", "norway"], ["danmark", "denmark"], ["frankrike", "france"], ["spanien", "spain"], ["italien", "italy"], ["polen", "poland"],
+  ["nederlanderna", "netherlands"], ["storbritannien", "united kingdom", "uk"], ["usa", "united states", "us"], ["kina", "china"], ["indien", "india"]];
+const PLACE_OF = new Map(PLACES.flatMap(g => g.map(n => [n, g])));
+const nameInSource = (phrase, src) => inSource(phrase, src) || (PLACE_OF.get(core(phrase).join(" ")) || []).some(n => inSource(n, src));
+
+// Degree words by level, in English and Swedish. A degree may be translated, but its level must be one the CV has.
+const DEGREE = { bachelor: ["bsc", "ba", "beng", "bba", "bachelor", "bachelors", "kandidat", "kandidatexamen", "hogskoleingenjor", "hogskoleingenjorsexamen", "hogskoleexamen"],
+  master: ["msc", "ma", "meng", "master", "masters", "magister", "magisterexamen", "masterexamen", "civilingenjor", "civilingenjorsexamen", "civilekonom", "civilekonomexamen"],
+  mba: ["mba", "emba"], doctor: ["phd", "doctorate", "doctoral", "doktor", "doktorsexamen", "licentiate", "licentiat", "licentiatexamen"],
+  yh: ["yh", "yrkeshogskola", "yrkeshogskoleexamen", "yrkeshogskoleutbildning"] };
+const LEVEL_OF = new Map(Object.entries(DEGREE).flatMap(([level, ws]) => ws.map(w => [w, level])));
+// The degree levels a phrase names. "Scrum Master" and "master data" are work, not degrees.
+const NOT_DEGREE = /(?:scrum\s+master|master\s+data|master\s+planner|master\s+scheduler)/gi;
+const degreeLevels = s => new Set(tokens(String(s || "").replace(NOT_DEGREE, " ")).map(w => LEVEL_OF.get(w)).filter(Boolean));
+
 const MONTHS = { jan: 1, januari: 1, january: 1, feb: 2, februari: 2, february: 2, mar: 3, mars: 3, march: 3, apr: 4, april: 4, maj: 5, may: 5,
   jun: 6, juni: 6, june: 6, jul: 7, juli: 7, july: 7, aug: 8, augusti: 8, august: 8, sep: 9, sept: 9, september: 9,
   okt: 10, oct: 10, oktober: 10, october: 10, nov: 11, november: 11, dec: 12, december: 12 };
@@ -122,9 +145,11 @@ const GENERIC = new Set(["profile", "profil", "profiltext", "summary", "sammanfa
   "roller", "tjanster", "work", "arbete", "history", "historik", "employment", "anstallningar", "role", "roll", "tjanst", "dear", "hej", "kind", "regards", "halsningar", "vanliga",
   "interview", "intervju", "prep", "forberedelse", "tips", "strengths", "styrkor", "gaps", "luckor", "background", "bakgrund", "career", "karriar", "current", "nuvarande", "previous", "tidigare"]);
 const isGeneric = s => { const t = core(s).filter(w => !/^\d+$/.test(w)); return !t.length || t.every(w => GENERIC.has(w)); };
-// A name: every word starts with a capital letter or digit, or it is all capitals, or it has a legal suffix
+// A name: every word starts with a capital letter or digit, or it is all capitals, or it has a legal suffix.
+// Swedish school names keep the institution word in lower case ("Linköpings universitet"), so those words don't count.
+const INSTITUTION = new Set(["universitet", "universitetet", "hogskola", "hogskolan", "tekniska", "folkhogskola", "yrkeshogskola", "gymnasium", "gymnasiet"]);
 const isNameLike = s => {
-  const w = s.replace(/[()[\]"“”'’]/g, " ").trim().split(/\s+/).filter(x => x && !FILL.has(fold(x)));
+  const w = s.replace(/[()[\]"“”'’]/g, " ").trim().split(/\s+/).filter(x => x && !FILL.has(fold(x)) && !INSTITUTION.has(fold(x)));
   return w.length > 0 && w.length <= 6 && w.every(x => /^[\p{Lu}\d]/u.test(x));
 };
 // Capitalised words that are not employers
@@ -159,14 +184,14 @@ function roleSegments(raw) {
  * Check an AI answer against the CV.
  * @param {string} output   the AI's text (Markdown)
  * @param {object} src      { cv, ad, title, employer, extra, year }
- * @returns {{ ok: boolean, issues: { kind: "employer"|"title"|"date"|"dates", text: string, line: string }[] }}
+ * @returns {{ ok: boolean, issues: { kind: "employer"|"title"|"school"|"degree"|"date"|"dates", text: string, line: string }[] }}
  */
 function factCheck(output, { cv = "", ad = "", title = "", employer = "", extra = "", year = new Date().getFullYear() } = {}) {
   const cvTok = core(cv), allTok = core([cv, ad, title, employer, extra].join("\n"));
   const jobTok = core([title, employer].join("\n"));
   const okYears = new Set([...years([cv, ad, title, extra].join("\n")), String(year), String(year + 1)]);
   const srcMonths = monthYears([cv, ad, extra].join("\n"));
-  const cvLines = cv.split(/\r?\n/);
+  const cvLines = cv.split(/\r?\n/), cvLevels = degreeLevels(cv);
   const issues = [], seen = new Set();
   const flag = (kind, text, line) => {
     text = text.replace(/\s+/g, " ").trim().replace(/^[^\p{L}\d]+|[^\p{L}\d.+#&)]+$/gu, "");
@@ -191,20 +216,25 @@ function factCheck(output, { cv = "", ad = "", title = "", employer = "", extra 
       const dated = RANGE.test(seg) || years(seg).size > 0 || OPEN.test(seg);
       const parts = stripDates(seg).split(SPLIT).map(s => s.trim()).filter(s => /\p{L}/u.test(s) && !isGeneric(s));
       if (!dated && parts.length < 2) continue;
-      const found = [];
+      const found = [], school = parts.some(part => degreeLevels(part).size);   // names next to a degree are schools
       for (const part of parts) {
+        const levels = degreeLevels(part);
+        if (levels.size) {                                     // a degree: translated is fine, a higher level is not
+          if (!inSource(part, cvTok) && ![...levels].every(l => cvLevels.has(l))) flag("degree", part, raw);
+          continue;
+        }
         const title = isTitle(part), name = isNameLike(part);
         if (!title && !name) continue;
-        if (title ? titleInSource(part, cvTok) : inSource(part, cvTok)) { found.push({ part, title }); continue; }
+        if (title ? titleInSource(part, cvTok) : nameInSource(part, cvTok)) { found.push({ part, title }); continue; }
         if (!dated && inSource(part, jobTok)) continue;        // a heading about the job being applied for
-        flag(title ? "title" : "employer", part, raw);
+        flag(title ? "title" : school ? "school" : "employer", part, raw);
       }
       // The dates on a role line must be the ones the CV gives for that employer or title
       if (dated && found.length) {
         const near = new Set(), lines = [];
         // Tie the dates to the employer when the line names one the CV has, otherwise to the title
         const anchor = found.find(f => !f.title) || found[0];
-        cvLines.forEach((l, i) => { if (anchor.title ? titleInSource(anchor.part, core(l)) : inSource(anchor.part, core(l))) lines.push(i); });
+        cvLines.forEach((l, i) => { if (anchor.title ? titleInSource(anchor.part, core(l)) : nameInSource(anchor.part, core(l))) lines.push(i); });
         for (const i of lines) for (let j = Math.max(0, i - 2); j <= Math.min(cvLines.length - 1, i + 2); j++) near.add(j);
         const nearText = [...near].map(i => cvLines[i]).join("\n");
         if (lines.length) {
@@ -233,9 +263,9 @@ function factCheck(output, { cv = "", ad = "", title = "", employer = "", extra 
       if (t && isTitle(t) && !titleInSource(t, cvTok)) flag("title", t, raw);
     }
   }
-  const order = ["employer", "title", "dates", "date"];
+  const order = ["employer", "title", "school", "degree", "dates", "date"];
   issues.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));   // stable, so lines keep their order within a kind
   return { ok: issues.length === 0, issues };
 }
 
-module.exports = { factCheck, _test: { inSource, titleInSource, tokens, isTitle, isNameLike, isGeneric } };
+module.exports = { factCheck, _test: { inSource, titleInSource, tokens, isTitle, isNameLike, isGeneric, degreeLevels } };

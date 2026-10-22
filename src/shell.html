@@ -465,10 +465,15 @@ body:has(.tailor[open]) { overflow: hidden; }
 .tl-err { margin: 0; color: var(--signal); font-weight: 600; font-size: 13.5px; }
 .tl-out { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 6px 22px 16px; box-shadow: var(--shadow); font-size: 14.5px; line-height: 1.6; max-width: 80ch; overflow-wrap: anywhere; }
 .tl-out:focus { outline: none; }
+.tl-out h3 { font-family: var(--font-display); font-size: 21px; line-height: 1.2; margin: 14px 0 2px; }
 .tl-out h4 { font-family: var(--font-display); font-size: 15.5px; margin: 16px 0 4px; }
+.tl-out h5 { font-size: 14.5px; font-weight: 700; margin: 12px 0 2px; }
 .tl-out p { margin: 8px 0; }
 .tl-out ul, .tl-out ol { margin: 6px 0; padding-left: 22px; }
 .tl-out li { margin: 3px 0; }
+.tl-edit { display: grid; gap: 8px; max-width: 80ch; }
+.tl-edit textarea { width: 100%; min-height: 360px; resize: vertical; font-family: var(--font-mono); font-size: 13px; line-height: 1.5; }
+.tl-fill { color: var(--ink); font-weight: 600; }
 .tl-privacy { border-top: 1px solid var(--line); padding-top: 12px; }
 .tl-headapply { margin-top: 10px; }
 .tl-headapply .btn { color: var(--mast-ink); border-color: var(--mast-line); }

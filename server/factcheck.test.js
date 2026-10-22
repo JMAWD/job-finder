@@ -27,6 +27,7 @@ const TITLES = [["Kvalitetsingenjör", "Quality Engineer"], ["Produktionsteknike
 const FAKE_TITLES = [["Driftchef", "Operations Director"], ["Inköpschef", "Head of Procurement"], ["Teamledare", "Team Leader"], ["Arkitekt", "Architect"],
   ["Platschef", "Site Director"], ["Forskare", "Research Scientist"]];
 const CITIES = ["Göteborg", "Borås", "Trollhättan", "Jönköping", "Västerås", "Linköping"];
+const NAMES = ["Eva Lind", "Ahmed Rahimi", "Maria Ekholm", "Jonas Berg", "Sara Nilsson", "Daniel Moore", "Priya Natarajan", "Erik Johansson"];
 const SKILLS = ["FMEA", "8D", "Python", "SAP", "Lean", "PPAP", "SQL", "Excel", "ISO 9001", "Six Sigma"];
 const YEAR = 2026;
 
@@ -42,7 +43,8 @@ function makeCase(r) {
   const eduTo = roles[roles.length - 1].from - r.int(0, 1), eduFrom = eduTo - 3;
   const english = r.next() < 0.3;
   const skills = r.shuffle(SKILLS).slice(0, 4);
-  const lines = [english ? "Experienced engineer focused on " + skills.join(", ") + "." : "Erfaren ingenjör med fokus på " + skills.join(", ") + ".", "", english ? "Experience" : "Erfarenhet"];
+  const name = r.pick(NAMES), home = r.pick(CITIES), email = name.toLowerCase().replace(" ", ".") + "@example.com";
+  const lines = [name, `${home} · ${email}`, "", english ? "Experienced engineer focused on " + skills.join(", ") + "." : "Erfaren ingenjör med fokus på " + skills.join(", ") + ".", "", english ? "Experience" : "Erfarenhet"];
   const layout = r.int(0, 2);
   for (const ro of roles) {
     const title = english ? ro.en : ro.sv, span = `${ro.from} – ${ro.to || (english ? "present" : "nu")}`;
@@ -55,7 +57,27 @@ function makeCase(r) {
   const adEmployer = "Acme " + r.pick(["Robotics", "Nordic", "Industri", "Vehicles"]);
   const adTitle = r.pick(TITLES)[r.next() < 0.5 ? 0 : 1];
   const ad = `${adEmployer} söker en ${adTitle.toLowerCase()} som kan ${skills[0]} och vill utveckla vår produktion. Start i januari ${YEAR + 1}.`;
-  return { roles, english, skills, src: { cv: lines.join("\n"), ad, title: adTitle, employer: adEmployer, extra: "", year: YEAR } };
+  return { roles, english, skills, name, home, email, layout, edu: { from: eduFrom, to: eduTo }, src: { cv: lines.join("\n"), ad, title: adTitle, employer: adEmployer, extra: "", year: YEAR } };
+}
+
+// The whole tailored CV, the way the CV task now asks for it: name, contact line, profile, skills, every role, education
+function wholeCv(r, c, en, T, span) {
+  const out = [`# ${c.name}`, r.next() < 0.5 ? `${c.home} · ${c.email}` : `${c.email} · ${c.home}`, "",
+    en ? "## Profile" : "## Profil",
+    en ? `${T(c.roles[0])} with experience of ${c.skills.slice(0, 2).join(" and ")}.` : `${T(c.roles[0])} med erfarenhet av ${c.skills.slice(0, 2).join(" och ")}.`, "",
+    en ? "## Key skills" : "## Nyckelkompetenser", ...r.shuffle(c.skills).map(s => `- ${s}`), "", en ? "## Experience" : "## Erfarenhet"];
+  for (const ro of c.roles) {
+    const fmt = r.int(0, 2);
+    if (fmt === 0) out.push(`### ${T(ro)}, ${ro.employer} (${span(ro)})`);
+    else if (fmt === 1) out.push(c.layout === 0 ? `### ${T(ro)}, ${ro.employer}, ${ro.city} (${span(ro)})` : `### ${T(ro)} | ${ro.employer} | ${span(ro)}`);   // only the first layout has towns
+    else out.push(`### ${T(ro)} · ${ro.employer} · ${span(ro)}`);
+    for (let i = r.int(1, 3); i > 0; i--) out.push(`- ${en ? "Drove improvements with" : "Drev förbättringar med"} ${r.pick(c.skills)}`);
+    out.push("");
+  }
+  // The degree in the answer's language: a translation of the CV's degree, never a higher one
+  out.push(en ? "## Education" : "## Utbildning", `### ${en ? r.pick(["BSc Engineering", "BSc in Mechanical Engineering", "Bachelor of Science in Engineering"]) : "Högskoleingenjör"}, Chalmers (${c.edu.from}–${c.edu.to})`,
+    "", en ? "## Languages" : "## Språk", en ? "- Swedish and English" : "- Svenska och engelska");
+  return out;
 }
 
 // An answer that only uses facts from the CV, written in one of the ways the model writes them
@@ -63,6 +85,7 @@ function faithful(r, c) {
   const en = r.next() < 0.5;   // the answer's language, which may differ from the CV's
   const T = ro => (en ? ro.en : ro.sv);
   const span = ro => `${ro.from}–${ro.to || (en ? r.pick(["present", "now"]) : r.pick(["nu", "idag"]))}`;
+  if (r.next() < 0.4) return { text: wholeCv(r, c, en, T, span).join("\n"), en, whole: true };
   const out = [en ? "## 1. Profile summary" : "## 1. Ny profiltext",
     en ? `${T(c.roles[0])} with experience of ${c.skills.slice(0, 2).join(" and ")}, ready to bring it to ${c.src.employer}.`
        : `${T(c.roles[0])} med erfarenhet av ${c.skills.slice(0, 2).join(" och ")}, redo att bidra hos ${c.src.employer}.`,
@@ -101,8 +124,13 @@ function poison(r, c, base) {
     () => ({ line: en ? `During my years at ${fakeEmp} I led audits.` : `Under mina år hos ${fakeEmp} ledde jag revisioner.`, expect: fakeEmp }),
     () => ({ line: en ? `I worked at ${c.src.employer} on a summer project.` : `Jag arbetade på ${c.src.employer} under ett sommarprojekt.`, expect: c.src.employer }),
     () => { const y = freshYear(); return { line: en ? `Certified in ${c.skills[0]} in ${y}.` : `Certifierad i ${c.skills[0]} ${y}.`, expect: String(y) }; },
+    () => ({ line: `### ${en ? r.pick(["MSc Engineering", "Master of Science in Engineering", "MBA"]) : r.pick(["Civilingenjör", "Masterexamen", "MBA"])}, Chalmers (${c.edu.from}–${c.edu.to})`, expect: en ? "M" : r.pick(["C", "M"]) }),
+    () => ({ line: `### ${en ? "BSc Engineering" : "Högskoleingenjör"}, ${r.pick(["KTH", "Linköpings universitet", "Uppsala University"])} (${c.edu.from}–${c.edu.to})`, expect: "", school: true }),
   ];
-  const k = r.int(0, kinds.length - 1), { line, expect } = kinds[k]();
+  const k = r.int(0, kinds.length - 1), made = kinds[k]();
+  const line = made.line;
+  // The upgraded degree or invented school is what must be flagged; take its name from the line itself
+  const expect = made.school ? line.match(/, ([^(]+) \(/)[1] : made.expect === "M" || made.expect === "C" ? line.slice(4, line.indexOf(",")) : made.expect;
   const lines = base.text.split("\n"), at = r.int(1, lines.length);
   lines.splice(at, 0, line);
   return { text: lines.join("\n"), expect, kind: k, line };
@@ -129,6 +157,19 @@ test("rewording, order and markup don't change the result", () => {
   const r = rng(42), c = makeCase(r), a = faithful(r, c);
   const variants = [a.text.toUpperCase().replace(/^#+/gm, "#"), a.text.split("\n").reverse().join("\n"), a.text.replace(/\*\*/g, "").replace(/^### /gm, "**").replace(/\n/g, "  \n")];
   for (const v of variants) assert.ok(factCheck(v, c.src).issues.every(i => i.kind !== "employer" && i.kind !== "date"), v);
+});
+
+test("a whole tailored CV passes, with translated degrees and place names, and an upgraded degree is caught", () => {
+  const cv = `Daniel Moore\nStockholm · daniel.moore@example.com\n\nExperience\nProject Coordinator — Vikinge Marine, Gothenburg (2017 – 2021)\n- Coordinated retrofit projects\n\nEducation\nBSc Electrical Engineering, University of Strathclyde, 2011 – 2015\nScrum Master course, 2019`;
+  const src = { cv, ad: "Vi söker en projektledare.", title: "Projektledare", employer: "Northwind Grid", year: 2026 };
+  const sv = "# Daniel Moore\nStockholm · daniel.moore@example.com\n\n## Erfarenhet\n### Projektkoordinator, Vikinge Marine, Göteborg (2017 – 2021)\n- Samordnade ombyggnadsprojekt\n\n## Utbildning\n### Kandidatexamen i elektroteknik, University of Strathclyde (2011 – 2015)\n### Scrum Master, kurs (2019)";
+  assert.deepEqual(factCheck(sv, src).issues, [], sv);
+  for (const [line, text] of [["### Civilingenjör i elektroteknik, University of Strathclyde (2011 – 2015)", "Civilingenjör"], ["### MBA, University of Strathclyde (2011 – 2015)", "MBA"],
+    ["### PhD Electrical Engineering, University of Strathclyde (2011 – 2015)", "PhD"], ["### BSc Electrical Engineering, University of Glasgow (2011 – 2015)", "Glasgow"]]) {
+    const i = factCheck(sv + "\n" + line, src).issues;
+    assert.ok(i.some(x => x.text.includes(text)), `${line}\n${JSON.stringify(i)}`);
+  }
+  assert.ok(factCheck("### MSc Electrical Engineering, University of Strathclyde (2011 – 2015)", src).issues.some(x => x.kind === "degree"));
 });
 
 test("worked examples in Swedish and English", () => {

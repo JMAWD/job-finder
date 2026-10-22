@@ -4,8 +4,9 @@
 // GET /last returns the last request it received and how many came in. POST /mode {"status":429} makes the next answers fail,
 // {"mentorBad":true} makes the Mentor's answer come back as Markdown instead of JSON.
 // {"invent":true} makes the tailored CV name a job the test CV doesn't have, for the fact check.
+// {"cut":true} makes the answer come back as if the model ran out of room (finish_reason "length").
 import http from "node:http";
-let last = null, count = 0, mode = { status: 200, delay: 300, mentorBad: false, invent: false };
+let last = null, count = 0, mode = { status: 200, delay: 300, mentorBad: false, invent: false, cut: false };
 const course = (name, provider, format, extra, directions, priority, skill, forRole, why) => ({ name, provider, format, ...extra, directions, priority, why, skill, for_role: forRole });
 const MENTOR = {
   name: "Eva", years: 8, stage: "established", stage_reason: "Eight years in quality roles, the last three leading improvement work.",
@@ -36,7 +37,12 @@ const MENTOR = {
 const ANSWERS = {
   match: "## Det som matchar\n- **FMEA**: åtta års erfarenhet inom fordonsindustrin\n- Leverantörsrevisioner\n\n---\n\n## Det som saknas\n1. Python nämns inte i CV:t\n\n## Samlad bedömning\nStark match.",
   letter: "## Cover letter\nDear [contact person],\n\nI want to work at **Acme Robotics** because the role joins quality work and software.\n\n- Eight years of FMEA\n- Supplier audits\n\nKind regards,\n[Your name]",
-  cv: "## Profil\nKvalitetsingenjör med åtta års erfarenhet.\n\n## Nyckelkompetenser\n- FMEA\n- 8D",
+  // The whole tailored CV, written only from FULL_CV in tests/test_tailor.py
+  cv: "# Eva Lindqvist\nGöteborg · eva.lindqvist@example.com · 070-123 45 67\n\n## Profil\nKvalitetsingenjör med åtta års erfarenhet av **FMEA**, 8D och leverantörsrevisioner inom fordonsindustrin. Van att leda riskanalys och förbättringsarbete tillsammans med produktion och leverantörer.\n\n"
+    + "## Nyckelkompetenser\n- FMEA\n- 8D\n- Leverantörsrevisioner\n- Riskanalys\n- Förbättringsarbete\n- Utbildning av kollegor\n\n"
+    + "## Erfarenhet\n### Kvalitetsingenjör, Nordvik Automotive AB, Göteborg (2018 – nu)\n- Ledde FMEA för bromssystem tillsammans med konstruktion och produktion\n- Genomförde leverantörsrevisioner och 8D-utredningar\n- Utbildade kollegor i riskanalys\n\n"
+    + "### Produktionstekniker, Svea Bearings AB, Göteborg (2016 – 2018)\n- Ansvarade för förbättringsarbete på monteringslinan\n\n"
+    + "## Utbildning\n### Högskoleingenjör i maskinteknik, Chalmers (2013 – 2016)\n\n## Språk\n- Svenska (modersmål), engelska (flytande)",
   interview: "## Troliga frågor\n1. Berätta om en FMEA du ledde.\n2. Hur arbetar du med leverantörer?",
 };
 http.createServer(async (req, res) => {
@@ -55,8 +61,8 @@ http.createServer(async (req, res) => {
     const ask = last.body.messages[1].content;
     if (/Translate the job ad into natural/.test(ask)) return send(200, { choices: [{ message: { content: "# Quality Engineer\n\nWe are looking for a quality engineer who can use FMEA and wants to drive quality improvements in production.\n\n## Experience\n- Experience with FMEA\n- Supplier audits" } }], usage: { prompt_tokens: 800, completion_tokens: 120 } });
     const task = /cover letter|personligt brev/i.test(ask) ? "letter" : /Tailor the CV|Anpassa CV/i.test(ask) ? "cv" : /interview|intervju/i.test(ask) ? "interview" : "match";
-    const content = mode.invent && task === "cv" ? ANSWERS.cv + "\n\n### Senior kvalitetsingenjör, Bosch Rexroth (2012–nu)\n- Ledde FMEA" : ANSWERS[task];
-    return send(200, { choices: [{ message: { content } }], usage: { prompt_tokens: 1200, completion_tokens: 300 } });
+    const content = mode.invent && task === "cv" ? ANSWERS.cv + "\n\n### Senior kvalitetsingenjör, Bosch Rexroth (2012–nu)\n- Ledde FMEA" : mode.cut ? ANSWERS[task].split("## Utbildning")[0].trim() : ANSWERS[task];
+    return send(200, { choices: [{ message: { content }, finish_reason: mode.cut ? "length" : "stop" }], usage: { prompt_tokens: 1200, completion_tokens: 300 } });
   }
   send(404, {});
 }).listen(+process.argv[2] || 8799, "127.0.0.1");
