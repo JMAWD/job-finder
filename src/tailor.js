@@ -4,6 +4,7 @@
    The CV and access code are kept in this browser. Translation sends only the ad text; Generate sends the CV,
    ad and any extra wishes to the tailoring server, which forwards them to an AI model hosted in the EU. */
 const TASKS = ["match", "cv", "letter", "interview"];
+const DOC_TASKS = new Set(["cv", "letter"]);   // the texts that go to the employer, so they download as a PDF with no title of ours
 const TAILOR_TIMEOUT = 110000;
 let tl = null;   // the open job: { id, title, employer, muni, url, src, task, busy, ctrl }
 let tailorStore = store.get("jf-tailor", {});   // ad id -> { ad, extra, out: { task: { text, at, model, lang, check } } }
@@ -14,14 +15,15 @@ const translations = new Map();   // translated ads stay in memory for this page
 
 const RULE = /^\s*([-*_])(\s*\1){2,}\s*$/;   // a "---" divider line, left out everywhere
 // Small Markdown reader for the AI's answers: headings, lists, bold, italics. Everything is escaped first.
+// "#" (the name on a tailored CV) becomes h3, "##" h4 and "###" or deeper h5.
 function mdHtml(text) {
   const out = []; let list = null;
   const inline = s => s.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(^|[\s(])\*(\S[^*]*?)\*(?=[\s).,;:!?]|$)/g, "$1<i>$2</i>");
   const close = () => { if (list) { out.push(`</${list}>`); list = null; } };
   for (const l of esc(text).split("\n")) {
     if (RULE.test(l)) { close(); continue; }
-    const h = l.match(/^\s*#{1,6}\s+(.*)/), ul = l.match(/^\s*[-*•]\s+(.*)/), ol = l.match(/^\s*\d+[.)]\s+(.*)/);
-    if (h) { close(); out.push(`<h4>${inline(h[1])}</h4>`); }
+    const h = l.match(/^\s*(#{1,6})\s+(.*)/), ul = l.match(/^\s*[-*•]\s+(.*)/), ol = l.match(/^\s*\d+[.)]\s+(.*)/);
+    if (h) { close(); const tag = h[1].length === 1 ? "h3" : h[1].length === 2 ? "h4" : "h5"; out.push(`<${tag}>${inline(h[2])}</${tag}>`); }
     else if (ul || ol) { const tag = ul ? "ul" : "ol"; if (list !== tag) { close(); out.push(`<${tag}>`); list = tag; } out.push(`<li>${inline((ul || ol)[1])}</li>`); }
     else if (!l.trim()) close();
     else { close(); out.push(`<p>${inline(l)}</p>`); }
@@ -93,11 +95,12 @@ function docxBlob(md, title, textLang) {
     const bold = /^\*\*.*\*\*$/.test(part), txt = bold ? part.slice(2, -2) : part;
     return `<w:r><w:rPr>${base}${bold ? "<w:b/>" : ""}</w:rPr><w:t xml:space="preserve">${x(txt)}</w:t></w:r>`;
   }).join("");
-  const paras = [`<w:p><w:pPr><w:spacing w:after="200"/></w:pPr>${runs(title, '<w:b/><w:sz w:val="32"/>')}</w:p>`];
+  // A CV or cover letter is sent as it is, so it gets no title of ours; the match check and interview prep do
+  const paras = title ? [`<w:p><w:pPr><w:spacing w:after="200"/></w:pPr>${runs(title, '<w:b/><w:sz w:val="32"/>')}</w:p>`] : [];
   for (const line of md.split("\n")) {
-    const h = line.match(/^\s*#{1,6}\s+(.*)/), ul = line.match(/^\s*[-*•]\s+(.*)/), ol = line.match(/^\s*(\d+)[.)]\s+(.*)/);
+    const h = line.match(/^\s*(#{1,6})\s+(.*)/), ul = line.match(/^\s*[-*•]\s+(.*)/), ol = line.match(/^\s*(\d+)[.)]\s+(.*)/);
     if (!line.trim() || RULE.test(line)) continue;
-    if (h) paras.push(`<w:p><w:pPr><w:spacing w:before="240" w:after="80"/><w:keepNext/></w:pPr>${runs(h[1], '<w:b/><w:sz w:val="26"/>')}</w:p>`);
+    if (h) { const lv = h[1].length; paras.push(`<w:p><w:pPr><w:spacing w:before="${lv === 1 ? 0 : lv === 2 ? 240 : 160}" w:after="${lv === 1 ? 40 : 80}"/><w:keepNext/></w:pPr>${runs(h[2], `<w:b/><w:sz w:val="${lv === 1 ? 40 : lv === 2 ? 26 : 22}"/>`)}</w:p>`); }
     else if (ul) paras.push(`<w:p><w:pPr><w:ind w:left="360" w:hanging="240"/><w:spacing w:after="60"/></w:pPr>${runs("• " + ul[1])}</w:p>`);
     else if (ol) paras.push(`<w:p><w:pPr><w:ind w:left="360" w:hanging="300"/><w:spacing w:after="60"/></w:pPr>${runs(ol[1] + ". " + ol[2])}</w:p>`);
     else paras.push(`<w:p><w:pPr><w:spacing w:after="120"/></w:pPr>${runs(line.trim())}</w:p>`);
@@ -113,6 +116,221 @@ function docxBlob(md, title, textLang) {
     ["word/styles.xml", enc.encode(styles)],
   ]);
 }
+
+/* ---------- Writing a PDF from the AI's answer, in the browser with no library ----------
+   Uses the PDF viewer's own Helvetica, so no font is embedded and the file stays small. Those fonts cover Swedish and the
+   other Western European letters (WinAnsi); anything else is drawn as "?" and counted, so the panel can suggest Word instead.
+   A tailored CV gets a CV layout: the name large, the contact line under it, section headings, and each job's years
+   right-aligned on its heading line. Email addresses and web links can be clicked. */
+const HELV = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,0,556,0,222,556,333,1000,556,556,333,1000,667,333,1000,0,611,0,0,222,222,333,333,350,556,1000,333,1000,500,333,944,0,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500];
+const HELV_B = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,0,556,0,278,556,500,1000,556,556,333,1000,667,333,1000,0,611,0,0,278,278,500,500,350,556,1000,333,1000,556,333,944,0,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556];
+// Characters outside Latin-1 that WinAnsi still has (curly quotes, dashes, bullet, euro …), and near matches for a few others
+const WIN = new Map([[0x20ac, 0x80], [0x201a, 0x82], [0x192, 0x83], [0x201e, 0x84], [0x2026, 0x85], [0x2020, 0x86], [0x2021, 0x87], [0x2c6, 0x88], [0x2030, 0x89], [0x160, 0x8a],
+  [0x2039, 0x8b], [0x152, 0x8c], [0x17d, 0x8e], [0x2018, 0x91], [0x2019, 0x92], [0x201c, 0x93], [0x201d, 0x94], [0x2022, 0x95], [0x2013, 0x96], [0x2014, 0x97], [0x2dc, 0x98],
+  [0x2122, 0x99], [0x161, 0x9a], [0x203a, 0x9b], [0x153, 0x9c], [0x17e, 0x9e], [0x178, 0x9f]]);
+const NEAR = { "\u2010": "-", "\u2011": "-", "\u2012": "-", "\u2212": "-", "\u2032": "'", "\u2033": '"', "\u00ad": "", "\u200b": "", "\u2009": " ", "\u202f": " ", "\u2007": " ",
+  "\u0141": "L", "\u0142": "l", "\u0110": "D", "\u0111": "d", "\u0131": "i", "\u2192": "->", "\u2264": "<=", "\u2265": ">=", "\u25cf": "\u2022", "\u25aa": "\u2022" };
+const latin = c => (c >= 32 && c < 127) || (c >= 0xa0 && c <= 0xff);
+function winAnsi(s) {   // the text as WinAnsi bytes (one char per byte), and how many characters had to become "?"
+  let out = "", lost = 0;
+  for (const ch of String(s)) {
+    const c = ch.codePointAt(0);
+    if (c === 9) { out += " "; continue; }
+    if (c < 32) continue;
+    if (latin(c)) { out += ch; continue; }
+    if (WIN.has(c)) { out += String.fromCharCode(WIN.get(c)); continue; }
+    const near = NEAR[ch] ?? ch.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+    if (near && [...near].every(b => latin(b.codePointAt(0)) || WIN.has(b.codePointAt(0)))) { out += [...near].map(b => latin(b.codePointAt(0)) ? b : String.fromCharCode(WIN.get(b.codePointAt(0)))).join(""); continue; }
+    out += "?"; lost++;
+  }
+  return { text: out, lost };
+}
+const pdfStr = s => s.replace(/[\\()]/g, "\\$&");
+const utf16 = s => "<FEFF" + [...String(s)].map(ch => { const c = ch.codePointAt(0); return c > 0xffff ? "003F" : c.toString(16).toUpperCase().padStart(4, "0"); }).join("") + ">";
+const glyphW = (code, font) => (font === "B" ? HELV_B : HELV)[code - 32] || 556;
+// "### Quality Engineer, Nordvik (2018–now)" -> the role on the left and its years on the right
+function splitYears(s) {
+  const m = s.match(/^(.*?)[\s,·|]*\(([^()]*\b(?:19|20)\d\d\b[^()]*)\)\s*$/) || s.match(/^(.*?)\s*[·|,–]\s*((?:[\p{L}.]+\s+)?(?:19|20)\d\d(?:\s*[–—-]\s*(?:[\p{L}.]+\s+)?(?:(?:19|20)\d\d|[\p{L}]+))?)\s*$/u);
+  return m && m[1].trim() ? [m[1].trim(), m[2].trim()] : [s, ""];
+}
+
+function pdfBlob(md, { title = "", author = "", lang: textLang = "sv" } = {}) {
+  const PW = 595.28, PH = 841.89, L = 56, R = 56, TOP = 56, BOTTOM = 62, FULL = PW - L - R;
+  const C = { ink: "0.13 0.15 0.17", muted: "0.39 0.42 0.45", accent: "0.11 0.35 0.41", rule: "0.78 0.81 0.83" };
+  const pages = []; let pg, y, lost = 0;
+  const newPage = () => { pg = { ops: [], annots: [] }; pages.push(pg); y = PH - TOP; };
+  newPage();
+  const atTop = () => y === PH - TOP;
+
+  // Markdown inline (**bold**, *italic*, [link](url), `code`) -> runs of text in one font
+  function runs(s, font, upper, count = true) {
+    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, txt, url) => txt === url ? url : `${txt} (${url})`).replace(/`/g, "");
+    const out = [];
+    for (const part of s.split(/(\*\*[^*]+\*\*|__[^_]+__|\*[^*\s][^*]*\*)/)) {
+      if (!part) continue;
+      const bold = /^(\*\*|__).*(\*\*|__)$/.test(part) && part.length > 4, ital = !bold && /^\*.*\*$/.test(part) && part.length > 2;
+      const txt = bold ? part.slice(2, -2) : ital ? part.slice(1, -1) : part;
+      const enc = winAnsi(upper ? txt.toLocaleUpperCase(textLang === "en" ? "en" : "sv") : txt); if (count) lost += enc.lost;
+      out.push({ t: enc.text, f: font === "B" || bold ? "B" : ital ? "I" : font });
+    }
+    return out;
+  }
+  // Runs -> words that each know their width; a word can mix fonts ("**FMEA**,")
+  function words(rs, size, tc) {
+    const out = []; let cur = null, space = false;
+    for (const r of rs) for (const ch of r.t) {
+      if (ch === " ") { if (cur) { out.push(cur); cur = null; } space = true; continue; }
+      if (!cur) { cur = { segs: [], w: 0, space: space && out.length > 0 }; space = false; }
+      const last = cur.segs[cur.segs.length - 1];
+      if (last && last.f === r.f) last.t += ch; else cur.segs.push({ t: ch, f: r.f });
+      cur.w += glyphW(ch.charCodeAt(0), r.f) * size / 1000 + tc;
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+  // Greedy line breaking; a word longer than the line (a long link) is cut where it has to be
+  function wrap(ws, width, size, tc) {
+    const sp = glyphW(32, "R") * size / 1000 + tc, lines = []; let line = [], w = 0;
+    const push = wd => { const s = line.length > 0 && wd.space; line.push({ ...wd, space: s }); w += (s ? sp : 0) + wd.w; };
+    for (const wd of ws) {
+      if (line.length && w + (wd.space ? sp : 0) + wd.w > width) { lines.push(line); line = []; w = 0; }
+      if (!line.length && wd.w > width) {
+        let piece = { segs: [], w: 0, space: false };
+        for (const s of wd.segs) for (const ch of s.t) {
+          const cw = glyphW(ch.charCodeAt(0), s.f) * size / 1000 + tc;
+          if (piece.w + cw > width && piece.w) { lines.push([piece]); piece = { segs: [], w: 0, space: false }; }
+          const last = piece.segs[piece.segs.length - 1];
+          if (last && last.f === s.f) last.t += ch; else piece.segs.push({ t: ch, f: s.f });
+          piece.w += cw;
+        }
+        line = [piece]; w = piece.w; continue;
+      }
+      push(wd);
+    }
+    if (line.length) lines.push(line);
+    return lines.length ? lines : [[]];
+  }
+  const LINK = /^(?:(?:https?:\/\/|www\.)\S+|(?:linkedin|github)\.com\/\S+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+)$/i;
+  function draw(line, x, base, size, color, tc = 0) {
+    const segs = [];
+    let cx = x;
+    for (const wd of line) {
+      if (wd.space) { const last = segs[segs.length - 1]; if (last) last.t += " "; else segs.push({ t: " ", f: wd.segs[0]?.f || "R" }); cx += glyphW(32, "R") * size / 1000 + tc; }
+      const text = wd.segs.map(s => s.t).join("").replace(/[.,;:)]+$/, "");
+      if (LINK.test(text)) {
+        const w = [...text].reduce((n, ch, i) => n + glyphW(ch.charCodeAt(0), wd.segs[0].f) * size / 1000 + tc, 0);
+        pg.annots.push({ rect: [cx, base - 2.5, cx + w, base + size * 0.85], uri: /@/.test(text) && !/^https?:/i.test(text) ? "mailto:" + text : /^https?:/i.test(text) ? text : "https://" + text });
+      }
+      for (const s of wd.segs) { const last = segs[segs.length - 1]; if (last && last.f === s.f) last.t += s.t; else segs.push({ ...s }); }
+      cx += wd.w;
+    }
+    if (!segs.length) return;
+    pg.ops.push(`BT ${color} rg${tc ? ` ${tc} Tc` : ""} ${x.toFixed(2)} ${base.toFixed(2)} Td ${segs.map(s => `/${s.f} ${size} Tf (${pdfStr(s.t)}) Tj`).join(" ")}${tc ? " 0 Tc" : ""} ET`);
+  }
+  const ruleAt = (yy, color, width = 0.6) => pg.ops.push(`q ${width} w ${color} RG ${L} ${yy.toFixed(2)} m ${(PW - R).toFixed(2)} ${yy.toFixed(2)} l S Q`);
+  const textW = (rs, size, tc) => words(rs, size, tc).reduce((n, w, i) => n + w.w + (i && w.space ? glyphW(32, "R") * size / 1000 + tc : 0), 0);
+
+  // One block of text: wraps it, moves to a new page when needed, and keeps a heading with what follows it
+  function block(text, { size = 10, lead = 13.6, font = "R", color = C.ink, x = L, width = FULL, tc = 0, upper = false, before = 0, keep = 0, marker = "", markerX = L, right = "" }) {
+    const rightRuns = right ? runs(right, "R") : null, rightW = right ? textW(rightRuns, size - 1, 0) : 0;
+    const lines = wrap(words(runs(text, font, upper), size, tc), width - (right ? rightW + 14 : 0), size, tc);
+    if (!atTop()) y -= before;
+    if (y - lead * Math.min(lines.length, 2) - keep < BOTTOM) newPage();
+    lines.forEach((line, i) => {
+      if (y - lead < BOTTOM) newPage();
+      const base = y - size;
+      if (i === 0 && marker) draw(words(runs(marker, "R"), size, 0), markerX, base, size, color);
+      draw(line, x, base, size, color, tc);
+      if (i === 0 && right) draw(wrap(words(rightRuns, size - 1, 0), FULL, size - 1, 0)[0], PW - R - rightW, base, size - 1, C.muted);
+      y -= lead;
+    });
+  }
+
+  // A run of short bullet points right under a section heading (key skills, tools, languages) goes into two or three
+  // columns, so the CV stays short. Bullets under a job stay in one column.
+  let list = [], listGap = 0, listCols = false, lastHead = 0;
+  function flushList() {
+    if (!list.length) return;
+    const items = list, lead = 13.6, widest = Math.max(...items.map(t => textW(runs(t, "R", false, false), 10, 0)));
+    const cols = items.length < 4 || !listCols ? 1 : widest + 31 <= FULL / 3 ? 3 : widest + 31 <= FULL / 2 ? 2 : 1;
+    list = [];
+    if (cols === 1) { items.forEach((t, i) => block(t, { x: L + 13, width: FULL - 13, marker: "•", markerX: L + 2, before: i === 0 && listGap ? 3 : 1.5 })); return; }
+    const rows = Math.ceil(items.length / cols), colW = FULL / cols;
+    if (!atTop()) y -= listGap ? 3 : 1.5;
+    if (y - lead * Math.min(rows, 2) < BOTTOM) newPage();
+    for (let r = 0; r < rows; r++) {
+      if (y - lead < BOTTOM) newPage();
+      for (let c = 0; c < cols; c++) {
+        const t = items[c * rows + r]; if (t == null) continue;
+        draw(words(runs("•", "R"), 10, 0), L + c * colW + 2, y - 10, 10, C.ink);
+        draw(wrap(words(runs(t, "R"), 10, 0), colW - 13, 10, 0)[0], L + c * colW + 13, y - 10, 10, C.ink);
+      }
+      y -= lead;
+    }
+  }
+
+  const src = String(md || "").replace(/\r/g, "").split("\n");
+  let gap = 0, seen = 0, contactNext = false;
+  for (const raw of src) {
+    if (RULE.test(raw)) continue;
+    if (!raw.trim()) { gap = 5; continue; }
+    const h = raw.match(/^\s*(#{1,6})\s+(.*)/), ul = raw.match(/^\s*[-*•]\s+(.*)/), ol = raw.match(/^\s*(\d+)[.)]\s+(.*)/);
+    if (ul && !h) { if (!list.length) { listGap = gap; listCols = lastHead === 2; } list.push(ul[1]); gap = 0; seen++; contactNext = false; continue; }
+    flushList();
+    const first = seen++ === 0;
+    lastHead = h ? h[1].length : 0;
+    if (h && h[1].length === 1) {
+      block(h[2], { size: first ? 21 : 15, lead: first ? 25 : 19, font: "B", before: first ? 0 : 14, keep: 30 });
+      contactNext = first;
+    } else if (h && h[1].length === 2) {
+      block(h[2], { size: 9.8, lead: 13, font: "B", color: C.accent, tc: 0.9, upper: true, before: Math.max(15, gap), keep: 34 });
+      ruleAt(y - 0.5, C.rule, 0.5); y -= 5;
+    } else if (h) {
+      const [left, years] = splitYears(h[2].replace(/\*\*/g, ""));
+      block(left, { size: 10.5, lead: 14, font: "B", before: Math.max(8, gap), keep: 24, right: years });
+    } else if (ol) {
+      block(ol[2], { x: L + 17, width: FULL - 17, marker: ol[1] + ".", markerX: L, before: gap ? 3 : 1.5 });
+    } else if (contactNext) {
+      block(raw.trim(), { size: 9.5, lead: 13, color: C.muted, before: 2 });
+      y -= 5; ruleAt(y, C.accent, 0.9); y -= 6;
+    } else {
+      block(raw.trim(), { before: gap ? 6 : 2 });
+    }
+    if (!(h && h[1].length === 1)) contactNext = false;
+    gap = 0;
+  }
+  flushList();
+  // Page numbers, only when there is more than one page
+  if (pages.length > 1) pages.forEach((p, i) => {
+    const label = `${i + 1} / ${pages.length}`, w = [...label].reduce((n, ch) => n + glyphW(ch.charCodeAt(0), "R") * 8 / 1000, 0);
+    p.ops.push(`BT ${C.muted} rg ${(PW - R - w).toFixed(2)} 34 Td /R 8 Tf (${label}) Tj ET`);
+  });
+
+  // The file: catalog, pages, three standard fonts, one content stream and the link annotations per page
+  const objs = [], add = s => objs.push(s);
+  add(null); add(null);
+  for (const [k, name] of [["R", "Helvetica"], ["B", "Helvetica-Bold"], ["I", "Helvetica-Oblique"]]) add(`<< /Type /Font /Subtype /Type1 /BaseFont /${name} /Encoding /WinAnsiEncoding >>`);
+  const kids = [];
+  for (const p of pages) {
+    const content = p.ops.join("\n"), cRef = add(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+    const aRefs = p.annots.map(a => add(`<< /Type /Annot /Subtype /Link /Rect [${a.rect.map(n => n.toFixed(2)).join(" ")}] /Border [0 0 0] /A << /S /URI /URI (${pdfStr(encodeURI(a.uri))}) >> >>`));
+    kids.push(add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /Font << /R 3 0 R /B 4 0 R /I 5 0 R >> >> /Contents ${cRef} 0 R${aRefs.length ? ` /Annots [${aRefs.map(n => n + " 0 R").join(" ")}]` : ""} >>`));
+  }
+  objs[0] = `<< /Type /Catalog /Pages 2 0 R /Lang (${textLang === "en" ? "en-GB" : "sv-SE"}) >>`;
+  objs[1] = `<< /Type /Pages /Kids [${kids.map(k => k + " 0 R").join(" ")}] /Count ${kids.length} >>`;
+  const stamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
+  const info = add(`<< /Title ${utf16(title)} /Author ${utf16(author)} /Creator (Job Finder) /Producer (Job Finder) /CreationDate (D:${stamp}Z) >>`);
+  let out = "%PDF-1.4\n%\xe2\xe3\xcf\xd3\n";
+  const offsets = objs.map((o, i) => { const at = out.length; out += `${i + 1} 0 obj\n${o}\nendobj\n`; return at; });
+  const xref = out.length;
+  out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n${offsets.map(o => String(o).padStart(10, "0") + " 00000 n \n").join("")}`;
+  out += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R /Info ${info} 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  const bytes = new Uint8Array(out.length);
+  for (let i = 0; i < out.length; i++) bytes[i] = out.charCodeAt(i) & 0xff;
+  return { blob: new Blob([bytes], { type: "application/pdf" }), lost, pages: pages.length };
+}
+// The name a tailored CV starts with ("# Eva Lind"), unless it's still the [Your name] placeholder
+const cvName = md => { const m = String(md || "").match(/^\s*#\s+(.+)$/m); return m && !/\[/.test(m[1]) ? m[1].replace(/\*\*/g, "").trim() : ""; };
 
 /* ---------- The panel ---------- */
 const guessLang = text => {
@@ -213,12 +431,50 @@ function applyHtml(job, big) {
   return `<a class="btn ${big ? "" : "ghost "}sm" href="${esc(href)}" target="_blank" rel="noopener" data-tl="apply">${esc(label)}</a>`;
 }
 // The server's fact check (server/factcheck.js). Answers saved before it existed have none, and show nothing.
-function factCheckHtml(check) {
+// After the person edits a text, the same code checks it again here in the browser (see recheck below).
+function factCheckHtml(check, edited) {
+  if (edited && !check) return `<p class="fc fc-warn" role="status">${esc(t("fc.unchecked"))}</p>`;
   if (!check || !Array.isArray(check.issues)) return "";
-  if (!check.issues.length) return `<p class="fc fc-ok" role="status">${esc(t("fc.ok"))}</p>`;
-  return `<section class="fc fc-warn" role="alert"><p><b>${esc(check.issues.length === 1 ? t("fc.warn1") : t("fc.warn", { n: check.issues.length }))}</b></p>
+  const again = edited ? ` ${esc(t("fc.again"))}` : "";
+  if (!check.issues.length) return `<p class="fc fc-ok" role="status">${esc(t("fc.ok"))}${again}</p>`;
+  return `<section class="fc fc-warn" role="alert"><p><b>${esc(check.issues.length === 1 ? t("fc.warn1") : t("fc.warn", { n: check.issues.length }))}</b>${again}</p>
     <ul>${check.issues.map(i => `<li><span class="fc-kind">${esc(t("fc.k." + i.kind))}</span>${esc(i.text)}</li>`).join("")}</ul>
     <p class="tl-hint">${esc(t("fc.how"))}</p></section>`;
+}
+// server/factcheck.js, built into the page by build.py and compiled on first use. A browser too old for its patterns
+// goes without, and the panel says the edits weren't checked.
+const FACTCHECK_SRC = /*__FACTCHECK__*/;
+let localCheck;
+function recheck(text) {
+  if (localCheck === undefined) {
+    try { const module = { exports: {} }; new Function("module", "require", FACTCHECK_SRC)(module, () => TITLES); localCheck = module.exports.factCheck || null; }
+    catch (err) { console.warn("The fact check can't run in this browser", err); localCheck = null; }
+  }
+  if (!localCheck || !tl) return null;
+  const e = tlEntry(tl.id), r = localCheck(text, { cv: store.get("jf-cv", ""), ad: e.ad ?? tl.adText ?? "", title: tl.title, employer: tl.employer, extra: e.extra || "", year: new Date().getFullYear() });
+  return { ok: r.ok, issues: r.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) };
+}
+// Saves what the person typed in Edit text, and checks it again
+function saveEdit() {
+  if (!tl?.editing) return;
+  const o = tlEntry(tl.id).out[tl.task], text = (tl.editDraft ?? "").replace(/\s+$/, "");
+  tl.editing = false; tl.editDraft = null;
+  if (!o || !text.trim() || text === o.text) return;
+  o.text = text; o.edited = new Date().toISOString(); delete o.cut;
+  const check = recheck(text);
+  if (check) o.check = check; else delete o.check;
+  saveTailor();
+}
+// The file name for a download: "cv-eva-lind-acme-robotics.pdf", or the task, employer and job when there's no name
+function docName(o, ext) {
+  const name = DOC_TASKS.has(tl.task) ? cvName(tlEntry(tl.id).out.cv?.text || "") : "";
+  const kind = tl.task === "cv" ? "cv" : tl.task === "letter" ? (o.lang === "en" ? "cover-letter" : "personligt-brev") : t("tl.t." + tl.task);
+  return [kind, ...(name ? [name, tl.employer] : [tl.employer, tl.title])].map(slugify).filter(Boolean).join("-").replace(/-+/g, "-") + "." + ext;
+}
+function download(blob, name) {
+  const url = URL.createObjectURL(blob), link = document.createElement("a");
+  link.href = url; link.download = name;
+  document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 function appliedHtml(id) {
   const st = apps[id]?.status;
@@ -258,10 +514,17 @@ function tailorHtml() {
         ${out ? "" : `<p class="tl-hint">${esc(t("ai.before"))}</p>`}
         ${tl.error ? `<p class="tl-err" role="alert">${tl.error}</p>` : ""}
         ${out ? `${aiNoteHtml(task === "match" ? "ai.match" : task === "interview" ? "ai.interview" : "ai.write", t("tl.t." + task))}
-          ${factCheckHtml(out.check)}
-          <div class="tl-out" tabindex="-1">${mdHtml(out.text)}</div>
-          <div class="row"><button class="btn ghost sm" type="button" data-tl="copy">${esc(t("copy"))}</button><button class="btn ghost sm" type="button" data-tl="word">${esc(t("tl.word"))}</button>${applyHtml(job, true)}
-          <span class="tl-hint">${esc(t("tl.made", { date: fmtDate(localDay(new Date(out.at))) }))}</span></div>
+          ${out.cut ? `<p class="tl-err" role="alert">${esc(t("tl.cut"))}</p>` : ""}
+          ${factCheckHtml(out.check, out.edited)}
+          ${tl.editing ? `<div class="tl-edit"><label class="tl-label" for="tl-edit">${esc(t("tl.edit.label"))}</label>
+            <textarea id="tl-edit" data-tl="edit-text" rows="22" lang="${out.lang === "en" ? "en" : "sv"}">${esc(tl.editDraft ?? out.text)}</textarea>
+            <p class="tl-hint">${esc(t("tl.edit.hint"))}</p>
+            <div class="row"><button class="btn sm" type="button" data-tl="save">${esc(t("tl.edit.save"))}</button><button class="btn ghost sm" type="button" data-tl="cancel">${esc(t("tl.edit.cancel"))}</button></div></div>`
+          : `<div class="tl-out" tabindex="-1">${mdHtml(out.text)}</div>
+          <div class="row">${DOC_TASKS.has(task) ? `<button class="btn sm" type="button" data-tl="pdf">${esc(t("tl.pdfdl"))}</button>` : ""}<button class="btn ghost sm" type="button" data-tl="word">${esc(t("tl.word"))}</button><button class="btn ghost sm" type="button" data-tl="edit">${esc(t("tl.edit"))}</button><button class="btn ghost sm" type="button" data-tl="copy">${esc(t("copy"))}</button>${applyHtml(job, true)}
+          <span class="tl-hint">${esc(t("tl.made", { date: fmtDate(localDay(new Date(out.at))) }))}${out.edited ? ` · ${esc(t("tl.edited", { date: fmtDate(localDay(new Date(out.edited))) }))}` : ""}</span></div>
+          ${DOC_TASKS.has(task) && /\[[^\]\n]{2,60}\]/.test(out.text) ? `<p class="tl-hint tl-fill">${esc(t("tl.fill"))}</p>` : ""}
+          ${tl.pdfLost ? `<p class="tl-hint" role="status">${esc(t("tl.pdflost", { n: tl.pdfLost }))}</p>` : ""}`}
           ${appliedHtml(job.id)}` : appliedHtml(job.id)}
       </section>
       <p class="tl-hint tl-privacy">${esc(t("tl.privacy"))}</p>
@@ -269,6 +532,7 @@ function tailorHtml() {
 }
 function flushTailor() {
   if (!tl) return;
+  if (tl.editing) { const ta = $("tl-edit"); if (ta) tl.editDraft = ta.value; }
   for (const k of ["cv", "code", "ad", "extra", "lang"]) { clearTimeout(tlTimers[k]); const el = $("tl-" + k); if (el) saveField(k, el.value); }
 }
 function drawTailor(focusSel) {
@@ -280,7 +544,7 @@ function drawTailor(focusSel) {
 }
 async function openTailor(id, from) {
   const job = jobFor(id); if (!job) return;
-  tl = { ...job, task: tailorStore[id]?.lastTask || "match", busy: false, status: "", error: "", from };
+  tl = { ...job, task: tailorStore[id]?.lastTask || "match", busy: false, status: "", error: "", from, editing: false, editDraft: null, pdfLost: 0 };
   const d = $("tailor");
   drawTailor();
   if (!d.open) d.showModal();
@@ -306,7 +570,7 @@ async function generate() {
   if (cv.length < 200) return stop("tl.e.cv", "#tl-cv");
   if (ad.length < 100) return stop("tl.e.ad", "#tl-ad");
   store.set("jf-cv", cv); store.set("jf-code", code); e.ad = ad; e.extra = extra; e.lang = outLang; saveTailor();
-  tl.busy = true; tl.error = ""; tl.status = t("tl.wait", { s: 0 });
+  tl.busy = true; tl.error = ""; tl.status = t("tl.wait", { s: 0 }); tl.editing = false; tl.editDraft = null; tl.pdfLost = 0;
   drawTailor('[data-tl="go"]');
   const started = Date.now(), tick = setInterval(() => { if (tl?.id === id && tl.busy) { tl.status = t("tl.wait", { s: Math.round((Date.now() - started) / 1000) }); const s = $("tl-status"); if (s) s.textContent = tl.status; } }, 1000);
   const ctrl = new AbortController(); tl.ctrl = ctrl;
@@ -317,7 +581,7 @@ async function generate() {
       body: JSON.stringify({ code, task, lang: outLang, cv, extra, job: { title: tl.title, employer: tl.employer, text: ad } }) });
     const j = await r.json().catch(() => ({}));
     if (r.ok && j.text) {
-      e.out[task] = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.check && Array.isArray(j.check.issues) ? { check: { ok: !!j.check.ok, issues: j.check.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) } } : {}) };
+      e.out[task] = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.cut ? { cut: true } : {}), ...(j.check && Array.isArray(j.check.issues) ? { check: { ok: !!j.check.ok, issues: j.check.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) } } : {}) };
       e.lastTask = task; e.lang = outLang;
       saveTailor();
       if (!apps[id]?.status) setStatus(id, "Saved");
@@ -336,7 +600,18 @@ function onTailorClick(e) {
   const el = e.target.closest("[data-tl]"); if (!el || !tl) return;
   const k = el.dataset.tl;
   if (k === "close") closeTailor();
-  else if (k === "task") { tl.task = el.dataset.task; tl.error = ""; tlEntry(tl.id).lastTask = tl.task; saveTailor(); drawTailor(`[data-task="${tl.task}"]`); }
+  else if (k === "task") { flushTailor(); saveEdit(); tl.task = el.dataset.task; tl.error = ""; tl.pdfLost = 0; tlEntry(tl.id).lastTask = tl.task; saveTailor(); drawTailor(`[data-task="${tl.task}"]`); }
+  else if (k === "edit") { tl.editing = true; tl.editDraft = null; tl.pdfLost = 0; drawTailor("#tl-edit"); }
+  else if (k === "save") { flushTailor(); saveEdit(); drawTailor(".fc"); }
+  else if (k === "cancel") { tl.editing = false; tl.editDraft = null; drawTailor('[data-tl="edit"]'); }
+  else if (k === "pdf") {
+    const o = tlEntry(tl.id).out[tl.task]; if (!o) return;
+    const name = cvName(tlEntry(tl.id).out.cv?.text || "");
+    const title = tl.task === "cv" ? `CV – ${name || tl.title}` : `${o.lang === "en" ? "Cover letter" : "Personligt brev"} – ${tl.employer || tl.title}`;
+    const pdf = pdfBlob(o.text, { title, author: name, lang: o.lang });
+    download(pdf.blob, docName(o, "pdf"));
+    if (pdf.lost !== tl.pdfLost) { tl.pdfLost = pdf.lost; drawTailor('[data-tl="pdf"]'); }
+  }
   else if (k === "go") generate();
   else if (k === "refetch") refetchAd();
   else if (k === "load") $("tl-file").click();
@@ -350,10 +625,8 @@ function onTailorClick(e) {
   else if (k === "copy") { const o = tlEntry(tl.id).out[tl.task]; if (o) copyText(plainText(o.text), el); }
   else if (k === "word") {
     const o = tlEntry(tl.id).out[tl.task]; if (!o) return;
-    const title = `${t("tl.t." + tl.task)}: ${tl.title}${tl.employer ? `, ${tl.employer}` : ""}`;
-    const url = URL.createObjectURL(docxBlob(o.text, title, o.lang)), link = document.createElement("a");
-    link.href = url; link.download = `${slugify(t("tl.t." + tl.task))}-${slugify(tl.employer || "")}-${slugify(tl.title)}.docx`.replace(/-+/g, "-");
-    document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+    const title = DOC_TASKS.has(tl.task) ? "" : `${t("tl.t." + tl.task)}: ${tl.title}${tl.employer ? `, ${tl.employer}` : ""}`;
+    download(docxBlob(o.text, title, o.lang), docName(o, "docx"));
   }
 }
 const tlTimers = {};
@@ -368,7 +641,9 @@ function saveField(k, v) {
   saveTailor();
 }
 function onTailorInput(e) {
-  const el = e.target, k = el.dataset.tl; if (!["cv", "code", "ad", "extra", "lang"].includes(k) || !tl) return;
+  const el = e.target, k = el.dataset.tl;
+  if (k === "edit-text" && tl) { tl.editDraft = el.value; return; }
+  if (!["cv", "code", "ad", "extra", "lang"].includes(k) || !tl) return;
   clearTimeout(tlTimers[k]);
   tlTimers[k] = setTimeout(() => saveField(k, el.value), k === "lang" ? 0 : 400);
 }
@@ -390,7 +665,7 @@ function initTailor() {
   d.addEventListener("input", onTailorInput);
   d.addEventListener("change", e => { if (e.target.id === "tl-file") onTailorFile(e); else onTailorInput(e); });
   d.addEventListener("close", () => {
-    flushTailor();
+    flushTailor(); saveEdit();   // closing the panel keeps what was typed in Edit text
     if (tl?.ctrl) tl.ctrl.abort();
     const id = tl?.id, from = tl?.from; tl = null; d.innerHTML = "";
     const back = id && document.querySelector(`${from === "apps" ? "#apps" : "#list"} [data-tailor="${CSS.escape(id)}"]`); if (back) back.focus();

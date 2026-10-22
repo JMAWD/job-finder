@@ -4,7 +4,8 @@
 
 Starts server/dev.mjs on port 8787 and tests/fake_ai.mjs on port 8799, builds a copy of the page that points at the local
 server, and runs through the panel in a browser: fetching the full ad, the CV from a Word file, access code errors,
-generating, the Word download, backup, Swedish and a phone-sized screen."""
+generating, the whole tailored CV as a PDF and a Word file, editing a text and checking it again, the Word download, backup,
+Swedish and a phone-sized screen."""
 import asyncio, hashlib, json, os, pathlib, re, shutil, subprocess, sys, tempfile, time, urllib.request, zipfile
 from playwright.async_api import async_playwright
 
@@ -19,6 +20,29 @@ AD_TEXT = ('Om tjänsten\nVi söker en software engineer som kan FMEA och kvalit
            'leverantörer och förbättringar i produktionen tillsammans med vårt team i Göteborg.\n\nKvalifikationer\n- Erfarenhet av FMEA\n- Python')
 CV = ('Kvalitetsingenjör med åtta års erfarenhet av FMEA, 8D och leverantörsrevisioner inom fordonsindustrin. '
       'Har lett förbättringsarbete i produktionen och utbildat kollegor i riskanalys. ') * 2
+# A whole CV for the tailored CV task; tests/fake_ai.mjs answers with a tailored version that only uses what's here
+FULL_CV = '''Eva Lindqvist
+Göteborg · eva.lindqvist@example.com · 070-123 45 67
+
+Profil
+Kvalitetsingenjör med åtta års erfarenhet av FMEA, 8D och leverantörsrevisioner inom fordonsindustrin. Har lett förbättringsarbete i produktionen och utbildat kollegor i riskanalys.
+
+Erfarenhet
+Kvalitetsingenjör, Nordvik Automotive AB, Göteborg
+2018 – nu
+- Ledde FMEA för bromssystem tillsammans med konstruktion och produktion
+- Genomförde leverantörsrevisioner och 8D-utredningar
+- Utbildade kollegor i riskanalys
+
+Produktionstekniker, Svea Bearings AB, Göteborg
+2016 – 2018
+- Ansvarade för förbättringsarbete på monteringslinan
+
+Utbildning
+Högskoleingenjör i maskinteknik, Chalmers, 2013 – 2016
+
+Språk
+Svenska (modersmål), engelska (flytande)'''
 
 def make_docx(paragraphs, path):
     """A Word file with compressed parts, the way Word itself saves them."""
@@ -138,7 +162,7 @@ async def main():
             check('focus lands on the note first', await pg.evaluate("document.activeElement.classList.contains('ai-note')"))
             fc = dlg.locator('.fc')
             check('the answer passed the fact check and says so, between the note and the text', await fc.count() == 1 and 'fc-ok' in (await fc.get_attribute('class'))
-                  and 'every employer, job title and date in this text is in your CV' in await fc.inner_text()
+                  and 'every employer, job title, school, degree and date in this text is in your CV' in await fc.inner_text()
                   and await pg.evaluate("document.querySelector('.fc').compareDocumentPosition(document.querySelector('.tl-out')) & 4"), await fc.all_inner_texts())
             report = await note.locator('a[data-fb=ai]').get_attribute('href')
             check('the note links to a report about the answer', '%5BAI%5D' in report and 'Part%3A%20Match%20check' in report, report)
@@ -161,9 +185,97 @@ async def main():
             check('a cover letter gets the interview test', "If you couldn't explain something in an interview, take it out." in await dlg.locator('.ai-note').inner_text())
             check('finished tasks get a dot', await dlg.locator('[data-task=match] .tl-dot').count() == 1)
 
+            # The tailored CV is the whole CV, ready to send: shown in full, and downloaded as a PDF or a Word file
+            await pg.fill('#tl-cv', FULL_CV)
+            await dlg.locator('[data-task=cv]').click(); await pg.select_option('#tl-lang', 'sv')
+            check('the CV task promises a whole CV, not tips', 'Your whole CV rewritten for this job' in await dlg.locator('.tl-desc').inner_text()
+                  and 'Copy the parts you like' not in await dlg.inner_text())
+            await dlg.locator('[data-tl=go]').click(); await pg.wait_for_selector('#tailor .tl-out', timeout=10000)
+            ask = last_ai()['body']['messages'][1]['content']
+            check('the prompt asks for the whole CV and nothing else', 'skriv hela det nya CV:t, färdigt att skicka' in ask and 'Skriv bara själva CV:t' in ask
+                  and 'kan tas bort' not in ask and 'Eva Lindqvist' in ask and last_ai()['body']['max_tokens'] == 4000, ask[:300])
+            out = dlg.locator('.tl-out')
+            check('the whole CV is shown: the name, both jobs and the education', await out.locator('h3').inner_text() == 'Eva Lindqvist'
+                  and await out.locator('h5').count() == 3 and 'Svea Bearings' in await out.inner_text() and 'Chalmers' in await out.inner_text())
+            check('the whole CV passes the fact check', await dlg.locator('.fc-ok').count() == 1)
+            row = dlg.locator('.tl-result .row').last
+            check('PDF comes first, then Word, Edit text and Copy', [await b.get_attribute('data-tl') for b in await row.locator('button').all()] == ['pdf', 'word', 'edit', 'copy'])
+            check('no reminder about brackets when there are none', await dlg.locator('.tl-fill').count() == 0)
+            async with pg.expect_download() as dl: await dlg.locator('[data-tl=pdf]').click()
+            d = await dl.value; cv_pdf = tmp / d.suggested_filename; await d.save_as(cv_pdf)
+            check('PDF file name has the name and the employer', d.suggested_filename == 'cv-eva-lindqvist-acme-robotics.pdf', d.suggested_filename)
+            raw_pdf = cv_pdf.read_bytes()
+            check('the download is a real PDF', raw_pdf.startswith(b'%PDF-1.4') and raw_pdf.rstrip().endswith(b'%%EOF'))
+            import pypdf
+            reader = pypdf.PdfReader(str(cv_pdf)); pdf_text = ' '.join(' '.join(x.extract_text() for x in reader.pages).split())
+            check('the PDF holds the whole CV, with Swedish letters', all(x in pdf_text for x in ['Eva Lindqvist', 'NYCKELKOMPETENSER', 'ERFARENHET', 'Kvalitetsingenjör, Nordvik Automotive AB, Göteborg', '2018 – nu',
+                  'Produktionstekniker, Svea Bearings AB, Göteborg', 'Högskoleingenjör i maskinteknik, Chalmers', '2013 – 2016', 'Svenska (modersmål), engelska (flytande)', 'Ledde FMEA för bromssystem']), pdf_text)
+            check('no Markdown, tips or notes in the PDF', not any(x in pdf_text for x in ['##', '**', 'kan tas bort', 'Skrivet av AI', 'Written by AI']))
+            check('the PDF has a title, an author and a language', reader.metadata.title == 'CV – Eva Lindqvist' and reader.metadata.author == 'Eva Lindqvist' and reader.trailer['/Root']['/Lang'] == 'sv-SE', reader.metadata)
+            links = [a.get_object()['/A']['/URI'] for x in reader.pages for a in (x.get('/Annots') or [])]
+            check('the email address in the PDF can be clicked', links == ['mailto:eva.lindqvist@example.com'], links)
+            check('the CV fits on one page', len(reader.pages) == 1)
+            if shutil.which('qpdf'):
+                q = subprocess.run(['qpdf', '--check', str(cv_pdf)], capture_output=True, text=True)
+                check('qpdf finds nothing wrong with the PDF', q.returncode == 0 and 'No syntax or stream encoding errors' in q.stdout, q.stdout + q.stderr)
+            else: print('SKIPPED qpdf check: qpdf is not installed')
+            if shutil.which('pdftoppm'): subprocess.run(['pdftoppm', '-r', '90', '-png', '-singlefile', str(cv_pdf), str(SHOTS / 'cv-pdf-sv')], check=True)
+            async with pg.expect_download() as dl: await dlg.locator('[data-tl=word]').click()
+            d = await dl.value; cv_word = tmp / d.suggested_filename; await d.save_as(cv_word)
+            import docx
+            cv_paras = [x.text for x in docx.Document(str(cv_word)).paragraphs]
+            check('the Word CV starts with the name, with no title of ours', d.suggested_filename == 'cv-eva-lindqvist-acme-robotics.docx' and cv_paras[0] == 'Eva Lindqvist'
+                  and not any('Anpassat CV' in x or 'Tailored CV' in x for x in cv_paras) and 'Kvalitetsingenjör, Nordvik Automotive AB, Göteborg (2018 – nu)' in cv_paras, cv_paras[:4])
+            await dlg.locator('.tl-result .row').last.scroll_into_view_if_needed()
+            await pg.screenshot(path=str(SHOTS / 'cv-en.png'))
+
+            # Edit text: what the person changes is checked again in the browser, with the server's own code
+            await dlg.locator('[data-tl=edit]').click()
+            ed = dlg.locator('#tl-edit')
+            check('Edit text opens the text as Markdown, with focus in it', (await ed.input_value()).startswith('# Eva Lindqvist\n') and await pg.evaluate("document.activeElement.id") == 'tl-edit')
+            check('no downloads while editing', await dlg.locator('[data-tl=pdf]').count() == 0 and await dlg.locator('[data-tl=save]').count() == 1)
+            original = await ed.input_value()
+            await ed.fill(original.replace('## Utbildning', '### Kvalitetschef, Bosch Rexroth (2010 – 2012)\n- Ledde revisioner\n\n## Utbildning'))
+            await dlg.locator('[data-tl=save]').click()
+            warn = await dlg.locator('.fc-warn').inner_text()
+            check('an added job is flagged when the edit is saved', 'Bosch Rexroth' in warn and 'Kvalitetschef' in warn and '2010' in warn and 'Checked again after your edits' in warn, warn)
+            check('the edited text is shown and saved with an edit date', 'Bosch Rexroth' in await dlg.locator('.tl-out').inner_text() and 'edited' in await dlg.locator('.tl-result .row .tl-hint').inner_text()
+                  and await pg.evaluate("JSON.parse(localStorage.getItem('jf-tailor'))['101'].out.cv.edited") is not None)
+            await dlg.locator('[data-tl=edit]').click()
+            await dlg.locator('#tl-edit').fill(original.replace('070-123 45 67', '[telefonnummer]').replace('Van att leda riskanalys', 'Van att driva riskanalys'))
+            await dlg.locator('[data-task=match]').click(); await dlg.locator('[data-task=cv]').click()
+            check('switching task while editing keeps the changes', 'Van att driva riskanalys' in await dlg.locator('.tl-out').inner_text() and await dlg.locator('#tl-edit').count() == 0)
+            check('after the fix the check passes again', await dlg.locator('.fc-ok').count() == 1 and 'Checked again after your edits' in await dlg.locator('.fc-ok').inner_text())
+            check('a reminder to fill in [brackets] before downloading', 'Fill in the parts in [brackets]' in await dlg.locator('.tl-fill').inner_text())
+            async with pg.expect_download() as dl: await dlg.locator('[data-tl=pdf]').click()
+            edited_text = ' '.join(pypdf.PdfReader(await (await dl.value).path()).pages[0].extract_text().split())   # lines wrap where the PDF breaks them
+            check('the PDF has the edited text', 'Van att driva riskanalys' in edited_text and 'Bosch' not in edited_text and '[telefonnummer]' in edited_text, edited_text[:300])
+            await dlg.locator('[data-tl=edit]').click(); await dlg.locator('#tl-edit').fill('# Eva Lindqvist\nNågot helt annat')
+            await dlg.locator('[data-tl=cancel]').click()
+            check('Cancel leaves the text as it was', 'Van att driva riskanalys' in await dlg.locator('.tl-out').inner_text() and 'Något helt annat' not in await dlg.locator('.tl-out').inner_text())
+            await pg.evaluate("localCheck = null")   # a browser that can't run the check
+            await dlg.locator('[data-tl=edit]').click(); await dlg.locator('#tl-edit').fill(original)
+            await dlg.locator('[data-tl=save]').click()
+            check("edits a browser can't check say so", "couldn't be checked in this browser" in await dlg.locator('.fc-warn').inner_text())
+            await pg.evaluate("localCheck = undefined")
+
+            # Characters a PDF's built-in fonts can't draw become "?", and the panel says so
+            await dlg.locator('[data-tl=edit]').click(); await dlg.locator('#tl-edit').fill(original.replace('# Eva Lindqvist', '# Eva Lindqvist 李'))
+            await dlg.locator('[data-tl=save]').click()
+            async with pg.expect_download() as dl: await dlg.locator('[data-tl=pdf]').click()
+            await dl.value
+            check("characters a PDF can't show are reported", "1 characters in this text can't be shown in a PDF" in await dlg.inner_text())
+
+            # An answer the model stopped mid-way is marked as cut off
+            post(FAKE + '/mode', {'cut': True})
+            await dlg.locator('[data-tl=go]').click(); await pg.wait_for_selector('#tailor .tl-out >> nth=0', timeout=10000)
+            await pg.wait_for_function("!document.querySelector('#tailor [data-tl=go]').disabled", timeout=10000)
+            check('a cut-off answer says the end may be missing', 'stopped before the end' in await dlg.locator('.tl-result').inner_text() and 'Chalmers' not in await dlg.locator('.tl-out').inner_text())
+            check('the new answer replaced the edited one', await pg.evaluate("JSON.parse(localStorage.getItem('jf-tailor'))['101'].out.cv.edited") is None)
+            post(FAKE + '/mode', {'cut': False})
+
             # A tailored CV that names a job the CV doesn't have is flagged, by code on the server
             post(FAKE + '/mode', {'invent': True})
-            await dlg.locator('[data-task=cv]').click(); await pg.select_option('#tl-lang', 'sv')
             await dlg.locator('[data-tl=go]').click(); await pg.wait_for_selector('#tailor .fc-warn', timeout=10000)
             warn = await dlg.locator('.fc-warn').inner_text()
             check('invented employer, title and date are listed above the answer', 'Fact check: 3 things here are not in your CV' in warn
@@ -202,10 +314,14 @@ async def main():
 
             async with pg.expect_download() as dl: await dlg.locator('[data-tl=word]').click()
             d = await dl.value; word = tmp / d.suggested_filename; await d.save_as(word)
-            check('Word file name', d.suggested_filename == 'cover-letter-acme-robotics-software-engineer-till-acme.docx', d.suggested_filename)
-            import docx
+            check('Word file name has the name from the CV', d.suggested_filename == 'cover-letter-eva-lindqvist-acme-robotics.docx', d.suggested_filename)
             doc = docx.Document(str(word)); paras = [x.text for x in doc.paragraphs]
-            check('Word file opens and has the letter', paras[0] == 'Cover letter: Software Engineer till Acme, Acme Robotics' and 'Dear [contact person],' in paras and '• Eight years of FMEA' in paras, paras)
+            check('Word file opens and has the letter, with no title of ours', paras[0] == 'Cover letter' and 'Dear [contact person],' in paras and '• Eight years of FMEA' in paras, paras)
+            async with pg.expect_download() as dl: await dlg.locator('[data-tl=pdf]').click()
+            d = await dl.value
+            letter_pdf = pypdf.PdfReader(await d.path())
+            check('the cover letter downloads as a PDF too', d.suggested_filename == 'cover-letter-eva-lindqvist-acme-robotics.pdf' and 'Dear [contact person],' in letter_pdf.pages[0].extract_text()
+                  and letter_pdf.trailer['/Root']['/Lang'] == 'en-GB', d.suggested_filename)
             check('bold kept in Word', any(r.bold and r.text == 'Acme Robotics' for x in doc.paragraphs for r in x.runs))
             if shutil.which('soffice'):
                 conv = subprocess.run(['soffice', '--headless', '--convert-to', 'pdf', '--outdir', str(tmp), str(word)], capture_output=True, timeout=120)

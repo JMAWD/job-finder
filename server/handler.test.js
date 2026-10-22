@@ -195,6 +195,29 @@ test("every written answer comes back with a fact check against the CV", async (
   assert.equal(json(await call(ok({ task: "translate" }))).check, undefined);
   aiReply = { status: 200, body: { choices: [{ message: { content: "ok" } }] } };
 });
+test("the tailored CV task asks for the whole CV and nothing else, with room to write it", async () => {
+  for (const [lang, whole, only] of [["sv", /skriv hela det nya CV:t, färdigt att skicka/, /Skriv bara själva CV:t\. Inga råd/], ["en", /write the whole new CV, ready to send/, /Write only the CV itself\. No advice/]]) {
+    _test.usage.clear(); sent.length = 0;
+    await call(ok({ task: "cv", lang }));
+    const b = sent[0].body, ask = b.messages[1].content;
+    assert.match(ask, whole); assert.match(ask, only);
+    assert.match(ask, /^# /m); assert.match(ask, /### (Titel|Job title), (Arbetsgivare|Employer) \(/);   // the name heading and a heading per job
+    assert.doesNotMatch(ask, /kan tas bort|could be cut|Copy the parts/);          // no list of tips any more
+    assert.equal(b.max_tokens, 4000);
+  }
+  _test.usage.clear(); sent.length = 0;
+  await call(ok({ task: "letter" }));
+  assert.equal(sent[0].body.max_tokens, 2500, "the other texts keep their usual length");
+});
+test("an answer the model stopped mid-way through is marked as cut off", async () => {
+  _test.usage.clear();
+  aiReply = { status: 200, body: { choices: [{ message: { content: "# Eva Lind\n## Erfarenhet\n### Kvalitetsingenjör" }, finish_reason: "length" }] } };
+  const r = json(await call(ok({ task: "cv" })));
+  assert.equal(r.cut, true);
+  assert.match(logs.at(-1), /"cut":true/);
+  aiReply = { status: 200, body: { choices: [{ message: { content: "ok" }, finish_reason: "stop" }] } };
+  assert.equal(json(await call(ok({ task: "cv" }))).cut, undefined);
+});
 test("the CV and the ad are never logged", async () => {
   assert.ok(logs.length > 0);
   for (const l of logs) { assert.doesNotMatch(l, /FMEA|Kvalitetsingenjör med|driva förbättringsarbete/); }

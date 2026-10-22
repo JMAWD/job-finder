@@ -19,14 +19,15 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
-const { PROMPTS } = require("../prompts.js");
+const { PROMPTS, OPTIONS } = require("../prompts.js");
 const { factCheck } = require("../factcheck.js");
 const here = path.dirname(fileURLToPath(import.meta.url));
 
-export async function callModel(messages, { model, baseUrl, key }) {
+// The same room to write as the server gives each task (prompts.js OPTIONS), so a whole CV isn't cut short here either
+export async function callModel(messages, { model, baseUrl, key, task }) {
   const r = await fetch(`${baseUrl.replace(/\/+$/, "")}/chat/completions`, {
     method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model, messages, temperature: 0.4, max_tokens: 2500 }),
+    body: JSON.stringify({ model, messages, temperature: OPTIONS[task]?.temperature ?? 0.4, max_tokens: OPTIONS[task]?.maxTokens ?? 2500 }),
   });
   if (!r.ok) throw new Error(`model answered ${r.status}`);
   const j = await r.json();
@@ -43,7 +44,7 @@ export async function runEval({ cases, tasks, langs, runs, ask, year = new Date(
       const { c, task, lang, run } = jobs[next++];
       let text = "", error = "";
       for (let attempt = 1; attempt <= 3 && !text; attempt++) {
-        try { text = await ask(PROMPTS[task](lang, { cv: c.cv, job: c.job, extra: "" })); error = ""; }
+        try { text = await ask(PROMPTS[task](lang, { cv: c.cv, job: c.job, extra: "" }), task); error = ""; }
         catch (e) { error = String(e.message || e); await new Promise(r => setTimeout(r, 2000 * attempt)); }
       }
       const check = text ? factCheck(text, { cv: c.cv, ad: c.job.text, title: c.job.title, employer: c.job.employer, extra: "", year }) : null;
@@ -88,7 +89,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const list = (k, d) => (process.env[k] || d).split(",").map(s => s.trim()).filter(Boolean);
   const cases = JSON.parse(fs.readFileSync(path.join(here, "cases.json"), "utf8"));
   const results = await runEval({ cases, tasks: list("EVAL_TASKS", "cv,letter,match,interview"), langs: list("EVAL_LANGS", "sv,en"), runs: +process.env.EVAL_RUNS || 3,
-    ask: messages => callModel(messages, { model, baseUrl, key }), log: m => console.log(m) });
+    ask: (messages, task) => callModel(messages, { model, baseUrl, key, task }), log: m => console.log(m) });
   const date = new Date().toISOString().slice(0, 10), out = path.join(here, "results");
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, `${date}-${model.replace(/[^\w.-]+/g, "_")}.json`), JSON.stringify({ model, date, results }, null, 1));

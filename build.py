@@ -31,6 +31,8 @@ js = js.replace('/*__MUNIS__*/', json.dumps(munis, ensure_ascii=False, separator
 js = js.replace('/*__TITLES__*/', json.dumps(titles, ensure_ascii=False, separators=(',', ':')), 1)
 js = js.replace('/*__ABOUT__*/', json.dumps(about, ensure_ascii=False), 1)
 js = js.replace('/*__TAILOR__*/', (here / 'src' / 'tailor.js').read_text(encoding='utf-8'), 1)
+# The server's fact check, as text, so step 2 can check a text again in the browser after the person edits it
+js = js.replace('/*__FACTCHECK__*/', json.dumps((here / 'server' / 'factcheck.js').read_text(encoding='utf-8'), ensure_ascii=False), 1)
 js = js.replace('/*__MENTOR__*/', (here / 'src' / 'mentor.js').read_text(encoding='utf-8'), 1)
 js = js.replace('/*__MARKET_JS__*/', (here / 'src' / 'market.js').read_text(encoding='utf-8'), 1)
 js = js.replace('/*__EVENTS__*/', (here / 'src' / 'events.js').read_text(encoding='utf-8'), 1)

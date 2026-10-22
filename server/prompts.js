@@ -35,17 +35,40 @@ const ASK = {
 3. Words and terms from the ad the CV should use, where they are true.
 4. An overall verdict in one sentence: strong, reasonable or weak match, and why.`,
   },
+  // The whole CV, ready to send: the browser turns it into a PDF or Word file as it stands, so it must hold nothing but the CV
   cv: {
-    sv: `Anpassa CV:t till annonsen.
-1. En ny profiltext, 3–4 meningar, riktad mot just det här jobbet.
-2. 8–12 nyckelkompetenser som både står i CV:t och efterfrågas i annonsen.
-3. För de 2–3 mest relevanta tjänsterna: omskrivna punkter (3–5 per tjänst) som lyfter det annonsen bryr sig om.
-4. Kort lista över vad som kan tas bort eller kortas för att CV:t ska hålla sig till två sidor.`,
-    en: `Tailor the CV to the job ad.
-1. A new profile summary, 3–4 sentences, aimed at this job.
-2. 8–12 key skills that are both in the CV and asked for in the ad.
-3. For the 2–3 most relevant roles: rewritten bullet points (3–5 per role) that bring out what the ad cares about.
-4. A short list of what could be cut or shortened to keep the CV to two pages.`,
+    sv: `Anpassa CV:t till annonsen och skriv hela det nya CV:t, färdigt att skicka till arbetsgivaren.
+Skriv bara själva CV:t. Inga råd, inga kommentarer om vad du har ändrat, inga anteckningar om vad som saknas och ingenting före eller efter CV:t. Det som annonsen efterfrågar men CV:t inte har lämnar du bara utanför.
+Använd exakt den här strukturen i Markdown:
+# Personens namn som det står i CV:t. Saknar CV:t namn, skriv [Ditt namn].
+En rad med de kontaktuppgifter som står i CV:t (ort, e-post, telefon, LinkedIn), åtskilda med " · ". Utelämna det som inte finns.
+## Profil
+3–4 meningar riktade mot just det här jobbet, byggda bara på CV:t.
+## Nyckelkompetenser
+8–12 kunskaper som står i CV:t, de som annonsen efterfrågar först, som en punktlista.
+## Erfarenhet
+Varje tjänst i CV:t, nyast först, utan att någon utelämnas, var och en som egen rubrik: ### Titel, Arbetsgivare (år–år). Arbetsgivare och år exakt som i CV:t.
+Under varje tjänst punkter som lyfter det annonsen bryr sig om: 3–5 för de mest relevanta tjänsterna, 1–2 för äldre eller mindre relevanta. Varje punkt bygger på det CV:t säger om just den tjänsten; flytta inga resultat mellan tjänster.
+## Utbildning
+Varje utbildning som ### Examen eller kurs, Skola (år), med skola och år exakt som i CV:t.
+Därefter CV:ts övriga avsnitt, till exempel certifikat, språk och körkort, var och en med en egen ##-rubrik och det som står i CV:t. Utelämna avsnitt som CV:t inte har.
+Håll CV:t till högst två sidor genom att korta äldre tjänster, inte genom att ta bort dem.`,
+    en: `Tailor the CV to the job ad and write the whole new CV, ready to send to the employer.
+Write only the CV itself. No advice, no comments on what you changed, no notes about what is missing, and nothing before or after the CV. Anything the ad asks for that the CV doesn't have is simply left out.
+Use exactly this structure in Markdown:
+# The person's name as the CV gives it. If the CV has no name, write [Your name].
+One line with the contact details the CV gives (town, email, phone, LinkedIn), separated by " · ". Leave out any it doesn't have.
+## Profile
+3–4 sentences aimed at this job, built only on the CV.
+## Key skills
+8–12 skills that are in the CV, the ones the ad asks for first, as a bullet list.
+## Experience
+Every job in the CV, newest first, none left out, each as a heading of its own: ### Job title, Employer (years–years). Employer and years exactly as the CV has them.
+Under each job, bullet points that bring out what the ad cares about: 3–5 for the most relevant jobs, 1–2 for older or less relevant ones. Each point builds on what the CV says about that job; never move results from one job to another.
+## Education
+Each degree or course as ### Degree or course, School (years), with the school and years exactly as the CV has them.
+Then the CV's other sections, such as certificates, languages and driving licence, each under its own ## heading with what the CV says. Leave out sections the CV doesn't have.
+Keep the CV to two pages at most by shortening older jobs, not by leaving them out.`,
   },
   letter: {
     sv: `Skriv ett personligt brev till den här tjänsten, 250–350 ord.
@@ -157,4 +180,11 @@ function parseMentor(text) {
   } catch { return null; }
 }
 
-module.exports = { PROMPTS, TASKS, AD_TASKS, CV_TASKS, parseMentor };
+// How much each task may write and how long it may take. A whole CV is longer than the other texts, so it gets more room.
+const OPTIONS = {
+  cv: { maxTokens: 4000, timeout: 105000 },
+  mentor: { maxTokens: 4000, temperature: 0.3, timeout: 110000 },
+  translate: { maxTokens: 6000, temperature: 0.1 },
+};
+
+module.exports = { PROMPTS, TASKS, AD_TASKS, CV_TASKS, OPTIONS, parseMentor };
