@@ -209,7 +209,7 @@ async def main():
             import pypdf
             reader = pypdf.PdfReader(str(cv_pdf)); pdf_text = ' '.join(' '.join(x.extract_text() for x in reader.pages).split())
             check('the PDF holds the whole CV, with Swedish letters', all(x in pdf_text for x in ['Eva Lindqvist', 'NYCKELKOMPETENSER', 'ERFARENHET', 'Kvalitetsingenjör, Nordvik Automotive AB, Göteborg', '2018 - nu',
-                  'Produktionstekniker, Svea Bearings AB, Göteborg', 'Högskoleingenjör i maskinteknik, Chalmers', '2013-2016', 'Svenska (modersmål), engelska (flytande)', 'Ledde FMEA för bromssystem']), pdf_text)
+                  'Produktionstekniker, Svea Bearings AB, Göteborg', 'Högskoleingenjör i maskinteknik, Chalmers', '2013 - 2016', 'Svenska (modersmål), engelska (flytande)', 'Ledde FMEA för bromssystem']), pdf_text)
             check('no Markdown, tips or notes in the PDF', not any(x in pdf_text for x in ['##', '**', 'kan tas bort', 'Skrivet av AI', 'Written by AI']))
             check('no long dashes anywhere in the CV, ranges included', not any(c in pdf_text for c in '\u2013\u2014') and '\u2013' not in await dlg.locator('.tl-out').inner_text())
             check('a lopsided CV with no buzzwords gets no style notes', await dlg.locator('.fc-style').count() == 0)

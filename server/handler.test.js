@@ -59,7 +59,7 @@ test("a good request returns the text and sends the prompt from the server", asy
   assert.equal(sent[0].url, "https://api.scaleway.ai/v1/chat/completions");
   assert.equal(sent[0].opts.headers.Authorization, "Bearer test-key");
   assert.equal(b.model, "mistral-medium-3.5-128b");
-  assert.match(b.messages[0].content, /Never invent experience/);
+  assert.match(b.messages[0].content, /Never invent anything/);
   assert.match(b.messages[1].content, /cover letter/);
   assert.match(b.messages[1].content, /<job_ad>[\s\S]*Acme[\s\S]*<\/job_ad>/);
 });

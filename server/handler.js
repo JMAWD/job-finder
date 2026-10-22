@@ -20,7 +20,7 @@
 const crypto = require("crypto");
 const { PROMPTS, TASKS, AD_TASKS, CV_TASKS, OPTIONS, parseMentor } = require("./prompts.js");
 const { factCheck } = require("./factcheck.js");
-const { stripDashes, styleCheck } = require("./style.js");
+const { stripDashes, styleCheck, tidyCv } = require("./style.js");
 
 const MAX_CV = 20000, MAX_AD = 20000, MAX_EXTRA = 2000;
 const usage = new Map();   // access code hash -> timestamps of recent requests (per running instance)
@@ -123,9 +123,11 @@ async function handle(event) {
   // and the style check reports what's left: jobs of even length and buzzwords (see style.js)
   const sent = !out.error && (task === "cv" || task === "letter");
   if (sent) out.text = stripDashes(out.text);
+  if (sent && task === "cv") out.text = tidyCv(out.text);   // bullets, contact line and year ranges in one form, whatever the model did
   const style = sent ? styleCheck(out.text, { cv, ad, task }) : null;
-  // Every written answer is checked in code for employers, job titles, schools, degrees and dates the CV doesn't back up (see factcheck.js)
-  const check = !out.error && needsCv && needsAd ? factCheck(out.text, { cv, ad, title: job.title, employer: job.employer, extra, year: new Date().getFullYear() }) : null;
+  // Every written answer is checked in code for employers, job titles, schools, degrees and dates the CV doesn't back up,
+  // and the CV and letter also for words and figures taken from the ad (see factcheck.js)
+  const check = !out.error && needsCv && needsAd ? factCheck(out.text, { cv, ad, title: job.title, employer: job.employer, extra, year: new Date().getFullYear(), task, lang }) : null;
   // Only sizes, timings and how many things the check flagged are logged, never the CV, the ad or the flagged words
   console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null, ...(out.cut ? { cut: true } : {}), ...(check ? { flagged: check.issues.length } : {}), ...(style ? { even: style.even, buzzwords: style.words.length } : {}) }));
   if (out.error) return fail(out.error === "ai_busy" ? 503 : 502, out.error, okOrigin);

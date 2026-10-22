@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 const require = createRequire(import.meta.url);
 const { PROMPTS, OPTIONS } = require("../prompts.js");
 const { factCheck } = require("../factcheck.js");
-const { stripDashes, styleCheck } = require("../style.js");
+const { stripDashes, styleCheck, tidyCv } = require("../style.js");
 const here = path.dirname(fileURLToPath(import.meta.url));
 
 // The same room to write as the server gives each task (prompts.js OPTIONS), so a whole CV isn't cut short here either
@@ -51,7 +51,8 @@ export async function runEval({ cases, tasks, langs, runs, ask, year = new Date(
       // The same clean-up and style check the server runs on a CV or letter before anyone sees it
       const sent = text && (task === "cv" || task === "letter");
       if (sent) text = stripDashes(text);
-      const check = text ? factCheck(text, { cv: c.cv, ad: c.job.text, title: c.job.title, employer: c.job.employer, extra: "", year }) : null;
+      if (sent && task === "cv") text = tidyCv(text);
+      const check = text ? factCheck(text, { cv: c.cv, ad: c.job.text, title: c.job.title, employer: c.job.employer, extra: "", year, task, lang }) : null;
       const style = sent ? styleCheck(text, { cv: c.cv, ad: c.job.text, task }) : null;
       results.push({ case: c.id, task, lang, run, text, error, issues: check ? check.issues : [], ...(style ? { style } : {}) });
       log(`${results.length}/${jobs.length} ${c.id} ${task} ${lang} #${run}: ${error ? "error " + error : check.issues.length ? check.issues.length + " flagged" : "clean"}`);

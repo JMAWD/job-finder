@@ -467,7 +467,8 @@ function recheck(text) {
   if (localCheck === undefined) localCheck = compiled(FACTCHECK_SRC, m => m.factCheck);
   if (!localCheck || !tl) return null;
   try {
-    const e = tlEntry(tl.id), r = localCheck(text, { cv: store.get("jf-cv", ""), ad: e.ad ?? tl.adText ?? "", title: tl.title, employer: tl.employer, extra: e.extra || "", year: new Date().getFullYear() });
+    const e = tlEntry(tl.id), o = e.out[tl.task];
+    const r = localCheck(text, { cv: store.get("jf-cv", ""), ad: e.ad ?? tl.adText ?? "", title: tl.title, employer: tl.employer, extra: e.extra || "", year: new Date().getFullYear(), task: tl.task, lang: o?.lang || e.lang || lang });
     return { ok: r.ok, issues: r.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) };
   } catch (err) { console.warn("The fact check failed", err); return null; }
 }

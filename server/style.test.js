@@ -4,7 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert");
 const fs = require("node:fs");
 const path = require("node:path");
-const { stripDashes, styleCheck } = require("./style.js");
+const { stripDashes, styleCheck, tidyCv } = require("./style.js");
 const { factCheck } = require("./factcheck.js");
 
 const EM = "\u2014", EN = "\u2013";
@@ -83,4 +83,20 @@ test("buzzwords are flagged only when neither the CV nor the ad uses them", () =
 test("dashes the person typed in are counted, ranges are not", () => {
   assert.equal(styleCheck(`Jag vill börja ${EN} helst i mars ${EM} om det går. (2018${EN}2020) och 3${EN}5 år.`, { task: "letter" }).dashes, 2);
   assert.equal(styleCheck(stripDashes(`Jag vill börja ${EN} helst i mars.`), { task: "letter" }).dashes, 0);
+});
+
+test("a CV with no bullets at all is not called even for that reason", () => {
+  const plain = "## Erfarenhet\n### A, X (2018 - nu)\nEn lång rad om allt som gjordes på jobbet under många år med många detaljer.\n### B, Y (2014 - 2018)\nKort rad.\n### C, Z (2010 - 2014)\nKort.";
+  assert.equal(styleCheck(plain).even, false);
+});
+
+test("the tailored CV is tidied into one form: bullets, contact line, ranges", () => {
+  const md = "# Priya Natarajan\nMalmö ·\n\n## Profile\nData analyst.\n\n## Key skills\n- SQL\n\n## Experience\n### Data Analyst, Sundvall Retail (2022-2024)\nBuilt the weekly sales dashboard that 120 store managers use, and kept it running through two system changes. Developed a forecasting model in Python, e.g. for seasonal stock, with pandas and Prophet. Automated the monthly reports.\n\n- Already a bullet\n\n### Business Analyst, Österlind Medical (2019 - 2022)\n2) Numbered line\n\n## Education\n### MSc Statistics, Lund University (2017-2019)\nThesis on forecasting\n\n## Languages\nEnglish, Swedish";
+  const out = tidyCv(md);
+  assert.match(out, /^# Priya Natarajan\nMalmö\n/);
+  assert.match(out, /### Data Analyst, Sundvall Retail \(2022 - 2024\)\n- Built the weekly sales dashboard that 120 store managers use, and kept it running through two system changes\.\n- Developed a forecasting model in Python, e\.g\. for seasonal stock, with pandas and Prophet\.\n- Automated the monthly reports\.\n- Already a bullet\n/);
+  assert.match(out, /### Business Analyst, Österlind Medical \(2019 - 2022\)\n- Numbered line/);
+  assert.match(out, /### MSc Statistics, Lund University \(2017 - 2019\)\nThesis on forecasting/);   // education is left as written
+  assert.match(out, /## Languages\nEnglish, Swedish/);
+  assert.match(tidyCv("# Eva\n· Göteborg ·· eva@x.se ·\n## Profil\nx"), /^# Eva\nGöteborg · eva@x\.se\n/);
 });

@@ -91,7 +91,7 @@ function styleCheck(text, { cv = "", ad = "", task = "cv" } = {}) {
   const out = String(text || "");
   const blocks = task === "cv" ? roleBlocks(out) : [];
   const v = variation(blocks.map(b => b.length));
-  const sameBullets = blocks.length >= 3 && blocks.every(b => b.bullets === blocks[0].bullets);
+  const sameBullets = blocks.length >= 3 && blocks[0].bullets > 0 && blocks.every(b => b.bullets === blocks[0].bullets);
   const source = [cv, ad].join("\n");
   const words = BUZZWORDS.filter(w => hasWord(out, w) && !hasWord(source, w));
   // Dashes still used as punctuation (only possible after the person's own edits, since answers are cleaned).
@@ -101,4 +101,43 @@ function styleCheck(text, { cv = "", ad = "", task = "cv" } = {}) {
   return { even: (v !== null && v < UNIFORM) || sameBullets, words, dashes };
 }
 
-module.exports = { stripDashes, styleCheck, _test: { roleBlocks, variation, UNIFORM } };
+// The tailored CV's form, made consistent in code so the PDF always looks the same, whatever the model did:
+//   lines under a job become bullet points ("- "), and a long paragraph is split into one bullet per sentence;
+//   the contact line under the name loses a separator left at its start or end ("Malmö ·");
+//   blank lines between the bullets of one job go.
+// Only sections that hold jobs are touched; education, skills and languages are left as written.
+const NOT_JOBS = /utbildning|education|kurs|course|certifi|språk|language|kunskap|kompetens|skill|verktyg|tool|teknik|technolog|övrigt|other|intress|interest|referen|körkort|licen|profil|profile|sammanfattning|summary/i;
+const ABBREV = /(?:t\.ex|bl\.a|m\.m|m\.fl|e\.g|i\.e|ca|inkl|resp|etc|osv|dvs|nr|st)\.$/i;
+function sentencesOf(text) {
+  const parts = text.split(/(?<=[.!?])\s+(?=[\p{Lu}\d])/u), out = [];
+  for (const p of parts) { if (out.length && ABBREV.test(out[out.length - 1])) out[out.length - 1] += " " + p; else out.push(p); }
+  return out.map(x => x.trim()).filter(Boolean);
+}
+function tidyCv(md) {
+  const lines = String(md || "").replace(/\r/g, "").split("\n"), out = [];
+  let section = "", inJob = false, afterName = false;
+  for (const line of lines) {
+    const h = line.match(/^\s*(#{1,6})\s+(.*)/);
+    if (h) {
+      if (h[1].length === 1) afterName = true;
+      if (h[1].length <= 2) { section = h[2]; inJob = false; }
+      else inJob = !NOT_JOBS.test(section);
+      // Every range on a heading written the same way, so the years line up in the PDF: "2016 - 2018", "2018 - nu"
+      out.push(h[1].length >= 3 ? line.replace(/\b((?:19|20)\d\d)\s*-\s*((?:19|20)\d\d)\b/g, "$1 - $2") : line); continue;
+    }
+    if (afterName && line.trim()) {
+      afterName = false;
+      out.push(line.replace(/^[\s·|,;•-]+|[\s·|,;•-]+$/g, "").replace(/\s*·\s*(?:·\s*)+/g, " · "));
+      continue;
+    }
+    if (!inJob || !line.trim()) { out.push(line); continue; }
+    const item = line.match(/^\s*(?:[-*•]|\d+[.)])\s+(.*)/);
+    const text = (item ? item[1] : line).trim();
+    const parts = text.length > 140 ? sentencesOf(text) : [text];
+    for (const part of parts) out.push("- " + part);
+  }
+  // No blank lines between the bullets of one job
+  return out.filter((l, i) => !(l.trim() === "" && /^- /.test(out[i - 1] || "") && /^- /.test(out[i + 1] || ""))).join("\n");
+}
+
+module.exports = { stripDashes, styleCheck, tidyCv, _test: { roleBlocks, variation, UNIFORM, sentencesOf } };

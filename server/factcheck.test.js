@@ -29,6 +29,8 @@ const FAKE_TITLES = [["Driftchef", "Operations Director"], ["Inköpschef", "Head
 const CITIES = ["Göteborg", "Borås", "Trollhättan", "Jönköping", "Västerås", "Linköping"];
 const NAMES = ["Eva Lind", "Ahmed Rahimi", "Maria Ekholm", "Jonas Berg", "Sara Nilsson", "Daniel Moore", "Priya Natarajan", "Erik Johansson"];
 const SKILLS = ["FMEA", "8D", "Python", "SAP", "Lean", "PPAP", "SQL", "Excel", "ISO 9001", "Six Sigma"];
+// What the ad asks for that the CV never has, so a claims check can tell when an answer borrows it
+const AD_ONLY = [["IATF 16949", "IATF"], ["Kafka", "Kafka"], ["PRINCE2", "PRINCE2"], ["Snowflake", "Snowflake"], ["Teamcenter", "Teamcenter"], ["felträdsanalys", "felträdsanalys"]];
 const YEAR = 2026;
 
 function makeCase(r) {
@@ -56,8 +58,9 @@ function makeCase(r) {
   lines.push(english ? "Education" : "Utbildning", `${english ? "BSc Engineering" : "Högskoleingenjör"}, Chalmers, ${eduFrom}–${eduTo}`);
   const adEmployer = "Acme " + r.pick(["Robotics", "Nordic", "Industri", "Vehicles"]);
   const adTitle = r.pick(TITLES)[r.next() < 0.5 ? 0 : 1];
-  const ad = `${adEmployer} söker en ${adTitle.toLowerCase()} som kan ${skills[0]} och vill utveckla vår produktion. Start i januari ${YEAR + 1}.`;
-  return { roles, english, skills, name, home, email, layout, edu: { from: eduFrom, to: eduTo }, src: { cv: lines.join("\n"), ad, title: adTitle, employer: adEmployer, extra: "", year: YEAR } };
+  const want = r.pick(AD_ONLY);
+  const ad = `${adEmployer} söker en ${adTitle.toLowerCase()} som kan ${skills[0]} och vill utveckla vår produktion. Meriterande är ${want[0]}. Start i januari ${YEAR + 1}.`;
+  return { want, roles, english, skills, name, home, email, layout, edu: { from: eduFrom, to: eduTo }, src: { cv: lines.join("\n"), ad, title: adTitle, employer: adEmployer, extra: "", year: YEAR } };
 }
 
 // The whole tailored CV, the way the CV task now asks for it: name, contact line, profile, skills, every role, education
@@ -151,6 +154,42 @@ test(`an answer with one invented employer, title or date is caught (${RUNS} ran
     const hit = res.issues.some(i => i.text.toLowerCase().includes(p.expect.toLowerCase()) || i.line.toLowerCase().includes(p.expect.toLowerCase()));
     assert.ok(hit, `seed ${seed} (kind ${p.kind}) missed "${p.expect}" in: ${p.line}\nflagged: ${JSON.stringify(res.issues)}\n--- CV ---\n${c.src.cv}`);
   }
+});
+
+test(`a whole CV that only uses the CV passes the claims check, and one borrowed skill or figure is caught (${RUNS} random CVs)`, () => {
+  for (let seed = 1; seed <= RUNS; seed++) {
+    const r = rng(seed * 104729), c = makeCase(r), en = r.next() < 0.5;
+    const T = ro => (en ? ro.en : ro.sv), span = ro => `${ro.from}–${ro.to || (en ? "present" : "nu")}`;
+    const text = wholeCv(r, c, en, T, span).join("\n"), src = { ...c.src, task: "cv", lang: en ? "en" : "sv" };
+    assert.deepEqual(factCheck(text, src).issues.filter(i => i.kind === "claim" || i.kind === "figure"), [], `seed ${seed} flagged a claim the CV backs\n--- CV ---\n${c.src.cv}\n--- ad ---\n${c.src.ad}\n--- answer ---\n${text}`);
+    const lines = text.split("\n"), kind = r.int(0, 2);
+    const at = lines.findIndex(l => /^- /.test(l));
+    const added = kind === 0 ? `- ${c.want[0]}` : kind === 1 ? `- ${en ? "Worked with" : "Arbetade med"} ${c.want[0]} ${en ? "in production" : "i produktionen"}` : `- ${en ? "Cut downtime by" : "Minskade stoppen med"} 37 %`;
+    lines.splice(at + 1, 0, added);
+    const issues = factCheck(lines.join("\n"), src).issues, expect = kind === 2 ? "37" : c.want[1];
+    // An ordinary word (not a name like Kafka) is only checked when the answer is in the CV's language
+    if (kind < 2 && c.want[1] === "felträdsanalys" && c.english !== en) continue;
+    assert.ok(issues.some(i => (i.kind === "claim" || i.kind === "figure") && i.text.toLowerCase().includes(expect.toLowerCase())), `seed ${seed} missed "${expect}" in: ${added}\nflagged: ${JSON.stringify(issues)}`);
+  }
+});
+
+test("real answers from the live model: the claims borrowed from the ad are caught", () => {
+  const cases = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(__dirname, "eval", "cases.json"), "utf8")).map(c => [c.id, c]));
+  const real = JSON.parse(fs.readFileSync(path.join(__dirname, "eval", "real-r1.json"), "utf8"));
+  for (const r of real) {
+    const c = cases[r.id], issues = factCheck(r.text, { cv: c.cv, ad: c.job.text, title: c.job.title, employer: c.job.employer, year: 2026, task: r.task, lang: r.lang }).issues;
+    for (const e of r.expect || []) assert.ok(issues.some(i => i.text.toLowerCase().includes(e.toLowerCase().split(" ")[0])), `${r.id} ${r.task}: missed "${e}"\n${JSON.stringify(issues)}`);
+  }
+  // The match check and interview prep talk about the ad by design, so they get no claims check
+  const c = cases["nurse-sv"];
+  assert.deepEqual(factCheck("Annonsen vill ha telefonrådgivning och erfarenhet av diabetes och astma.", { cv: c.cv, ad: c.job.text, year: 2026, task: "match" }).issues, []);
+});
+
+test("in a letter only the person's own sentences are read, and the employer may be named", () => {
+  const c = { cv: "Sara Holm\nInköpare, Sundvall Retail AB, 2020 – nu\n- Förhandlade ramavtal med åtta leverantörer\n- SAP MM", ad: "Halvarsson Home söker en inköpare som driver hållbarhetsarbetet och kan Amfori BSCI.", title: "Inköpare", employer: "Halvarsson Home", year: 2026, task: "letter", lang: "sv" };
+  assert.deepEqual(factCheck("Hej!\n\nNi söker någon som driver hållbarhetsarbetet och kan Amfori BSCI. Jag har förhandlat ramavtal med åtta leverantörer på Sundvall Retail och vill gärna göra det hos Halvarsson Home.\n\nVänliga hälsningar\nSara Holm", c).issues, []);
+  const bad = factCheck("Hej!\n\nJag har lett hållbarhetsarbetet enligt Amfori BSCI på Sundvall Retail i tolv år.\n\nVänliga hälsningar\nSara Holm", c).issues.map(i => i.text);
+  assert.ok(bad.some(t => /hållbarhetsarbetet/.test(t)) && bad.some(t => /Amfori/.test(t)) && bad.includes("tolv"), JSON.stringify(bad));
 });
 
 test("rewording, order and markup don't change the result", () => {
