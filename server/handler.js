@@ -20,6 +20,7 @@
 const crypto = require("crypto");
 const { PROMPTS, TASKS, AD_TASKS, CV_TASKS, OPTIONS, parseMentor } = require("./prompts.js");
 const { factCheck } = require("./factcheck.js");
+const { stripDashes, styleCheck } = require("./style.js");
 
 const MAX_CV = 20000, MAX_AD = 20000, MAX_EXTRA = 2000;
 const usage = new Map();   // access code hash -> timestamps of recent requests (per running instance)
@@ -118,12 +119,17 @@ async function handle(event) {
   const out = await callModel(PROMPTS[task](lang, { cv, job, extra, year: new Date().getFullYear() }), model, OPTIONS[task]);
   const data = mentor && !out.error ? parseMentor(out.text) : null;
   if (mentor && !out.error && !data) out.error = "ai_bad_format";
+  // The CV and the letter go to the employer, so dashes used as punctuation are taken out in code, not just asked for,
+  // and the style check reports what's left: jobs of even length and buzzwords (see style.js)
+  const sent = !out.error && (task === "cv" || task === "letter");
+  if (sent) out.text = stripDashes(out.text);
+  const style = sent ? styleCheck(out.text, { cv, ad, task }) : null;
   // Every written answer is checked in code for employers, job titles, schools, degrees and dates the CV doesn't back up (see factcheck.js)
   const check = !out.error && needsCv && needsAd ? factCheck(out.text, { cv, ad, title: job.title, employer: job.employer, extra, year: new Date().getFullYear() }) : null;
   // Only sizes, timings and how many things the check flagged are logged, never the CV, the ad or the flagged words
-  console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null, ...(out.cut ? { cut: true } : {}), ...(check ? { flagged: check.issues.length } : {}) }));
+  console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null, ...(out.cut ? { cut: true } : {}), ...(check ? { flagged: check.issues.length } : {}), ...(style ? { even: style.even, buzzwords: style.words.length } : {}) }));
   if (out.error) return fail(out.error === "ai_busy" ? 503 : 502, out.error, okOrigin);
-  return reply(200, mentor ? { data, model: out.model, tokens: out.tokens } : { text: out.text, model: out.model, tokens: out.tokens, ...(out.cut ? { cut: true } : {}), ...(check ? { check } : {}) }, okOrigin);
+  return reply(200, mentor ? { data, model: out.model, tokens: out.tokens } : { text: out.text, model: out.model, tokens: out.tokens, ...(out.cut ? { cut: true } : {}), ...(check ? { check } : {}), ...(style ? { style } : {}) }, okOrigin);
 }
 
 module.exports = { handle, _test: { usage, sha256 } };

@@ -5,8 +5,9 @@
 // {"mentorBad":true} makes the Mentor's answer come back as Markdown instead of JSON.
 // {"invent":true} makes the tailored CV name a job the test CV doesn't have, for the fact check.
 // {"cut":true} makes the answer come back as if the model ran out of room (finish_reason "length").
+// {"tone":true} makes the tailored CV break Job Tailor's writing rules: dashes, buzzwords and two jobs of the same shape.
 import http from "node:http";
-let last = null, count = 0, mode = { status: 200, delay: 300, mentorBad: false, invent: false, cut: false };
+let last = null, count = 0, mode = { status: 200, delay: 300, mentorBad: false, invent: false, cut: false, tone: false };
 const course = (name, provider, format, extra, directions, priority, skill, forRole, why) => ({ name, provider, format, ...extra, directions, priority, why, skill, for_role: forRole });
 const MENTOR = {
   name: "Eva", years: 8, stage: "established", stage_reason: "Eight years in quality roles, the last three leading improvement work.",
@@ -34,6 +35,10 @@ const MENTOR = {
     course("Train the trainer", "Classroom, 2 days", "class", { hours: 16, days: 2, cost_sek: 11000, ramp_months: 1 }, ["advise"], { advise: 8 }, "utbildning", "Kvalitetsingenjör", "Helps you teach what you know."),
   ],
 };
+// A CV that reads as machine written, with only facts from FULL_CV in tests/test_tailor.py
+const TONE_CV = "# Eva Lindqvist\nGöteborg \u00b7 eva.lindqvist@example.com\n\n## Profil\nKvalitetsingenjör \u2014 drivande och resultatinriktad.\n\n"
+  + "## Erfarenhet\n### Kvalitetsingenjör, Nordvik Automotive AB, Göteborg (2018 \u2013 nu)\n- Ledde FMEA för bromssystem med konstruktion\n- Utbildade kollegor i riskanalys varje år\n\n"
+  + "### Produktionstekniker, Svea Bearings AB, Göteborg (2016 \u2013 2018)\n- Ansvarade för förbättringar på monteringslinan\n- Arbetade med standardiserat arbete där\n";
 const ANSWERS = {
   match: "## Det som matchar\n- **FMEA**: åtta års erfarenhet inom fordonsindustrin\n- Leverantörsrevisioner\n\n---\n\n## Det som saknas\n1. Python nämns inte i CV:t\n\n## Samlad bedömning\nStark match.",
   letter: "## Cover letter\nDear [contact person],\n\nI want to work at **Acme Robotics** because the role joins quality work and software.\n\n- Eight years of FMEA\n- Supplier audits\n\nKind regards,\n[Your name]",
@@ -61,7 +66,7 @@ http.createServer(async (req, res) => {
     const ask = last.body.messages[1].content;
     if (/Translate the job ad into natural/.test(ask)) return send(200, { choices: [{ message: { content: "# Quality Engineer\n\nWe are looking for a quality engineer who can use FMEA and wants to drive quality improvements in production.\n\n## Experience\n- Experience with FMEA\n- Supplier audits" } }], usage: { prompt_tokens: 800, completion_tokens: 120 } });
     const task = /cover letter|personligt brev/i.test(ask) ? "letter" : /Tailor the CV|Anpassa CV/i.test(ask) ? "cv" : /interview|intervju/i.test(ask) ? "interview" : "match";
-    const content = mode.invent && task === "cv" ? ANSWERS.cv + "\n\n### Senior kvalitetsingenjör, Bosch Rexroth (2012–nu)\n- Ledde FMEA" : mode.cut ? ANSWERS[task].split("## Utbildning")[0].trim() : ANSWERS[task];
+    const content = mode.tone && task === "cv" ? TONE_CV : mode.invent && task === "cv" ? ANSWERS.cv + "\n\n### Senior kvalitetsingenjör, Bosch Rexroth (2012–nu)\n- Ledde FMEA" : mode.cut ? ANSWERS[task].split("## Utbildning")[0].trim() : ANSWERS[task];
     return send(200, { choices: [{ message: { content }, finish_reason: mode.cut ? "length" : "stop" }], usage: { prompt_tokens: 1200, completion_tokens: 300 } });
   }
   send(404, {});

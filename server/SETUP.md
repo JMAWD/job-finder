@@ -4,7 +4,7 @@ This is how the live server was set up. Repeat it if you ever need a second one.
 
 1. **An app identity for the AI key.** IAM → Applications → Create application (`job-finder-tailor`). Then IAM → Policies → Create policy: principal = that application, permission set `GenerativeApisModelAccess` only, scope = your project. A key made for this application can call the AI models and nothing else in your account.
 2. **The key.** Open the application → API keys → Generate an API key. Copy the **secret key** (the long one with dashes) straight into step 4. It is shown only once. Never paste it anywhere else.
-3. **The function.** Serverless Functions → Create (region Paris, namespace `job-finder`, function `tailor`): runtime Node 22, Upload a ZIP (`function.zip` = handler.js, prompts.js, factcheck.js, titles.json, package.json), handler `handler.handle`, 256 MB, min 0 and max 1 instance (one instance keeps the per-code limits exact), privacy Public, HTTPS only.
+3. **The function.** Serverless Functions → Create (region Paris, namespace `job-finder`, function `tailor`): runtime Node 22, Upload a ZIP (`function.zip` = handler.js, prompts.js, factcheck.js, style.js, titles.json, package.json), handler `handler.handle`, 256 MB, min 0 and max 1 instance (one instance keeps the per-code limits exact), privacy Public, HTTPS only.
 4. **Settings** (Data tab of the function):
    - ALLOWED_ORIGINS = `null` (the downloaded file). Add the GitHub Pages address later, comma-separated, e.g. `null,https://name.github.io`.
    - AI_MODEL = `mistral-medium-3.5-128b`
@@ -15,7 +15,7 @@ This is how the live server was set up. Repeat it if you ever need a second one.
 5. Deploy and copy the function endpoint (`https://….functions.fnc.fr-par.scw.cloud`). The address is safe to share; it only works with an access code.
 6. Put the endpoint in `config.json` as `tailor_url` and run `python3 build.py`.
 
-**Making the ZIP:** run `python3 build.py` first (it writes `titles.json`), then from `server/`: `zip function.zip handler.js prompts.js factcheck.js titles.json package.json`.
+**Making the ZIP:** run `python3 build.py` first (it writes `titles.json`), then from `server/`: `zip function.zip handler.js prompts.js factcheck.js style.js titles.json package.json`.
 
 **Checking the model before a beta round:** `AI_KEY=... node eval/run.mjs` runs the fact-check eval against the real model (192 answers, roughly €2–4) and writes the summary to `eval/results/latest.md`. Read the flags there and mark the false alarms before quoting the result.
 

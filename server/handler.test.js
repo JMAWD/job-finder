@@ -65,7 +65,7 @@ test("a good request returns the text and sends the prompt from the server", asy
 });
 test("translation needs only the ad, targets the chosen language, and never sends a CV", async () => {
   _test.usage.clear(); sent.length = 0;
-  aiReply = { status: 200, body: { choices: [{ message: { content: "Quality Engineer — we are looking for..." } }] } };
+  aiReply = { status: 200, body: { choices: [{ message: { content: "Quality Engineer \u2014 we are looking for..." } }] } };
   const r = await call({ code: CODE, task: "translate", lang: "en", job: { text: AD } });
   assert.equal(r.statusCode, 200);
   assert.match(json(r).text, /Quality Engineer/);
@@ -178,11 +178,11 @@ test("a mentor answer that isn't usable JSON gives a clear error", async () => {
 });
 test("every written answer comes back with a fact check against the CV", async () => {
   _test.usage.clear();
-  const cv = "Kvalitetsingenjör, Nordvik Automotive, 2018 – nu. Ledde FMEA och 8D för bromssystem och utbildade kollegor i riskanalys. ".repeat(3);
-  aiReply = { status: 200, body: { choices: [{ message: { content: "### Kvalitetsingenjör, Nordvik Automotive (2018–nu)\n- Ledde FMEA" } }] } };
+  const cv = "Kvalitetsingenjör, Nordvik Automotive, 2018 \u2013 nu. Ledde FMEA och 8D för bromssystem och utbildade kollegor i riskanalys. ".repeat(3);
+  aiReply = { status: 200, body: { choices: [{ message: { content: "### Kvalitetsingenjör, Nordvik Automotive (2018\u2013nu)\n- Ledde FMEA" } }] } };
   let b = json(await call(ok({ task: "cv", cv })));
   assert.deepEqual(b.check, { ok: true, issues: [] });
-  aiReply = { status: 200, body: { choices: [{ message: { content: "### Senior kvalitetsingenjör, Bosch Rexroth (2014–nu)\n- Ledde FMEA" } }] } };
+  aiReply = { status: 200, body: { choices: [{ message: { content: "### Senior kvalitetsingenjör, Bosch Rexroth (2014\u2013nu)\n- Ledde FMEA" } }] } };
   b = json(await call(ok({ task: "letter", cv })));
   assert.equal(b.check.ok, false);
   assert.deepEqual(b.check.issues.map(i => i.kind).sort(), ["date", "employer", "title"]);
@@ -208,6 +208,41 @@ test("the tailored CV task asks for the whole CV and nothing else, with room to 
   _test.usage.clear(); sent.length = 0;
   await call(ok({ task: "letter" }));
   assert.equal(sent[0].body.max_tokens, 2500, "the other texts keep their usual length");
+});
+test("every writing prompt carries Job Tailor's rules: no dashes as punctuation, no buzzwords, nothing upgraded", async () => {
+  for (const task of ["match", "cv", "letter", "interview"]) for (const [lang, rules] of [
+    ["sv", [/Använd inte tankstreck eller långa streck som skiljetecken/, /inga modeord/, /"arbetat med" blir aldrig "ledde"|"arbetade med" blir aldrig "ledde"/, /inte översatt engelska/, /Översätt aldrig namn på skolor/]],
+    ["en", [/Do not use em dashes or en dashes as punctuation/, /no buzzwords/, /"worked on" never becomes "led"/, /Never translate the names of schools/]]]) {
+    _test.usage.clear(); sent.length = 0;
+    await call(ok({ task, lang }));
+    for (const r of rules) assert.match(sent[0].body.messages[0].content, r, `${task} ${lang}`);
+  }
+});
+test("the CV prompt weights jobs unevenly and varies the bullets", async () => {
+  for (const [lang, rules] of [["sv", [/Vikta tjänsterna ojämnt/, /fyra till sex punkter/, /inga alls/, /Ge aldrig alla tjänster lika många punkter/, /Börja inte varje punkt med ett verb i dåtid/]],
+    ["en", [/Weight the jobs unevenly/, /four to six bullets/, /none at all/, /Never give every job the same number of bullets/, /Do not open every bullet with a past-tense verb/]]]) {
+    _test.usage.clear(); sent.length = 0;
+    await call(ok({ task: "cv", lang }));
+    for (const r of rules) assert.match(sent[0].body.messages[1].content, r, lang);
+  }
+});
+test("the CV and the letter come back with dashes taken out and a style check; other texts are left as written", async () => {
+  const em = "\u2014", en = "\u2013";
+  aiReply = { status: 200, body: { choices: [{ message: { content: `# Eva\n## Profil\nKvalitetsingenjör ${em} drivande och resultatinriktad.\n## Erfarenhet\n### Kvalitetsingenjör, Acme (2018 ${en} nu)\n- FMEA` } }] } };
+  for (const task of ["cv", "letter"]) {
+    _test.usage.clear();
+    const b = json(await call(ok({ task })));
+    assert.doesNotMatch(b.text, /[\u2013\u2014]/, task);
+    assert.match(b.text, /Kvalitetsingenjör, drivande/);
+    assert.match(b.text, /\(2018 - nu\)/);
+    assert.deepEqual(b.style.words.sort(), ["drivande", "resultatinriktad"]);
+    assert.match(logs.at(-1), /"buzzwords":2/);
+    assert.doesNotMatch(logs.at(-1), /drivande/);
+  }
+  _test.usage.clear();
+  const i = json(await call(ok({ task: "interview" })));
+  assert.match(i.text, /\u2014/); assert.equal(i.style, undefined);
+  aiReply = { status: 200, body: { choices: [{ message: { content: "ok" } }] } };
 });
 test("an answer the model stopped mid-way through is marked as cut off", async () => {
   _test.usage.clear();

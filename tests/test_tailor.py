@@ -208,9 +208,11 @@ async def main():
             check('the download is a real PDF', raw_pdf.startswith(b'%PDF-1.4') and raw_pdf.rstrip().endswith(b'%%EOF'))
             import pypdf
             reader = pypdf.PdfReader(str(cv_pdf)); pdf_text = ' '.join(' '.join(x.extract_text() for x in reader.pages).split())
-            check('the PDF holds the whole CV, with Swedish letters', all(x in pdf_text for x in ['Eva Lindqvist', 'NYCKELKOMPETENSER', 'ERFARENHET', 'Kvalitetsingenjör, Nordvik Automotive AB, Göteborg', '2018 – nu',
-                  'Produktionstekniker, Svea Bearings AB, Göteborg', 'Högskoleingenjör i maskinteknik, Chalmers', '2013 – 2016', 'Svenska (modersmål), engelska (flytande)', 'Ledde FMEA för bromssystem']), pdf_text)
+            check('the PDF holds the whole CV, with Swedish letters', all(x in pdf_text for x in ['Eva Lindqvist', 'NYCKELKOMPETENSER', 'ERFARENHET', 'Kvalitetsingenjör, Nordvik Automotive AB, Göteborg', '2018 - nu',
+                  'Produktionstekniker, Svea Bearings AB, Göteborg', 'Högskoleingenjör i maskinteknik, Chalmers', '2013-2016', 'Svenska (modersmål), engelska (flytande)', 'Ledde FMEA för bromssystem']), pdf_text)
             check('no Markdown, tips or notes in the PDF', not any(x in pdf_text for x in ['##', '**', 'kan tas bort', 'Skrivet av AI', 'Written by AI']))
+            check('no long dashes anywhere in the CV, ranges included', not any(c in pdf_text for c in '\u2013\u2014') and '\u2013' not in await dlg.locator('.tl-out').inner_text())
+            check('a lopsided CV with no buzzwords gets no style notes', await dlg.locator('.fc-style').count() == 0)
             check('the PDF has a title, an author and a language', reader.metadata.title == 'CV – Eva Lindqvist' and reader.metadata.author == 'Eva Lindqvist' and reader.trailer['/Root']['/Lang'] == 'sv-SE', reader.metadata)
             links = [a.get_object()['/A']['/URI'] for x in reader.pages for a in (x.get('/Annots') or [])]
             check('the email address in the PDF can be clicked', links == ['mailto:eva.lindqvist@example.com'], links)
@@ -225,7 +227,7 @@ async def main():
             import docx
             cv_paras = [x.text for x in docx.Document(str(cv_word)).paragraphs]
             check('the Word CV starts with the name, with no title of ours', d.suggested_filename == 'cv-eva-lindqvist-acme-robotics.docx' and cv_paras[0] == 'Eva Lindqvist'
-                  and not any('Anpassat CV' in x or 'Tailored CV' in x for x in cv_paras) and 'Kvalitetsingenjör, Nordvik Automotive AB, Göteborg (2018 – nu)' in cv_paras, cv_paras[:4])
+                  and not any('Anpassat CV' in x or 'Tailored CV' in x for x in cv_paras) and 'Kvalitetsingenjör, Nordvik Automotive AB, Göteborg (2018 - nu)' in cv_paras, cv_paras[:4])
             await dlg.locator('.tl-result .row').last.scroll_into_view_if_needed()
             await pg.screenshot(path=str(SHOTS / 'cv-en.png'))
 
@@ -265,6 +267,25 @@ async def main():
             async with pg.expect_download() as dl: await dlg.locator('[data-tl=pdf]').click()
             await dl.value
             check("characters a PDF can't show are reported", "1 characters in this text can't be shown in a PDF" in await dlg.inner_text())
+
+            # Job Tailor's writing rules are in the prompt, and what the model still gets wrong is caught in code
+            check("the prompt carries Job Tailor's writing rules", all(x in last_ai()['body']['messages'][0]['content'] for x in ['Använd inte tankstreck', 'inga modeord', 'blir aldrig "ledde"'])
+                  and all(x in ask for x in ['Vikta tjänsterna ojämnt', 'Ge aldrig alla tjänster lika många punkter', 'Börja inte varje punkt med ett verb i dåtid']))
+            post(FAKE + '/mode', {'tone': True})
+            await dlg.locator('[data-tl=go]').click(); await pg.wait_for_selector('#tailor .fc-style', timeout=10000)
+            shown = await dlg.locator('.tl-out').inner_text()
+            check('dashes the model used are taken out before the CV is shown', '\u2014' not in shown and '\u2013' not in shown and 'Kvalitetsingenjör, drivande' in shown, shown[:300])
+            note = await dlg.locator('.fc-style').inner_text()
+            check('jobs of even length and buzzwords are pointed out', 'Every job is about the same length' in note and 'drivande' in note and 'resultatinriktad' in note, note)
+            check('the style note is a status, not an alarm', await dlg.locator('.fc-style').get_attribute('role') == 'status')
+            post(FAKE + '/mode', {'tone': False})
+            await dlg.locator('[data-tl=edit]').click()
+            fixed = (await dlg.locator('#tl-edit').input_value()).replace('Kvalitetsingenjör, drivande och resultatinriktad', 'Kvalitetsingenjör \u2014 van vid FMEA')
+            fixed = fixed.replace('### Produktionstekniker', '### Produktionstekniker').split('### Produktionstekniker')[0] + '### Produktionstekniker, Svea Bearings AB, Göteborg (2016-2018)\n'
+            await dlg.locator('#tl-edit').fill(fixed); await dlg.locator('[data-tl=save]').click()
+            note = await dlg.locator('.fc-style').inner_text()
+            check('after an edit the notes follow the text: buzzwords gone, a typed dash noted', 'drivande' not in note and 'same length' not in note and 'A dash is used as punctuation' in note, note)
+            check('the dash the person typed is kept, not changed behind their back', '\u2014' in await dlg.locator('.tl-out').inner_text())
 
             # An answer the model stopped mid-way is marked as cut off
             post(FAKE + '/mode', {'cut': True})
