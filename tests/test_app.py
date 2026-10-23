@@ -47,6 +47,19 @@ LINKS = [{"id": "l1", "headline": "Fullstack Software Engineer", "brief": "Join 
 PL = [ad('201', 'Projektledare, el', 'Nordbygg AB', '5560000011', GBG, 'Vi söker en projektledare till vår engineering-avdelning.', field='Teknik'),
       ad('202', 'Project Leader, Engineering', 'Tyre Works AB', '5560000012', GBG, 'As project leader you will run our engineering projects.', field='Teknik'),
       ad('203', 'Engineering Manager', 'Volt Labs AB', '5560000013', GBG, 'Lead the engineering team.', field='Teknik')]
+# Ads Platsbanken returns for a place that aren't all there. JobTech's place filters also match ads that only mention the place,
+# like a travelling nurse ad for the whole country, so a search around Göteborg brings in ads from Stockholm and Malmö.
+STO = dict(municipality='Stockholm', municipality_concept_id='mSTO', region='Stockholms län', region_concept_id='rST', country='Sverige', city='STOCKHOLM', coordinates=[18.07, 59.31])
+NURSE = [ad('301', 'Sjuksköterska, akuten', 'Sahlgrenska Vård AB', '5560000021', GBG, 'Vi söker en sjuksköterska till akuten.', field='Hälso- och sjukvård'),
+         ad('302', 'Resande sjuksköterska, hela Sverige', 'Resebemanning AB', '5560000022', STO, 'Sjuksköterska som vill jobba i Göteborg, Malmö och Umeå.', field='Hälso- och sjukvård'),
+         # A Göteborg street address with the municipality set to Stockholm by mistake
+         ad('303', 'Sjuksköterska, vårdcentral', 'Linnéstadens Vård AB', '5560000023', {**STO, 'city': 'GÖTEBORG', 'coordinates': [11.95, 57.69]}, 'Vi söker en sjuksköterska.', field='Hälso- och sjukvård'),
+         # No coordinates: a neighbouring municipality is kept, one in another county isn't
+         ad('304', 'Sjuksköterska, hemsjukvård', 'Mölndal Hemvård AB', '5560000024', {k: v for k, v in MOL.items() if k != 'coordinates'}, 'Sjuksköterska till hemsjukvården.', field='Hälso- och sjukvård'),
+         ad('305', 'Sjuksköterska, Malmö', 'Öresund Vård AB', '5560000025', {k: v for k, v in MAL.items() if k != 'coordinates'}, 'Sjuksköterska i Göteborg eller Malmö.', field='Hälso- och sjukvård')]
+NURSE_LINKS = [{"id": "l9", "headline": "Sjuksköterska", "brief": "Stockholm.", "occupation_group": {"concept_id": "g_rn", "label": "x"}, "occupation_field": {"concept_id": "h", "label": "Hälso- och sjukvård"},
+                "employer": {"name": "Huvudstadens Vård AB"}, "workplace_addresses": [{"municipality": "Stockholm", "municipality_concept_id": "mSTO", "region_concept_id": "rST", "country": "Sverige"}],
+                "publication_date": day(-1) + "T00:00:00", "source_links": [{"label": "ledigajobb.se", "url": "https://ledigajobb.se/l9"}]}]
 # How many ads in all of Sweden use each word or phrase, for the check that offers to split a phrase
 COUNTS = {'project leader engineering': 0, 'project leader': 11, 'engineering': 1507, 'project': 5000, 'leader': 300, 'leader engineering': 0,
           'quality engineer medtech': 0, 'quality engineer': 40, 'medtech': 20, 'quality': 900, 'engineer medtech': 0}
@@ -63,12 +76,15 @@ async def jobsearch(route):
     if q.get('limit') == ['0'] and term in COUNTS: return await route.fulfill(**ok({"total": {"value": COUNTS[term]}, "hits": []}))
     hits = SW + ([NEW] if STATE.get('fresh') else []) if 'software' in term else FMEA if 'fmea' in term else []
     if term in ('project leader', 'projektledare', 'engineering'): hits = [h for h in PL if term in (h['headline'] + ' ' + h['description']['text']).lower()]
+    if term == 'sjuksköterska': hits = NURSE
     after = q.get('published-after', [''])[0]
     if after.isdigit(): hits = [h for h in hits if datetime.fromisoformat(h['publication_date']) >= datetime.now() - timedelta(minutes=int(after))]
     await route.fulfill(**ok({"total": {"value": len(hits)}, "hits": hits}))
 async def joblinks(route):
     q = parse_qs(urlparse(route.request.url).query)
-    await route.fulfill(**ok({"total": {"value": 2}, "hits": LINKS} if 'software' in q.get('q', [''])[0].lower() else {"total": {"value": 0}, "hits": []}))
+    term = q.get('q', [''])[0].lower()
+    hits = LINKS if 'software' in term else NURSE_LINKS if 'sjuksköterska' in term else []
+    await route.fulfill(**ok({"total": {"value": len(hits)}, "hits": hits}))
 def hist_ad(i, days_ago, title='Software Engineer', duration='Tills vidare'):
     return {"id": f"h{i}", "headline": title, "publication_date": day(-days_ago) + "T08:00:00", "occupation_group": {"concept_id": "g_sw"}, "duration": {"label": duration}}
 # Past ads per employer. Acme has too few for a pattern. Bolt keeps advertising the same backend job, has nearly stopped
@@ -235,6 +251,31 @@ async def beta_checks(browser, errors):
         for view in ('res', 'app', 'market', 'mentor'):
             await pg.click(f'#tab-{view}')
             check(f'no sideways scroll in {view} at {1280 // w * 100}% zoom', await pg.evaluate('document.documentElement.scrollWidth') <= w)
+    await ctx.close()
+
+async def place_checks(browser, errors):
+    """Ads that Platsbanken returns for a place but whose own address is somewhere else stay out, and so do the other job sites
+    from those places. The English name Gothenburg is Göteborg."""
+    ctx = await browser.new_context(locale='en-US', viewport={'width': 1280, 'height': 1000})
+    await ctx.route('https://jobsearch.api.jobtechdev.se/**', jobsearch)
+    await ctx.route(EVENT_HOSTS, no_events)
+    await ctx.route('https://links.api.jobtechdev.se/**', joblinks)
+    await ctx.route('https://historical.api.jobtechdev.se/**', history)
+    pg = await ctx.new_page(); pg.on('pageerror', lambda e: errors.append(str(e)))
+    await pg.goto(PAGE)
+    await pg.fill('#place', 'Gothenburg'); await pg.fill('#kw-input', 'sjuksköterska'); await pg.press('#kw-input', 'Enter')
+    CALLS.clear(); msg = await search(pg)
+    check('Gothenburg is Göteborg', 'in Göteborg and 25 km around' in msg, msg)
+    names = sorted(x.split('\n')[0] for x in await pg.locator('article.co h2').all_inner_texts())
+    check('ads whose address is far away are left out, a nearby one without coordinates kept', names == ['Linnéstadens Vård', 'Mölndal Hemvård', 'Sahlgrenska Vård'], names)
+    check('no Stockholm from the other job sites either', not any('rST' in u for u in CALLS) and 'Huvudstadens' not in await pg.locator('#list').inner_text(), CALLS)
+    lv = pg.locator('article.co', has_text='Linnéstadens Vård'); await lv.locator('button.exp').click(); await pg.wait_for_timeout(200)
+    check('an address in Göteborg with Stockholm as its municipality shows as Göteborg', 'Göteborg' in await lv.inner_text() and 'Stockholm' not in await pg.locator('#list').inner_text())
+    await pg.select_option('#radius', '0')
+    CALLS.clear(); msg = await search(pg)
+    check('only this municipality uses the municipality for Gothenburg', any('municipality=mGBG' in u for u in CALLS if 'qfields' not in u), CALLS)
+    names = sorted(x.split('\n')[0] for x in await pg.locator('article.co h2').all_inner_texts())
+    check('only this municipality keeps only Göteborg', names == ['Linnéstadens Vård', 'Sahlgrenska Vård'], names)
     await ctx.close()
 
 async def main():
@@ -461,6 +502,7 @@ async def main():
         await pg.fill('#kw-input', ''); await pg.dispatch_event('#kw-input', 'input')
         check('the hint goes away when the box is cleared', await pg.locator('#kw-hint').inner_text() == '')
 
+        await place_checks(browser, errors)
         await beta_checks(browser, errors)
         check('no script errors', not errors, errors)
         await browser.close()
