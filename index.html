@@ -1594,8 +1594,11 @@ $("kw-hint").addEventListener("click", e => {
   if (b.dataset.kwh === "split") splitTerm(kwHint.term, kwHint.parts);
   else { kept.add(fold(kwHint.term)); showHint({ kind: "" }); $("kw-input").focus(); }
 });
+// English names people type for Swedish places
+const PLACE_EN = { gothenburg: "goteborg", "gothenburg municipality": "goteborg", scania: "skane lan", "stockholm county": "stockholms lan" };
 function placeKind(raw) {
-  const k = fold(raw.trim().replace(/\s+/g, " "));
+  let k = fold(raw.trim().replace(/\s+/g, " "));
+  k = PLACE_EN[k] || k;
   if (!k || /^(hela )?(sverige|sweden)$/.test(k)) return { kind: "all" };
   const muni = MUNIS.find(([m]) => fold(m) === k || fold(m + " kommun") === k);
   if (muni && !/\blan\b/.test(k)) return { kind: "muni", name: muni[0], county: muni[1] };
@@ -1664,7 +1667,7 @@ async function resolvePlace(raw) {
   const term = pk.kind === "county" ? pk.short : pk.name;
   const j = await getJSON(`${JS_API}/search?q=${encodeURIComponent(/\s/.test(term) ? `"${term}"` : term)}&qfields=location&limit=100`);
   const was = j.hits.map(h => h.workplace_address || {});
-  const coords = list => { const c = list.map(w => w.coordinates).filter(c => Array.isArray(c) && c[1] > 55 && c[1] < 69.5 && c[0] > 10.5 && c[0] < 24.5); return c.length ? { lat: median(c.map(x => x[1])), lon: median(c.map(x => x[0])) } : {}; };
+  const coords = list => { const c = list.map(w => inSweden(w.coordinates)).filter(Boolean); return c.length ? { lat: median(c.map(x => x.lat)), lon: median(c.map(x => x.lon)) } : {}; };
   let geo = null;
   if (pk.kind === "county") {
     const m = was.filter(w => fold(w.region) === fold(pk.name) && w.region_concept_id);
@@ -1687,6 +1690,33 @@ function locationParam(geo, radius) {
   if (geo.mode === "county") return `region=${geo.regionId}`;
   if ((radius > 0 || geo.mode === "point") && geo.lat) return `position=${geo.lat.toFixed(4)},${geo.lon.toFixed(4)}&position.radius=${radius || 10}`;
   return `municipality=${geo.muniId}`;
+}
+// An ad's coordinates as { lat, lon }, or null when it has none or they're outside Sweden. JobTech gives them as [lon, lat].
+const inSweden = c => Array.isArray(c) && c[1] > 55 && c[1] < 69.5 && c[0] > 10.5 && c[0] < 24.5 ? { lat: c[1], lon: c[0] } : null;
+// Distance in km between two points. A flat-earth approximation, close enough at the distances searched here.
+const km = (a, b) => { const r = Math.PI / 180, x = (b.lon - a.lon) * r * Math.cos((a.lat + b.lat) * r / 2), y = (b.lat - a.lat) * r; return 6371 * Math.hypot(x, y); };
+// Platsbanken's place filters also return ads that only mention the place: jobs offered in several cities, nurses who travel the
+// whole country. A search within 25 km of Göteborg brought in ads from Stockholm and Malmö that way. And some ads have an address
+// in the place with their municipality set to somewhere else. So each ad is checked against its own address, and the address wins.
+// Returns a test for one ad. Ads need _c (their coordinates) and _city from fromPB. nearMunis are municipality ids already known to
+// be in the area, such as those in the last results.
+function inPlace(geo, radius, ads, nearMunis = []) {
+  if (geo.mode === "all") return () => true;
+  // An address in the searched municipality, with another municipality set: moved to where the address is
+  if (geo.muniId && geo.lat) {
+    const region = COUNTY_FULL[(MUNIS.find(([m]) => fold(m) === fold(geo.muni)) || [])[1]];
+    for (const a of ads) if (a.muniId !== geo.muniId && a._c && a._city && fold(a._city) === fold(geo.muni) && km(a._c, geo) <= 30)
+      Object.assign(a, { muni: geo.muni, muniId: geo.muniId, region: region || a.region, regionId: geo.regionId || a.regionId });
+  }
+  if (geo.mode === "county") return a => a.regionId === geo.regionId;
+  if (!((radius > 0 || geo.mode === "point") && geo.lat)) return a => a.muniId === geo.muniId;
+  // A little more than the distance asked for, since JobTech measures it its own way
+  const r = (radius || 10) + 2, dists = new Map();
+  for (const a of ads) if (a._c && a.muniId) { if (!dists.has(a.muniId)) dists.set(a.muniId, []); dists.get(a.muniId).push(km(a._c, geo)); }
+  const near = new Set([geo.muniId, ...nearMunis, ...[...dists].filter(([, d]) => median(d) <= r).map(([m]) => m)]);
+  // An ad without coordinates is kept when its municipality is in the area, judged by the other ads there, or, with nothing to
+  // judge by, when it's in the same county
+  return a => a._c ? km(a._c, geo) <= r : near.has(a.muniId) || (!dists.has(a.muniId) && !!a.regionId && a.regionId === geo.regionId);
 }
 const placeLabel = geo => geo.mode === "all" ? t("allswe") : geo.label;
 const hasRadius = (geo, p) => p.radius && (geo.mode === "muni" || geo.mode === "point");
@@ -1744,7 +1774,8 @@ function fromPB(h) {
     apply: h.application_details?.url || "", applyEmail: h.application_details?.email || "",
     occ: h.occupation?.label || "", group: h.occupation_group?.label || "", groupId: h.occupation_group?.concept_id || "", field: h.occupation_field?.label || "", fieldId: h.occupation_field?.concept_id || "",
     duration: h.duration?.label || "", hours: h.working_hours_type?.label || "", vacancies: h.number_of_vacancies || 1, exp: h.experience_required,
-    agency, client: !agency && CLIENT_TEXT.test(desc), contacts: adContacts(h, agency), snippet: desc.slice(0, 500), adLang: adLang(`${h.headline} ${desc}`), _text: fold(`${h.headline} ${desc} ${emp.name || ""}`) };
+    agency, client: !agency && CLIENT_TEXT.test(desc), contacts: adContacts(h, agency), snippet: desc.slice(0, 500), adLang: adLang(`${h.headline} ${desc}`), _text: fold(`${h.headline} ${desc} ${emp.name || ""}`),
+    _c: inSweden(wa.coordinates), _city: wa.city || "" };
 }
 function fromLinks(h) {
   const wa = (h.workplace_addresses || [])[0] || {}, link = (h.source_links || [])[0] || {}, emp = h.employer?.name || "", brief = (h.brief || "").replace(/\s+/g, " ").trim();
@@ -1788,6 +1819,9 @@ async function runSearch() {
       }
       if (total > MAX_PER_TERM) capped.push(q0 || t("nokw"));
     });
+    // Ads that are really somewhere else go before the other job sites are read, so they don't pull in those places too
+    const fits = inPlace(geo, p.radius, [...ads.values()]);
+    for (const [id, a] of ads) if (!fits(a)) ads.delete(id);
 
     // Other job sites. They have no distance search, so they're read by county and kept when they're in the same places as the Platsbanken results.
     let linksOk = true, linksCount = 0;
@@ -1835,7 +1869,7 @@ async function runSearch() {
       a.keys = p.terms.filter(x => variants(p, x).some(v => termRe(v).test(a._text)));
       a.terms = a.keys.map(x => variants(p, x).find(v => termRe(v).test(a._text)));
       a.loose = p.terms.filter(x => a._by.has(x) && !a.keys.includes(x));
-      delete a._text; delete a._by;
+      delete a._text; delete a._by; delete a._c; delete a._city;
       list.push(a);
       if (a.src === "links") linksCount++;
     }
@@ -2583,14 +2617,16 @@ async function newAdsSinceSearch() {
   const p = r.params, mins = Math.max(1, Math.ceil((Date.now() - new Date(r.at)) / 60000));
   const extra = `&published-after=${p.since ? Math.min(mins, +p.since) : mins}` + (p.remote ? "&remote=true" : "") + (p.noexp ? "&experience=false" : "");
   const loc = locationParam(r.geo, p.radius), exRes = (p.excludes || []).map(termRe);
-  const known = new Set(store.get("jf-seen", {})[r.sig] || r.ads.map(a => a.id)), fresh = new Set();
+  const known = new Set(store.get("jf-seen", {})[r.sig] || r.ads.map(a => a.id)), fresh = new Map();
   let more = false;
   await pool(p.terms.length ? allWords(p) : [""], 3, async q0 => {
     const j = await getJSON(`${JS_API}/search?${qPart(q0)}${loc}${extra}&limit=100`, 2);
     if (j.total.value > j.hits.length) more = true;
-    for (const h of j.hits) { const a = fromPB(h); if (!known.has(a.id) && !exRes.some(re => re.test(a._text))) fresh.add(a.id); }
+    for (const h of j.hits) { const a = fromPB(h); if (!known.has(a.id) && !exRes.some(re => re.test(a._text))) fresh.set(a.id, a); }
   });
-  return { n: fresh.size, more };
+  // The same check of each ad's own address as in the search, with the places in the last results counted as in the area
+  const fits = inPlace(r.geo, p.radius, [...fresh.values()], r.ads.filter(a => a.src === "pb").map(a => a.muniId).filter(Boolean));
+  return { n: [...fresh.values()].filter(fits).length, more };
 }
 function followUpContact(sn) { const ps = sn.contacts || []; return ps.find(p => p.e) || ps.find(p => p.p) || null; }
 function welcomeHtml() {
