@@ -4,7 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert");
 const fs = require("node:fs");
 const path = require("node:path");
-const { factCheck } = require("./factcheck.js");
+const { factCheck, review, lineParts, keywordImpact, cleanAd, trimAd } = require("./factcheck.js");
 
 // A small seeded random generator, so a failure can be repeated with the same seed
 function rng(seed) {
@@ -171,6 +171,68 @@ test(`a whole CV that only uses the CV passes the claims check, and one borrowed
     if (kind < 2 && c.want[1] === "felträdsanalys" && c.english !== en) continue;
     assert.ok(issues.some(i => (i.kind === "claim" || i.kind === "figure") && i.text.toLowerCase().includes(expect.toLowerCase())), `seed ${seed} missed "${expect}" in: ${added}\nflagged: ${JSON.stringify(issues)}`);
   }
+});
+
+test(`a whole CV gets a clean sentence trace, and an invented name, leading role or result is caught in its own sentence (${RUNS} random CVs)`, () => {
+  const NAMES = ["AWS", "OpenShift", "S4HANA", "CATIA V5"];
+  for (let seed = 1; seed <= RUNS; seed++) {
+    const r = rng(seed * 15485863), c = makeCase(r), en = r.next() < 0.5;
+    const T = ro => (en ? ro.en : ro.sv), span = ro => `${ro.from}–${ro.to || (en ? "present" : "nu")}`;
+    const text = wholeCv(r, c, en, T, span).join("\n"), src = { ...c.src, task: "cv", lang: en ? "en" : "sv" };
+    const clean = review(text, src), why = `seed ${seed}\n--- CV ---\n${c.src.cv}\n--- answer ---\n${text}`;
+    assert.deepEqual(clean.issues, [], why);
+    assert.equal(clean.trace.split(",").length, text.split("\n").length, why);
+    assert.ok(!clean.trace.includes("u"), `${why}\n--- trace ---\n${clean.trace}`);
+    // Add one sentence to the first bullet under a job; that sentence, and only that one, must be unsupported
+    const leadInCv = c.roles.some(ro => ro.sv === "Projektledare");
+    const kind = leadInCv ? r.pick([0, 2]) : r.int(0, 2), tool = r.pick(NAMES);
+    const added = kind === 0 ? `${en ? "Worked with" : "Arbetade med"} ${tool}.` : kind === 1 ? `${en ? "Led the work on" : "Ledde arbetet med"} ${c.skills[0]}.` : (en ? "Reduced the downtime on the line." : "Minskade stoppen på linan.");
+    const lines = text.split("\n"), at = lines.findIndex((l, i) => /^- /.test(l) && lines.slice(0, i).some(x => x.startsWith("### ")));
+    lines[at] = lines[at].replace(/\.?$/, ". ") + added;
+    const bad = review(lines.join("\n"), src), want = ["name", "responsibility", "outcome"][kind];
+    assert.ok(bad.issues.some(i => i.kind === want), `seed ${seed} missed the ${want} in: ${lines[at]}\nflagged: ${JSON.stringify(bad.issues)}`);
+    const tr = bad.trace.split(",")[at];
+    assert.ok(tr.length === 2 && tr[0] !== "u" && tr[1] === "u", `seed ${seed}: trace "${tr}" for: ${lines[at]}`);
+  }
+});
+
+test("sentences are split where a person would split them, not after t.ex. or e.g.", () => {
+  assert.deepEqual(lineParts("- Erfarenhet av t.ex. Python och SQL. Ledde bl.a. FMEA. Worked with e.g. SAP! Then 2019 came."),
+    { prefix: "- ", sentences: ["Erfarenhet av t.ex. Python och SQL.", "Ledde bl.a. FMEA.", "Worked with e.g. SAP!", "Then 2019 came."] });
+  assert.deepEqual(lineParts("### Kvalitetsingenjör, Nordvik (2018 – nu)").sentences.length, 1);
+  assert.deepEqual(lineParts("2. Hur arbetar du med leverantörer?"), { prefix: "2. ", sentences: ["Hur arbetar du med leverantörer?"] });
+  assert.deepEqual(lineParts("   ").sentences, []);
+});
+
+test("in a letter, a sentence about the job comes from the ad, a claim the CV lacks is unsupported, and the rest is traced", () => {
+  const cv = "Eva Lind\nKvalitetsingenjör, Nordvik Automotive AB, 2018 – nu\n- Ledde FMEA för bromssystem och utbildade kollegor i riskanalys\n- Genomförde leverantörsrevisioner";
+  const ad = "Acme Robotics bygger autonoma truckar för lagerlogistik. Vi söker en kvalitetsingenjör med erfarenhet av PPAP och FMEA för våra autonoma truckar.";
+  const letter = "Hej [kontaktperson],\n\nNi bygger autonoma truckar för lagerlogistik. Jag har lett FMEA för bromssystem på Nordvik Automotive. Jag har även arbetat med PPAP. Jag tycker om tydliga processer och ordning.\n\nVänliga hälsningar,\nEva Lind";
+  const r = review(letter, { cv, ad, title: "Kvalitetsingenjör", employer: "Acme Robotics", task: "letter", lang: "sv", year: 2026 });
+  assert.deepEqual(r.trace.split(","), ["", "", "acui", "", "", ""]);
+  assert.deepEqual(r.counts, { c: 1, a: 1, i: 1, u: 1 });
+});
+
+test("the keyword match counts only what the CV backs up, and lists the rest apart", () => {
+  const cv = "Kvalitetsingenjör med erfarenhet av FMEA, 8D och leverantörsrevisioner. Arbetade med kvalitetsarbete i produktionen.";
+  const ad = "Vi söker en kvalitetsingenjör.\n\n- FMEA\n- PPAP\n- SAP\n- 8D\n- Leverantörsrevisioner";
+  const before = keywordImpact(cv, { cv, ad, title: "Kvalitetsingenjör", employer: "Acme", lang: "sv" });
+  assert.equal(before.after, before.before);
+  const draft = cv + "\n- PPAP\n- SAP";
+  const im = keywordImpact(draft, { cv, ad, title: "Kvalitetsingenjör", employer: "Acme", lang: "sv" });
+  assert.deepEqual(im.unsupported.sort(), ["PPAP", "SAP"]);
+  assert.equal(im.after, im.before);   // the borrowed terms raise nothing
+  const dropped = keywordImpact("Kvalitetsingenjör med erfarenhet av leverantörsrevisioner.", { cv, ad, title: "Kvalitetsingenjör", employer: "Acme", lang: "sv" });
+  assert.ok(dropped.lost.includes("FMEA") && dropped.after < dropped.before);
+});
+
+test("a fetched ad loses invisible characters and repeated paragraphs, and a long one is cut at a paragraph", () => {
+  const para = "Vi erbjuder en spännande roll i ett växande team med fina kollegor och goda villkor.";
+  assert.equal(cleanAd(`Om oss​\r\n\r\n${para}\n\n\n\n${para}\n\nKrav:  FMEA`), `Om oss\n\n${para}\n\nKrav: FMEA`);
+  const long = Array.from({ length: 400 }, (_, i) => `Stycke ${i}: ${para}`).join("\n\n");
+  const cut = trimAd(long, 20000);
+  assert.ok(cut.length <= 20000 && cut.length > 16000 && /Stycke \d+: .*villkor\.$/.test(cut));
+  assert.equal(trimAd("kort annons", 20000), "kort annons");
 });
 
 test("real answers from the live model: the claims borrowed from the ad are caught", () => {

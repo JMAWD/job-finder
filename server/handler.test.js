@@ -303,3 +303,53 @@ test("not configured gives 503", async () => {
   process.env.AI_KEY = k;
 });
 test.after(() => { console.log = origLog; });
+
+test("a very long ad is cut at a paragraph and the answer says so, instead of being refused", async () => {
+  _test.usage.clear(); sent.length = 0;
+  const para = "Vi söker en kvalitetsingenjör som kan FMEA och vill driva förbättringsarbete i produktionen tillsammans med oss. ";
+  const long = Array.from({ length: 220 }, (_, i) => `Stycke ${i}. ${para}`).join("\n\n");
+  assert.ok(long.length > 20000);
+  const r = await call(ok({ job: { title: "Kvalitetsingenjör", employer: "Acme", text: long } }));
+  assert.equal(r.statusCode, 200);
+  const j = json(r);
+  assert.ok(j.adTrimmed.from > 20000);   // the length after invisible characters and extra spaces are taken out
+  assert.ok(j.adTrimmed.to <= 20000 && j.adTrimmed.to > 16000, JSON.stringify(j.adTrimmed));
+  const prompt = sent[0].body.messages[1].content;
+  assert.match(prompt, /bara ett utdrag/);
+  assert.match(prompt, /Stycke 0\./);
+  assert.doesNotMatch(prompt, /Stycke 219\./);
+  assert.equal(JSON.parse(logs.at(-1)).adTrimmed, j.adTrimmed.from);
+});
+
+test("a short excerpt is refused unless the person chose to go ahead with it", async () => {
+  _test.usage.clear(); sent.length = 0;
+  const excerpt = "Kvalitetsingenjör till Acme i Göteborg, FMEA och 8D.";
+  assert.equal(json(await call(ok({ job: { title: "Kvalitetsingenjör", employer: "Acme", text: excerpt } }))).error, "ad_too_short");
+  assert.equal(sent.length, 0);
+  const r = await call(ok({ excerpt: true, job: { title: "Kvalitetsingenjör", employer: "Acme", text: excerpt } }));
+  assert.equal(r.statusCode, 200);
+  assert.equal(json(r).excerpt, true);
+  assert.match(sent[0].body.messages[1].content, /bara ett utdrag/);
+  assert.equal(json(await call(ok({ excerpt: true, job: { title: "X", employer: "Acme", text: "FMEA" } }))).error, "ad_too_short");   // too little even for an excerpt
+});
+
+test("a tailored CV comes back with a sentence trace and the keyword match kept apart from the evidence", async () => {
+  _test.usage.clear(); sent.length = 0;
+  const cvText = "Eva Lind\nGöteborg · eva@example.com\n\nErfarenhet\nKvalitetsingenjör, Nordvik Automotive AB, 2018 – nu\n- Ledde FMEA för bromssystem tillsammans med konstruktion\n- Genomförde leverantörsrevisioner och 8D-utredningar\n- Utbildade kollegor i riskanalys och förbättringsarbete\n";
+  const answer = "# Eva Lind\nGöteborg · eva@example.com\n\n## Erfarenhet\n### Kvalitetsingenjör, Nordvik Automotive AB (2018 – nu)\n- Ledde FMEA för bromssystem tillsammans med konstruktion\n- Genomförde leverantörsrevisioner och 8D-utredningar. Arbetade med PPAP.";
+  aiReplies = [{ status: 200, body: { choices: [{ message: { content: answer } }] } }, { status: 200, body: { choices: [{ message: { content: answer } }] } }];
+  const ad = "Vi söker en kvalitetsingenjör som kan FMEA och PPAP. Du arbetar med leverantörer och PPAP i produktionen tillsammans med oss i Göteborg.\n\n- FMEA\n- PPAP";
+  const r = await call(ok({ task: "cv", cv: cvText, job: { title: "Kvalitetsingenjör", employer: "Acme", text: ad } }));
+  aiReplies = null;
+  const j = json(r);
+  assert.equal(r.statusCode, 200);
+  const lines = j.text.split("\n"), trace = j.trace.split(",");
+  assert.equal(trace.length, lines.length);
+  assert.equal(trace[lines.findIndex(l => l.startsWith("### "))], "c");
+  assert.equal(trace.at(-1), "cu");   // the PPAP sentence, not the line it's on
+  assert.deepEqual(j.impact.unsupported, ["PPAP"]);
+  assert.equal(j.impact.after, j.impact.before);   // a claim the CV doesn't back up is never counted as a gain
+  const log = JSON.parse(logs.at(-1));
+  assert.ok(log.sentences.u >= 1 && log.unsupported === 1);
+  assert.doesNotMatch(logs.at(-1), /PPAP|Nordvik/);   // sizes and counts only
+});

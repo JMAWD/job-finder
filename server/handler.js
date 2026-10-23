@@ -2,7 +2,7 @@
 /*
   Job Finder tailoring server: one Scaleway Serverless Function (Node 22).
 
-  Job Finder's tailoring server: translation sends only ad text, application writing sends a CV and ad, and Mentor reads only a CV. The function checks the beta access code, limits how much each code can use, sends the request to Scaleway Generative APIs (Paris) with the prompts kept here on the server, and returns the text (or, for the Mentor, the advice as JSON). It never stores or logs CV or ad text.
+  Job Finder's tailoring server: translation sends only ad text, application writing sends a CV and ad, and Mentor reads only a CV. The function checks the beta access code, limits how much each code can use, sends the request to Scaleway Generative APIs (Paris) with the prompts kept here on the server, and returns the text (or, for the Mentor, the advice as JSON) with the fact check, the style notes, a trace of where each sentence comes from and, for a CV, the keyword match kept apart from the evidence. It never stores or logs CV or ad text, or the words it flagged.
 
   Environment variables (set on the function in the Scaleway console):
     ALLOWED_ORIGINS   comma-separated sites allowed to call it, e.g. https://name.github.io  (add "null" to allow the downloaded file)
@@ -20,8 +20,11 @@
 const crypto = require("crypto");
 const { PROMPTS, TASKS, AD_TASKS, CV_TASKS, OPTIONS, parseMentor } = require("./prompts.js");
 const { finish } = require("./pipeline.js");
+const { cleanAd, trimAd } = require("./factcheck.js");
 
-const MAX_CV = 20000, MAX_AD = 20000, MAX_EXTRA = 2000;
+// An ad longer than MAX_AD is cut at a paragraph and the answer says so, rather than refused. A short excerpt (the few
+// lines a listing shows) is accepted down to MIN_EXCERPT when the person has chosen to go ahead with it.
+const MAX_CV = 20000, MAX_AD = 20000, MAX_EXTRA = 2000, MIN_AD = 100, MIN_EXCERPT = 30;
 const usage = new Map();   // access code hash -> timestamps of recent requests (per running instance)
 
 const env = k => (process.env[k] || "").trim();
@@ -103,14 +106,17 @@ async function handle(event) {
   const task = req.task, lang = req.lang === "en" ? "en" : "sv";
   if (!TASKS.includes(task)) return fail(400, "bad_task", okOrigin, { tasks: TASKS });
   const needsAd = AD_TASKS.includes(task), needsCv = CV_TASKS.includes(task);
-  const cv = needsCv && typeof req.cv === "string" ? req.cv.trim() : "", ad = needsAd && typeof req.job?.text === "string" ? req.job.text.trim() : "";
+  const cv = needsCv && typeof req.cv === "string" ? req.cv.trim() : "";
+  let ad = needsAd && typeof req.job?.text === "string" ? cleanAd(req.job.text) : "", adTrimmed = null;
+  if (ad.length > MAX_AD) { const cut = trimAd(ad, MAX_AD); adTrimmed = { from: ad.length, to: cut.length }; ad = cut; }
+  const excerpt = req.excerpt === true && task !== "translate";
   if (needsCv && cv.length < 200) return fail(400, "cv_too_short", okOrigin);
-  if (needsAd && ad.length < 100) return fail(400, "ad_too_short", okOrigin);
-  if (cv.length > MAX_CV || ad.length > MAX_AD) return fail(413, "too_long", okOrigin, { maxCv: MAX_CV, maxAd: MAX_AD });
+  if (needsAd && ad.length < (excerpt ? MIN_EXCERPT : MIN_AD)) return fail(400, "ad_too_short", okOrigin, { min: MIN_AD, minExcerpt: MIN_EXCERPT });
+  if (cv.length > MAX_CV) return fail(413, "too_long", okOrigin, { maxCv: MAX_CV, maxAd: MAX_AD });
   const limit = overLimit(h, Date.now(), task === "translate" ? "translate" : "write");
   if (limit) return fail(429, "limit_reached", okOrigin, limit);
 
-  const job = task === "translate" ? { text: ad } : { title: String(req.job?.title || "").slice(0, 300), employer: String(req.job?.employer || "").slice(0, 200), text: ad };
+  const job = task === "translate" ? { text: ad } : { title: String(req.job?.title || "").slice(0, 300), employer: String(req.job?.employer || "").slice(0, 200), text: ad, excerpt: excerpt || Boolean(adTrimmed) };
   const extra = typeof req.extra === "string" ? req.extra.slice(0, MAX_EXTRA) : "";
   const started = Date.now();
   const model = req.model && list("AI_MODELS").includes(req.model) ? req.model : (env("AI_MODEL") || "mistral-medium-3.5-128b");
@@ -121,16 +127,18 @@ async function handle(event) {
   if (mentor && !out.error && !data) out.error = "ai_bad_format";
   // Cleaned in code, fact-checked, corrected once if the CV or letter claims something the CV doesn't back up, and
   // style-checked (see pipeline.js). One correction call at most, within what is left of the time.
-  let check = null, style = null, fixed = 0;
+  let check = null, style = null, fixed = 0, trace = null, counts = null, impact = null;
   if (!out.error && !mentor && task !== "translate") {
     const ask = (messages, options) => callModel(messages, model, { ...options, timeout: Math.max(15000, Math.min(options?.timeout || 90000, 100000 - (Date.now() - started))) });
     const done = await finish({ text: out.text, task, lang, cv: needsCv ? cv : "", ad: needsCv && needsAd ? ad : "", job, extra, year }, ask);
-    out.text = done.text; check = done.check; style = done.style; fixed = done.fixed;
+    ({ check, style, fixed, trace, counts, impact } = done); out.text = done.text;
   }
   // Only sizes, timings and how many things the check flagged are logged, never the CV, the ad or the flagged words
-  console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null, ...(out.cut ? { cut: true } : {}), ...(check ? { flagged: check.issues.length } : {}), ...(fixed ? { fixed } : {}), ...(style ? { even: style.even, buzzwords: style.words.length } : {}) }));
+  console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null, ...(out.cut ? { cut: true } : {}), ...(check ? { flagged: check.issues.length } : {}), ...(fixed ? { fixed } : {}), ...(style ? { even: style.even, buzzwords: style.words.length } : {}),
+    ...(counts ? { sentences: counts } : {}), ...(impact ? { terms: impact.terms, before: impact.before, after: impact.after, unsupported: impact.unsupported.length } : {}), ...(adTrimmed ? { adTrimmed: adTrimmed.from } : {}), ...(excerpt ? { excerpt: true } : {}) }));
   if (out.error) return fail(out.error === "ai_busy" ? 503 : 502, out.error, okOrigin);
-  return reply(200, mentor ? { data, model: out.model, tokens: out.tokens } : { text: out.text, model: out.model, tokens: out.tokens, ...(out.cut ? { cut: true } : {}), ...(check ? { check } : {}), ...(fixed ? { fixed } : {}), ...(style ? { style } : {}) }, okOrigin);
+  return reply(200, mentor ? { data, model: out.model, tokens: out.tokens } : { text: out.text, model: out.model, tokens: out.tokens, ...(out.cut ? { cut: true } : {}), ...(check ? { check } : {}), ...(fixed ? { fixed } : {}), ...(style ? { style } : {}),
+    ...(trace != null ? { trace } : {}), ...(impact ? { impact } : {}), ...(adTrimmed ? { adTrimmed } : {}), ...(excerpt ? { excerpt: true } : {}) }, okOrigin);
 }
 
 module.exports = { handle, _test: { usage, sha256 } };

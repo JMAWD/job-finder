@@ -19,12 +19,16 @@
     degrees    a degree on a role line (### BSc Mechanical Engineering, Chalmers (2013–2016)) may be translated, but its
                level must be one the CV has: an MSc or an MBA is flagged when the CV only has a bachelor's degree. The
                school next to it must be in the CV, and its years must be the ones the CV gives for that school.
+  In a tailored CV and a cover letter it also looks at what is claimed about the person (claimCheck below): words and
+  figures from the ad, names of tools and standards nobody gave it, and leading or results the CV never claims.
+  review() adds where each sentence comes from (CV, ad, inferred or unsupported) and, for a CV, the keyword match kept
+  apart from the evidence.
 
   Words are compared without case or accents, legal suffixes (AB, Inc, Ltd …) are ignored, and Swedish endings are
   tolerated ("kvalitetsingenjören" matches "kvalitetsingenjör"). English and Swedish titles from src/titles.txt
   (copied to titles.json by build.py) count as the same title, so an English CV for a Swedish CV is not flagged.
   Places with an English and a Swedish name (Gothenburg and Göteborg) count as the same place.
-  It does not judge skills, figures or wording; those are covered by the prompt and by reading the result.
+  It does not judge wording or how big a claim is; those are covered by the prompt and by reading the result.
 */
 
 let TITLES = [];
@@ -287,7 +291,41 @@ const THEIRS = /(?<![\p{L}])(ni|er|ert|era|du|dig|din|ditt|dina|rollen|tjänsten
 // A wish or a plan for the new job is not a claim about what the person has done
 const WISH = /(?<![\p{L}])(vill|ville|skulle|hoppas|gärna|ser fram emot|längtar|would|want|wants|hope|hoping|look forward|looking forward|keen|eager|glad to|like to|love to)(?![\p{L}])/iu;
 
-function claimCheck(output, { cv = "", ad = "", title = "", employer = "", extra = "", task = "", lang = "" } = {}) {
+/* ---------- New names, bigger responsibilities and results (tailored CV and cover letter only) ----------
+   Three more things the model can add without borrowing a word from the ad:
+     name            a tool, standard or system written as a name (SAP, ISO9001, PowerBI, S4HANA, 3D) that neither the CV, the
+                     ad nor the person's wishes have. A name the ad has but the CV doesn't is already a claim (above).
+     responsibility  leading, managing or owning something, when the CV never says the person led, managed or was
+                     responsible for anything: "worked on" must not become "led".
+     outcome         a result (reduced, increased, improved, saved, halved …) of a kind the CV never claims.
+   Both lists are in English and Swedish, so a translated CV is checked against the CV's own language. The CV only has to
+   have a word from the same group somewhere; the check can't tell how big the responsibility was, only that the CV
+   claims one at all. */
+// An all-caps line of words ("KVALIFIKATIONER", "OM TJÄNSTEN") is a heading, but a list item or a lone name ("- PPAP", "SAP") is not
+const capsHeading = l => !/^\s*(?:[-*•+]|\d+[.)])\s/.test(l) && l === l.toUpperCase() && /\p{L}{3}/u.test(l)
+  && ((l.match(/\p{L}{3,}/gu) || []).length >= 2 || (!/[\d+#]/.test(l) && l.trim().length > 5));
+const NAME_OK = new Set(["cv", "pdf", "ok", "ab", "publ", "ca", "nr", "tel", "mob", "ps"]);
+const isProductName = raw => raw.length >= 2 && /\p{L}/u.test(raw) && ((ACRONYM.test(raw) && raw === raw.toUpperCase()) || (/\d/.test(raw) && /\p{L}/u.test(raw)) || /\p{Ll}\p{Lu}/u.test(raw));
+// out: the words in an answer (folded); cv: what the CV must have somewhere (a start of a word, or anywhere in it from 4 letters)
+const RESPONSIBILITY = [
+  { out: ["led", "headed", "spearheaded", "managed", "managing", "oversaw", "overseen", "overseeing", "supervised", "supervising", "directed", "ledde", "lett", "leder", "leda", "styrde", "basade"],
+    cv: ["led", "lead", "ledde", "lett", "leder", "leda", "ledar", "chef", "head", "styrde", "spearhead", "supervis", "manag", "arbetsled", "foreman", "formans", "basade", "oversaw", "oversee"] },
+  { out: ["owned", "agde", "ansvarade", "ansvarat", "ansvarig", "responsible", "accountable"],
+    cv: ["own", "agde", "agare", "ansvar", "responsib", "accountab", "in charge"] },
+];
+const OUTCOME = [
+  { out: ["reduced", "lowered", "minimised", "minimized", "minskade", "minskat", "sankte"], cv: ["reduc", "lower", "minimi", "minsk", "sankt", "sankn"] },
+  { out: ["increased", "boosted", "maximised", "maximized", "okade", "okat"], cv: ["increas", "boost", "maximi", "okad", "okat", "okning"] },
+  { out: ["improved", "optimised", "optimized", "streamlined", "forbattrade", "forbattrat", "effektiviserade", "effektiviserat", "optimerade", "optimerat"], cv: ["improv", "optimi", "streamlin", "forbattr", "effektivis", "optimer"] },
+  { out: ["saved", "sparade", "sparat"], cv: ["saved", "saving", "sparad", "sparat", "besparing"] },
+  { out: ["halved", "doubled", "tripled", "halverade", "halverat", "fordubblade", "fordubblat", "tredubblade"], cv: ["halv", "doubl", "tripl", "fordubbl", "tredubbl"] },
+  { out: ["shortened", "kortade", "kortat", "forkortade", "forkortat"], cv: ["shorten", "kortad", "kortat", "forkort"] },
+  { out: ["eliminated", "eliminerade", "eliminerat"], cv: ["elimin"] },
+];
+// "managed to", "lett till" (led to), "lead times" are not about leading anyone
+const NOT_LEADING = { managed: /^to$/, managing: /^to$/, lett: /^till$/ };
+
+function claimCheck(output, { cv = "", ad = "", title = "", employer = "", extra = "", task = "", lang = "" } = {}, hits = []) {
   if (task !== "cv" && task !== "letter") return [];
   // The employer may be named, and so may anything the person wrote in their wishes. The ad's job title may not be
   // used for the person: calling a visualiser a "technical artist" because the ad says so is a claim too.
@@ -295,33 +333,48 @@ function claimCheck(output, { cv = "", ad = "", title = "", employer = "", extra
   const sameLang = guessLangOf(cv) === (lang || guessLangOf(output));
   // Words the ad uses and the CV doesn't
   const adOnly = new Map();
-  const adText = String(ad || "").split(/\r?\n/).filter(l => !(/\p{L}{3}/u.test(l) && l === l.toUpperCase())).join("\n");   // all-caps headings are not terms
+  const adText = String(ad || "").split(/\r?\n/).filter(l => !capsHeading(l)).join("\n");   // all-caps headings are not terms
   for (const { raw, w, named } of wordsOf(adText)) {
     if (COMMON.has(w) || (!named && w.length < 5) || /^\d+$/.test(w)) continue;
     if (!named && !sameLang) continue;
     if (backed(w, cvWords, cvText)) continue;
     if (!adOnly.has(w)) adOnly.set(w, { raw, named, acronym: raw.length >= 2 && raw === raw.toUpperCase() && /\p{Lu}/u.test(raw) });
   }
+  // Names in any source (CV, wishes, ad, its title and employer), and the CV's own words for the responsibility and result groups
+  const allSrc = [cv, extra, ad, title, employer].join("\n"), srcTokens = new Set(tokens(allSrc)), compact = s => fold(s).replace(/[^a-z0-9+#]/g, "");
+  const srcCompact = compact(allSrc);
+  const knownName = w => srcTokens.has(w) || tokens(w).every(x => srcTokens.has(x)) || (compact(w).length >= 4 && srcCompact.includes(compact(w)));
+  const ownTokens = tokens([cv, extra].join("\n")), ownText = fold([cv, extra].join("\n"));
+  const cvHas = root => root.includes(" ") ? ownText.includes(root) : ownTokens.some(t => t.startsWith(root) || (root.length >= 4 && t.includes(root)));
+  const groupOf = (groups, w) => groups.find(g => g.out.includes(w));
   const cvF = figures(cv), cvFigures = new Set(cvF.map(f => f.n)), cvYears = new Set(cvF.filter(f => f.years).map(f => f.n)), adFigures = new Set(figures(ad).map(f => f.n));
   const issues = [], seen = new Set();
   const lines = String(output || "").split(/\r?\n/);
   let nameSeen = false;
-  for (const raw of lines) {
+  for (let li = 0; li < lines.length; li++) {
+    const raw = lines[li];
     if (!raw.trim()) continue;
     if (/^\s*#\s/.test(raw)) { nameSeen = true; continue; }
     // The contact line under the name has phone numbers and addresses, not claims
     if (nameSeen && /@|\d{3}[ -]?\d{2,3}[ -]?\d{2}|linkedin|github|·/i.test(raw) && !/^\s*[-*#]/.test(raw)) { nameSeen = false; continue; }
     nameSeen = false;
+    const heading = /^\s*#/.test(raw), allCaps = capsHeading(raw);
     const empTok = core(employer);
     const aboutThem = s => THEIRS.test(s) || WISH.test(s) || (empTok.length && inSource(employer, core(s)));
     // In a letter: the person's own sentences, and in them the parts that aren't about the employer or the job
     const sentences = task === "letter" ? raw.split(/(?<=[.!?])\s+/).filter(s => MINE.test(s)).flatMap(s => s.split(/\s*[,;:]\s*/)).filter(s => s && !aboutThem(s)) : [raw];
+    // Every place a flagged thing appears is a hit (for the sentence traces); the list of issues names each thing once
+    const add = (kind, text, key = kind + ":" + fold(text)) => {
+      hits.push({ kind, text, li });
+      if (!seen.has(key)) { seen.add(key); issues.push({ kind, text, line: raw.trim().slice(0, 200) }); }
+    };
     for (const s of sentences) {
       const ws = wordsOf(s);
       let run = null;
       const flush = () => {
         if (!run) return;
         const key = "claim:" + run.keys.join(" ");
+        hits.push({ kind: "claim", text: run.words.join(" "), li });
         if (!run.keys.every(k => seen.has("claim:" + k)) && !seen.has(key)) { seen.add(key); run.keys.forEach(k => seen.add("claim:" + k)); issues.push({ kind: "claim", text: run.words.join(" "), line: raw.trim().slice(0, 200) }); }
         run = null;
       };
@@ -339,35 +392,51 @@ function claimCheck(output, { cv = "", ad = "", title = "", employer = "", extra
       flush();
       for (const f of figures(s.replace(/^\s*(?:#{1,6}\s*)?\d+[.)]\s+/, ""))) {   // "## 1." and "2)" are numbering, not figures
         if (f.years ? cvYears.has(f.n) : (cvFigures.has(f.n) || (task === "letter" && adFigures.has(f.n)))) continue;
-        const key = "figure:" + f.n;
-        if (!seen.has(key)) { seen.add(key); issues.push({ kind: "figure", text: f.raw, line: raw.trim().slice(0, 200) }); }
+        add("figure", f.raw, "figure:" + f.n);
       }
+      // Headings are the role and section checks' job, and an all-caps line is a heading too
+      if (heading || allCaps) continue;
+      ws.forEach(({ raw: word, w }, i) => {
+        if (isProductName(word) && !NAME_OK.has(w) && !adOnly.has(w) && !knownName(w)) add("name", word);
+        const next = ws[i + 1]?.w || "";
+        if (NOT_LEADING[w] && NOT_LEADING[w].test(next)) return;
+        for (const [kind, groups] of [["responsibility", RESPONSIBILITY], ["outcome", OUTCOME]]) {
+          const g = groupOf(groups, w);
+          if (g && !g.cv.some(cvHas)) add(kind, word, kind + ":" + g.out[0]);
+        }
+      });
     }
   }
   return issues;
 }
 
+const KINDS = ["employer", "title", "school", "degree", "dates", "date", "claim", "name", "responsibility", "outcome", "figure"];
 /**
- * Check an AI answer against the CV.
+ * Check an AI answer against the CV, and say where in the text each flagged thing is.
  * @param {string} output   the AI's text (Markdown)
  * @param {object} src      { cv, ad, title, employer, extra, year, task, lang }; task "cv" or "letter" adds the claims check
- * @returns {{ ok: boolean, issues: { kind: "employer"|"title"|"school"|"degree"|"date"|"dates"|"claim"|"figure", text: string, line: string }[] }}
+ * @returns {{ ok: boolean, issues: { kind, text, line }[], hits: { kind, text, li }[] }}  issues name each thing once;
+ *          hits are every place it appears, by line number (li), for the sentence traces
  */
-function factCheck(output, { cv = "", ad = "", title = "", employer = "", extra = "", year = new Date().getFullYear(), task = "", lang = "" } = {}) {
+function checkAll(output, { cv = "", ad = "", title = "", employer = "", extra = "", year = new Date().getFullYear(), task = "", lang = "" } = {}) {
   const cvTok = core(cv), allTok = core([cv, ad, title, employer, extra].join("\n"));
   const jobTok = core([title, employer].join("\n"));
   const okYears = new Set([...years([cv, ad, title, extra].join("\n")), String(year), String(year + 1)]);
   const srcMonths = monthYears([cv, ad, extra].join("\n"));
   const cvLines = cv.split(/\r?\n/), cvLevels = degreeLevels(cv);
-  const issues = [], seen = new Set();
+  const issues = [], seen = new Set(), hits = [];
+  let li = -1;
   const flag = (kind, text, line) => {
     text = text.replace(/\s+/g, " ").trim().replace(/^[^\p{L}\d]+|[^\p{L}\d.+#&)]+$/gu, "");
+    if (!text) return;
+    hits.push({ kind, text, li });
     const key = kind + ":" + core(text).join(" ");
-    if (!text || seen.has(key)) return;
+    if (seen.has(key)) return;
     seen.add(key); issues.push({ kind, text, line: line.trim().slice(0, 200) });
   };
 
   for (const raw of String(output || "").split(/\r?\n/)) {
+    li++;
     if (!raw.trim()) continue;
     const line = plain(raw);
 
@@ -422,7 +491,8 @@ function factCheck(output, { cv = "", ad = "", title = "", employer = "", extra 
       // "Substance and Blender" may be two names the source has separately
       const parts = name.split(/\s+(?:och|and|&)\s+/i);
       const known = n => (worked ? inSource(n, cvTok) : inSource(n, allTok));
-      if (!known(name) && !(parts.length > 1 && parts.every(known))) flag("employer", name, raw);
+      // "with OpenShift", "på SAP": a tool or system after a plain preposition is a name, not a past employer
+      if (!known(name) && !(parts.length > 1 && parts.every(known))) flag(!worked && name.split(/\s+/).every(isProductName) ? "name" : "employer", name, raw);
     }
 
     // Titles after "worked as", "years as", "arbetat som" …
@@ -433,13 +503,179 @@ function factCheck(output, { cv = "", ad = "", title = "", employer = "", extra 
       if (t && isTitle(t) && !titleInSource(t, cvTok)) flag("title", t, raw);
     }
   }
-  for (const i of claimCheck(output, { cv, ad, title, employer, extra, task, lang })) {
+  for (const i of claimCheck(output, { cv, ad, title, employer, extra, task, lang }, hits)) {
     const key = i.kind + ":" + core(i.text).join(" ");
+    // A name already flagged as an employer, title or school is not listed again
+    if (i.kind === "name" && issues.some(x => core(x.text).join(" ") === core(i.text).join(" "))) continue;
     if (!seen.has(key)) { seen.add(key); issues.push(i); }
   }
-  const order = ["employer", "title", "school", "degree", "dates", "date", "claim", "figure"];
-  issues.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));   // stable, so lines keep their order within a kind
-  return { ok: issues.length === 0, issues };
+  issues.sort((a, b) => KINDS.indexOf(a.kind) - KINDS.indexOf(b.kind));   // stable, so lines keep their order within a kind
+  return { ok: issues.length === 0, issues, hits };
+}
+// The fact check as the server and the panel show it: what was found, without where
+function factCheck(output, src = {}) {
+  const { ok, issues } = checkAll(output, src);
+  return { ok, issues };
 }
 
-module.exports = { factCheck, _test: { inSource, titleInSource, tokens, isTitle, isNameLike, isGeneric, degreeLevels, claimCheck, figures } };
+/* ---------- Where each sentence comes from ----------
+   One passed-or-not for the whole text hides too much, so every sentence gets one of four labels:
+     c  from the CV: at least half of its words are in the CV, and nothing in it was flagged
+     a  from the ad: more of its words come from the ad than from anywhere else (fine about the job, flagged about the person)
+     i  inferred: mostly the AI's own words, in neither the CV nor the ad. Worth reading, since code can't check it
+     u  unsupported: it holds something the fact check flagged. The panel leaves it out of every download until the person
+        keeps it
+   The trace is one string per line of the text, one letter per sentence, joined with commas: "", "c", "ci", "u" … A
+   heading counts as one unit; the name, the contact line, section headings, greetings and sign-offs aren't traced.
+   Across languages (a Swedish CV written in English) words can't be compared, so only names and the job-title words in
+   WORD_SV count, and a sentence with none of them is "inferred". */
+const ABBREV = "(?:t\\.ex|bl\\.a|m\\.m|m\\.fl|inkl|ca|e\\.g|i\\.e|etc|dvs|osv|resp|jfr|nr|no|kl|vs|tel|Dr|Mr|Mrs|Ms|St|Jr|Sr)";
+const SENTENCE_END = new RegExp(`(?<=[.!?])(?<!(?<![\\p{L}])${ABBREV}\\.)\\s+(?=["“'(\\[*_]*[\\p{Lu}\\d])`, "u");
+const PREFIX = /^(\s*(?:#{1,6}\s+|>\s*|[-+*•]\s+|\d+[.)]\s+)*)/;
+// A line's Markdown prefix ("- ", "### ", "2. ") and its sentences, so it can be put back together without some of them
+function lineParts(raw) {
+  const s = String(raw || ""), prefix = s.match(PREFIX)[1], body = s.slice(prefix.length);
+  return { prefix, sentences: body.trim() ? body.trim().split(SENTENCE_END) : [] };
+}
+const RULE_LINE = /^\s*([-*_])(\s*\1){2,}\s*$/;
+// Words about the CV and the ad themselves ("Python nämns inte i CV:t"), which say nothing about where a sentence comes from
+const META = new Set(["cv", "cvt", "annons", "annonsen", "annonsens", "ad", "ads", "efterfragar", "efterfragas", "namns", "namner", "namnt", "mention", "mentions",
+  "mentioned", "asks", "requests", "stark", "strong", "rimlig", "reasonable", "svag", "svagt", "weak", "fits", "passar", "brev", "letter", "intervju", "interview",
+  "match", "matchar", "matches", "matchning", "missing", "saknas", "verdict", "bedomning", "samlad", "overall"]);
+const GREETING = /^(?:dear|hej|hejsan|hello|hi|kind regards|best regards|warm regards|regards|sincerely|yours sincerely|yours faithfully|med vänliga hälsningar|vänliga hälsningar|varma hälsningar|bästa hälsningar|hälsningar|mvh)(?![\p{L}])/iu;
+
+function traceText(output, { cv = "", ad = "", title = "", employer = "", extra = "", lang = "" } = {}, hits = []) {
+  const own = [cv, extra].join("\n"), cvText = fold(own), cvWords = new Set(tokens(own));
+  const adAll = [ad, title, employer].join("\n"), adText = fold(adAll), adWords = new Set(tokens(adAll));
+  const outLang = lang || guessLangOf(output), sameCv = guessLangOf(cv) === outLang, sameAd = guessLangOf(ad) === outLang;
+  // A translated word: true when the CV has its English or Swedish form, null when the code can't tell
+  const across = w => {
+    if ((WORD_SV[w] || []).some(x => cvText.includes(x))) return true;
+    for (const [en, list] of Object.entries(WORD_SV)) if (cvWords.has(en) && list.some(x => x.length >= 4 && w.startsWith(x))) return true;
+    return null;
+  };
+  // Swedish words share their stem more loosely than backed() allows ("utbildning" and "utbildat"), so for the trace a long
+  // shared start is enough. Claims are the fact check's job, so this only decides between "from the CV" and "inferred".
+  const cvList = [...cvWords].filter(x => x.length >= 5);
+  const shared = (a, b) => { let i = 0; while (i < a.length && a[i] === b[i]) i++; return i; };
+  const near = w => w.length >= 6 && cvList.some(x => shared(w, x) >= Math.max(5, Math.ceil(0.6 * Math.min(w.length, x.length))));
+  const byLine = new Map();
+  for (const h of hits) { if (!byLine.has(h.li)) byLine.set(h.li, []); byLine.get(h.li).push(h); }
+  const holds = (h, s) => { const st = tokens(s), ht = tokens(h.text); return ht.length > 0 && ht.every(x => st.some(y => y === x || sameWord(x, y))); };
+  const kindOf = s => {
+    let c = 0, a = 0, none = 0;
+    for (const { w, named } of wordsOf(plain(s))) {
+      if (/^[\d.,]+$/.test(w) || COMMON.has(w) || FILL.has(w) || META.has(w) || (!named && w.length < 4)) continue;
+      const inCv = sameCv || named ? backed(w, cvWords, cvText) || (sameCv && near(w)) : across(w);
+      if (inCv === null) continue;
+      if (inCv) c++;
+      else if ((sameAd || named) && backed(w, adWords, adText)) a++;
+      else none++;
+    }
+    const n = c + a + none;
+    if (!n) return "i";   // nothing to trace: a verdict, a filler line
+    if (c >= n / 2) return "c";
+    return a > 0 && a >= none ? "a" : "i";
+  };
+  let nameSeen = false, signedOff = false;
+  return String(output || "").split(/\r?\n/).map((raw, li) => {
+    if (!raw.trim() || RULE_LINE.test(raw)) return "";
+    // The name under "Kind regards," is a signature
+    if (signedOff && raw.trim().split(/\s+/).length <= 4) { signedOff = false; return ""; }
+    signedOff = /(?:regards|sincerely|faithfully|hälsningar|mvh)\W*$/iu.test(raw.trim());
+    if (/^\s*#\s/.test(raw)) { nameSeen = true; return ""; }
+    if (nameSeen && /@|\d{3}[ -]?\d{2,3}[ -]?\d{2}|linkedin|github|·/i.test(raw) && !/^\s*[-*#]/.test(raw)) { nameSeen = false; return ""; }
+    nameSeen = false;
+    const lh = byLine.get(li) || [], body = plain(raw);
+    if (/^\s*#{2,6}\s/.test(raw)) {
+      if (lh.length) return "u";
+      // A dated role line has been read by the role check; other headings are structure
+      return roleSegments(raw).some(seg => RANGE.test(seg) || years(seg).size || OPEN.test(seg)) ? "c" : "";
+    }
+    if (GREETING.test(body) || /^\[[^\]]+\]$/.test(body)) return "";
+    const { sentences } = lineParts(raw);
+    if (!sentences.length) return "";
+    // A flagged thing the sentences can't be matched to marks the whole line
+    if (lh.some(h => !sentences.some(s => holds(h, s)))) return "u".repeat(sentences.length);
+    return sentences.map(s => lh.some(h => holds(h, s)) ? "u" : kindOf(s)).join("");
+  });
+}
+
+/* ---------- Keyword match and evidence, kept apart ----------
+   An applicant tracking system counts the ad's terms in a CV. A tailored CV can raise that count honestly (the CV says the
+   same thing in other words, and the ad's word is used for it) or by claiming what the CV doesn't have. Only the first is
+   an improvement, so the gain is split: terms the CV backs up are counted, terms only the ad has are listed apart and never
+   counted. The ad's terms are its names (FMEA, SAP, ISO), the words of its title, and longer words it uses at least twice. */
+function keywordImpact(output, { cv = "", ad = "", title = "", employer = "", extra = "", lang = "" } = {}) {
+  const outLang = lang || guessLangOf(output);
+  const ordinary = guessLangOf(ad) === outLang && guessLangOf(cv) === outLang;   // across languages only names can be counted
+  const empTok = new Set(tokens(employer)), compact = s => fold(s).replace(/[^a-z0-9+#]/g, "");
+  const adText = String(ad || "").split(/\r?\n/).filter(l => !capsHeading(l)).join("\n");
+  // The short lines of the ad's lists ("- Python", "- Erfarenhet av FMEA") are usually its requirements
+  const listLine = l => /^\s*(?:[-*•+]|\d+[.)])\s/.test(l) && l.trim().split(/\s+/).length <= 6;
+  const terms = new Map();
+  const sources = [...adText.split("\n").map(l => [l, listLine(l) ? "list" : ""]), [title, "title"]];
+  for (const [text, from] of sources) for (const { raw, w, named } of wordsOf(text)) {
+    if (COMMON.has(w) || FILL.has(w) || empTok.has(w) || /^[\d.,]+$/.test(w)) continue;
+    const prod = isProductName(raw);
+    if (!prod && (!ordinary || w.length < (from || named ? 3 : 6))) continue;
+    const key = prod ? compact(raw) : stemOf(enStem(w));
+    const t = terms.get(key) || { shown: prod || named || from === "list" ? raw : raw.toLowerCase(), w, prod, n: 0, keep: false };
+    t.n++; t.keep = t.keep || Boolean(from) || named; terms.set(key, t);
+  }
+  const list = [...terms.values()].filter(t => t.prod || t.n >= 2 || t.keep)
+    .sort((a, b) => (b.prod - a.prod) || (b.keep - a.keep) || (b.n - a.n)).slice(0, 40);
+  // Is the term written in the text, as an ATS would see it: the same word or the same word with another ending
+  const presence = text => {
+    const ws = [...new Set(tokens(text))], whole = compact(text);
+    return t => t.prod ? (ws.includes(t.w) || (compact(t.shown).length >= 3 && whole.includes(compact(t.shown))))
+      : ws.some(s => s === t.w || sameWord(s, t.w) || (enStem(t.w).length >= 4 && enStem(s) === enStem(t.w)));
+  };
+  const ownText = [cv, extra].join("\n"), inCv = presence(ownText), inOut = presence(output);
+  const cvWords = new Set(tokens(ownText)), cvText = fold(ownText);
+  const before = list.filter(inCv), gained = list.filter(t => inOut(t) && !inCv(t)), lost = before.filter(t => !inOut(t));
+  const supported = gained.filter(t => backed(t.w, cvWords, cvText)), unsupported = gained.filter(t => !backed(t.w, cvWords, cvText));
+  const names = a => a.slice(0, 12).map(t => t.shown.slice(0, 40));
+  return { terms: list.length, before: before.length, after: before.length - lost.length + supported.length,
+    gained: names(supported), unsupported: names(unsupported), lost: names(lost) };
+}
+
+/* ---------- The ad text itself ----------
+   A fetched ad can come with invisible characters, runs of empty lines and paragraphs repeated word for word. cleanAd takes
+   those out. An ad longer than the server reads is cut at the last paragraph (or sentence) before the limit, so what the
+   AI sees ends where a person would stop reading, and the panel shows that excerpt before anything is sent. */
+function cleanAd(text) {
+  const seen = new Set(), out = [];
+  const t = String(text || "").replace(/[​-‍⁠﻿­]/g, "").replace(/\r\n?/g, "\n").replace(/[ \t ]+/g, " ");
+  for (const para of t.split(/\n\s*\n/)) {
+    const p = para.split("\n").map(l => l.trim()).filter(Boolean).join("\n");
+    if (!p) continue;
+    const key = fold(p).replace(/\s+/g, " ");
+    if (key.length > 40 && seen.has(key)) continue;
+    seen.add(key); out.push(p);
+  }
+  return out.join("\n\n");
+}
+function trimAd(text, max = 20000) {
+  const t = cleanAd(text);
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max), para = cut.lastIndexOf("\n");
+  if (para > max * 0.8) return cut.slice(0, para).trim();
+  const end = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "));
+  return (end > max * 0.8 ? cut.slice(0, end + 1) : cut).trim();
+}
+
+/**
+ * Everything the panel shows about an answer: the fact check, the sentence trace and, for a tailored CV, the keyword
+ * match kept apart from the evidence.
+ * @returns {{ ok, issues, trace: string, counts: { c, a, i, u }, impact: object|null }}
+ */
+function review(output, src = {}) {
+  const r = checkAll(output, src), lines = traceText(output, src, r.hits);
+  const counts = { c: 0, a: 0, i: 0, u: 0 };
+  for (const l of lines) for (const ch of l) counts[ch]++;
+  return { ok: r.ok, issues: r.issues, trace: lines.join(","), counts, impact: src.task === "cv" ? keywordImpact(output, src) : null };
+}
+
+module.exports = { factCheck, checkAll, review, traceText, lineParts, keywordImpact, cleanAd, trimAd,
+  _test: { inSource, titleInSource, tokens, isTitle, isNameLike, isGeneric, degreeLevels, claimCheck, figures, isProductName } };
