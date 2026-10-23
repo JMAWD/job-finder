@@ -6,8 +6,9 @@
 // {"invent":true} makes the tailored CV name a job the test CV doesn't have, for the fact check.
 // {"cut":true} makes the answer come back as if the model ran out of room (finish_reason "length").
 // {"tone":true} makes the tailored CV break Job Tailor's writing rules: dashes, buzzwords and two jobs of the same shape.
+// {"borrow":true} makes the tailored CV add one sentence about Python, which the ad asks for and the CV doesn't have.
 import http from "node:http";
-let last = null, count = 0, mode = { status: 200, delay: 300, mentorBad: false, invent: false, cut: false, tone: false };
+let last = null, count = 0, mode = { status: 200, delay: 300, mentorBad: false, invent: false, cut: false, tone: false, borrow: false };
 const course = (name, provider, format, extra, directions, priority, skill, forRole, why) => ({ name, provider, format, ...extra, directions, priority, why, skill, for_role: forRole });
 const MENTOR = {
   name: "Eva", years: 8, stage: "established", stage_reason: "Eight years in quality roles, the last three leading improvement work.",
@@ -66,7 +67,8 @@ http.createServer(async (req, res) => {
     const ask = last.body.messages[1].content;
     if (/Translate the job ad into natural/.test(ask)) return send(200, { choices: [{ message: { content: "# Quality Engineer\n\nWe are looking for a quality engineer who can use FMEA and wants to drive quality improvements in production.\n\n## Experience\n- Experience with FMEA\n- Supplier audits" } }], usage: { prompt_tokens: 800, completion_tokens: 120 } });
     const task = /cover letter|personligt brev/i.test(ask) ? "letter" : /Tailor the CV|Anpassa CV/i.test(ask) ? "cv" : /interview|intervju/i.test(ask) ? "interview" : "match";
-    const content = mode.tone && task === "cv" ? TONE_CV : mode.invent && task === "cv" ? ANSWERS.cv + "\n\n### Senior kvalitetsingenjör, Bosch Rexroth (2012–nu)\n- Ledde FMEA" : mode.cut ? ANSWERS[task].split("## Utbildning")[0].trim() : ANSWERS[task];
+    const borrowed = ANSWERS.cv.replace("tillsammans med konstruktion och produktion\n", "tillsammans med konstruktion och produktion. Arbetade med Python i testmiljön.\n");
+    const content = mode.tone && task === "cv" ? TONE_CV : mode.invent && task === "cv" ? ANSWERS.cv + "\n\n### Senior kvalitetsingenjör, Bosch Rexroth (2012–nu)\n- Ledde FMEA" : mode.borrow && task === "cv" ? borrowed : mode.cut ? ANSWERS[task].split("## Utbildning")[0].trim() : ANSWERS[task];
     return send(200, { choices: [{ message: { content }, finish_reason: mode.cut ? "length" : "stop" }], usage: { prompt_tokens: 1200, completion_tokens: 300 } });
   }
   send(404, {});

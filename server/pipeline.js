@@ -11,8 +11,11 @@
      tests the model kept borrowing from the ad even when told not to, so this turns the check from a warning into a
      correction. The new version is kept only if it has fewer flags and, for a CV, still has every job.
   4. Style check (style.js) on what is left.
+  5. Review (factcheck.js): where each sentence comes from, as one letter per sentence, and for a CV the keyword match
+     kept apart from the evidence. The panel leaves unsupported sentences out of every download until the person keeps
+     them.
 */
-const { factCheck } = require("./factcheck.js");
+const { factCheck, review } = require("./factcheck.js");
 const { stripDashes, styleCheck, tidyCv, keepContact } = require("./style.js");
 const { repairPrompt, OPTIONS } = require("./prompts.js");
 
@@ -28,7 +31,7 @@ const jobHeadings = t => (String(t || "").match(/^\s*###\s/gm) || []).length;
 /**
  * @param {object} a     { text, task, lang, cv, ad, job: { title, employer }, extra, year }
  * @param {function} ask (messages, options) => Promise<{ text, error, cut, tokens }>: one more model call, or null for none
- * @returns {Promise<{ text, check, style, fixed, repairTokens }>}
+ * @returns {Promise<{ text, check, style, fixed, repairTokens, trace, counts, impact }>}
  */
 async function finish({ text, task, lang, cv = "", ad = "", job = {}, extra = "", year = new Date().getFullYear() }, ask) {
   const src = { cv, ad, title: job.title || "", employer: job.employer || "", extra, year, task, lang };
@@ -51,7 +54,8 @@ async function finish({ text, task, lang, cv = "", ad = "", job = {}, extra = ""
     }
   }
   const style = SENT.has(task) ? styleCheck(out, { cv, ad, task }) : null;
-  return { text: out, check, style, fixed, repairTokens };
+  const rv = checked ? review(out, src) : null;
+  return { text: out, check, style, fixed, repairTokens, trace: rv ? rv.trace : null, counts: rv ? rv.counts : null, impact: rv ? rv.impact : null };
 }
 
 module.exports = { finish, clean };

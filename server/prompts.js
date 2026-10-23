@@ -131,6 +131,8 @@ function build(task) {
     { role: "user", content: [
       ASK[task][lang],
       extra ? (lang === "sv" ? `\nPersonens egna önskemål: ${extra}` : `\nThe person's own wishes: ${extra}`) : "",
+      // A short excerpt, or the first part of a very long ad: the rest is not to be guessed at
+      job.excerpt ? (lang === "sv" ? "\nAnnonsen nedan är bara ett utdrag. Gissa inte vad resten av annonsen efterfrågar." : "\nThe ad below is only an excerpt. Do not guess what the rest of the ad asks for.") : "",
       lang === "sv" ? `\n<annons>\nTitel: ${job.title}\nArbetsgivare: ${job.employer}\n\n${job.text}\n</annons>` : `\n<job_ad>\nTitle: ${job.title}\nEmployer: ${job.employer}\n\n${job.text}\n</job_ad>`,
       `\n<cv>\n${cv}\n</cv>`,
     ].join("\n") },
@@ -220,9 +222,11 @@ function parseMentor(text) {
    without changing anything else. */
 const KIND = {
   sv: { employer: "arbetsgivare som inte står i CV:t", title: "titel som inte står i CV:t", school: "skola som inte står i CV:t", degree: "examen som inte står i CV:t",
-    dates: "datum som inte stämmer med CV:t", date: "datum som inte står i CV:t", claim: "från annonsen, inte från CV:t", figure: "siffra som inte står i CV:t" },
+    dates: "datum som inte stämmer med CV:t", date: "datum som inte står i CV:t", claim: "från annonsen, inte från CV:t", figure: "siffra som inte står i CV:t",
+    name: "verktyg, standard eller namn som inte står i CV:t", responsibility: "att leda eller ansvara för något, vilket CV:t aldrig säger", outcome: "ett resultat som CV:t inte påstår" },
   en: { employer: "an employer the CV doesn't have", title: "a job title the CV doesn't have", school: "a school the CV doesn't have", degree: "a degree the CV doesn't have",
-    dates: "dates that don't match the CV", date: "a date the CV doesn't have", claim: "from the ad, not from the CV", figure: "a figure the CV doesn't have" },
+    dates: "dates that don't match the CV", date: "a date the CV doesn't have", claim: "from the ad, not from the CV", figure: "a figure the CV doesn't have",
+    name: "a tool, standard or name the CV doesn't have", responsibility: "leading or being responsible for something, which the CV never says", outcome: "a result the CV doesn't claim" },
 };
 function repairPrompt(lang, task, { cv, text, issues }) {
   const list = issues.map(i => `- "${i.text}" (${KIND[lang][i.kind] || i.kind}), on the line: ${i.line}`).join("\n");

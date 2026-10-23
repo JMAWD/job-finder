@@ -36,7 +36,8 @@ test("the eval runs every case, task, language and run, and counts what was flag
     if (/A check in code found|En kontroll i kod hittade/.test(messages[1].content)) return invented(isEn);
     calls++;
     if (calls === 2) throw new Error("model answered 503");   // retried
-    return calls % 4 === 0 ? invented(isEn) : "## Profil\n- FMEA";
+    // A faithful answer: only a heading, since FMEA is in the quality CV but would be a new name in the logistics one
+    return calls % 4 === 0 ? invented(isEn) : "## Profil";
   };
   const results = await runEval({ cases: cases.slice(0, 2), tasks: ["cv", "letter"], langs: ["sv", "en"], runs: 2, ask, year: 2026 });
   assert.equal(results.length, 2 * 2 * 2 * 2);

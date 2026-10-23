@@ -7,7 +7,7 @@ const TASKS = ["match", "cv", "letter", "interview"];
 const DOC_TASKS = new Set(["cv", "letter"]);   // the texts that go to the employer, so they download as a PDF with no title of ours
 const TAILOR_TIMEOUT = 110000;
 let tl = null;   // the open job: { id, title, employer, muni, url, src, task, busy, ctrl }
-let tailorStore = store.get("jf-tailor", {});   // ad id -> { ad, extra, out: { task: { text, at, model, lang, check } } }
+let tailorStore = store.get("jf-tailor", {});   // ad id -> { ad, extra, out: { task: { text, at, model, lang, check, trace, impact, keep } } }
 const saveTailor = () => store.set("jf-tailor", tailorStore);
 const tlEntry = id => tailorStore[id] || (tailorStore[id] = { out: {} });
 const fullAds = new Map(), adFails = new Set();   // ads fetched in full, and Platsbanken ads that couldn't be fetched this time
@@ -16,18 +16,29 @@ const translations = new Map();   // translated ads stay in memory for this page
 const RULE = /^\s*([-*_])(\s*\1){2,}\s*$/;   // a "---" divider line, left out everywhere
 // Small Markdown reader for the AI's answers: headings, lists, bold, italics. Everything is escaped first.
 // "#" (the name on a tailored CV) becomes h3, "##" h4 and "###" or deeper h5.
-function mdHtml(text) {
+// With ann (annotate below), sentences are marked: unsupported ones always, and every sentence's source when sources is on.
+function mdHtml(text, ann = null, sources = false) {
   const out = []; let list = null;
   const inline = s => s.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(^|[\s(])\*(\S[^*]*?)\*(?=[\s).,;:!?]|$)/g, "$1<i>$2</i>");
   const close = () => { if (list) { out.push(`</${list}>`); list = null; } };
-  for (const l of esc(text).split("\n")) {
-    if (RULE.test(l)) { close(); continue; }
+  const sentence = (a, si) => {
+    const html = inline(esc(a.parts[si])), k = a.kinds[si], label = esc(t("src.k." + k));
+    if (a.block >= 0) return sources ? `<span class="src src-${k}">${html}</span>` : html;   // a job that isn't in the CV is marked as a whole
+    if (k === "u") return `<span class="src src-u${a.q[si] ? "" : " kept"}">${html}</span> <span class="q-tag">${esc(t(a.q[si] ? "q.tag" : "q.tagkept"))}</span>`;
+    return sources ? `<span class="src src-${k}" title="${label}">${html}<span class="vh"> (${label})</span></span>` : html;
+  };
+  String(text).split("\n").forEach((raw, li) => {
+    const l = esc(raw), a = ann?.[li];
+    if (RULE.test(l)) { close(); return; }
     const h = l.match(/^\s*(#{1,6})\s+(.*)/), ul = l.match(/^\s*[-*•]\s+(.*)/), ol = l.match(/^\s*\d+[.)]\s+(.*)/);
-    if (h) { close(); const tag = h[1].length === 1 ? "h3" : h[1].length === 2 ? "h4" : "h5"; out.push(`<${tag}>${inline(h[2])}</${tag}>`); }
-    else if (ul || ol) { const tag = ul ? "ul" : "ol"; if (list !== tag) { close(); out.push(`<${tag}>`); list = tag; } out.push(`<li>${inline((ul || ol)[1])}</li>`); }
+    const marked = a && a.parts.length && (sources || a.block >= 0 || a.kinds.includes("u"));
+    const body = s => marked ? a.parts.map((_, si) => sentence(a, si)).join(" ") + (a.head ? ` <span class="q-tag">${esc(t(a.q[0] ? "q.jobtag" : "q.tagkept"))}</span>` : "") : inline(s);
+    const cls = a && a.block >= 0 ? ` class="q-block${a.q.some(Boolean) ? "" : " kept"}"` : "";
+    if (h) { close(); const tag = h[1].length === 1 ? "h3" : h[1].length === 2 ? "h4" : "h5"; out.push(`<${tag}${cls}>${body(h[2])}</${tag}>`); }
+    else if (ul || ol) { const tag = ul ? "ul" : "ol"; if (list !== tag) { close(); out.push(`<${tag}>`); list = tag; } out.push(`<li${cls}>${body((ul || ol)[1])}</li>`); }
     else if (!l.trim()) close();
-    else { close(); out.push(`<p>${inline(l)}</p>`); }
-  }
+    else { close(); out.push(`<p${cls}>${body(l)}</p>`); }
+  });
   close();
   return out.join("");
 }
@@ -353,7 +364,9 @@ async function loadFullAd(job) {
   if (job.src !== "pb") return job.snippet || "";
   try {
     const h = await getJSON(`${JS_API}/ad/${encodeURIComponent(job.id)}`, 2);
-    const text = (h.description?.text || "").trim();
+    const raw = String(h.description?.text || ""), m = checks();
+    // Invisible characters, runs of empty lines and paragraphs repeated word for word come out (cleanAd in server/factcheck.js)
+    const text = (m?.cleanAd ? m.cleanAd(raw) : raw).trim();
     fullAds.set(job.id, text); adFails.delete(job.id);
     return text;
   } catch (err) { console.warn("The full ad could not be fetched", err); adFails.add(job.id); return job.snippet || ""; }
@@ -371,7 +384,7 @@ function translationHtml(id) {
   const langAttr = state.lang === "en" ? "en" : "sv";
   const error = state.error ? `<p class="translation-error" role="alert">${esc(t(state.error, state.errorVars))}</p>` : "";
   const access = state.askCode ? `<div class="translation-access"><p>${esc(t("tr.ask"))}</p><label>${esc(t("tl.code"))}<input data-translate-code type="text" maxlength="64" value="${esc(store.get("jf-code", ""))}" autocomplete="off" spellcheck="false" placeholder="ABCDE-FGHJK"></label><button class="btn sm" type="button" data-translate-go="${esc(id)}">${esc(t("tr.go"))}</button></div>` : "";
-  const result = state.text ? `<p class="translation-note">${esc(t("tr.note"))}</p><div class="translation-text" lang="${langAttr}">${mdHtml(state.text)}</div>` : "";
+  const result = state.text ? `<p class="translation-note">${esc(t("tr.note"))}${state.trimmed ? " " + esc(t("tr.trimmed")) : ""}</p><div class="translation-text" lang="${langAttr}">${mdHtml(state.text)}</div>` : "";
   return `<section class="translation-panel" tabindex="-1" aria-live="polite">${state.busy ? `<p class="translation-status">${esc(t("tr.wait"))}</p>` : ""}${error}${access}${result}</section>`;
 }
 function redrawTranslation(id, focusSel = ".translation-panel") {
@@ -391,7 +404,7 @@ async function runTranslation(id, code) {
       body: JSON.stringify({ code, task: "translate", lang: state.lang, job: { text: ad } }) });
     const data = await r.json().catch(() => ({}));
     if (r.ok && typeof data.text === "string" && data.text.trim()) {
-      state.text = data.text.trim(); store.set("jf-code", code);
+      state.text = data.text.trim(); state.trimmed = Boolean(data.adTrimmed); store.set("jf-code", code);
     } else { state.error = TRANSLATE_ERRORS[data.error] || "tr.e.service"; if (data.error === "limit_reached") state.errorVars = { perHour: data.perHour, perDay: data.perDay }; }
   } catch (err) { state.error = err.name === "AbortError" ? "tr.e.timeout" : "tr.e.network"; }
   finally { clearTimeout(timer); state.busy = false; redrawTranslation(id); }
@@ -433,7 +446,7 @@ function applyHtml(job, big) {
   return `<a class="btn ${big ? "" : "ghost "}sm" href="${esc(href)}" target="_blank" rel="noopener" data-tl="apply">${esc(label)}</a>`;
 }
 // The server's fact check (server/factcheck.js). Answers saved before it existed have none, and show nothing.
-// After the person edits a text, the same code checks it again here in the browser (see recheck below).
+// After the person edits a text, the same code checks it again here in the browser (see reviewText below).
 function factCheckHtml(check, edited, fixed) {
   if (edited && !check) return `<p class="fc fc-warn" role="status">${esc(t("fc.unchecked"))}</p>`;
   if (!check || !Array.isArray(check.issues)) return "";
@@ -461,18 +474,26 @@ const cleanStyle = st => st && typeof st === "object" ? { even: !!st.even, words
 // for their patterns goes without, and the panel says the edits weren't checked.
 const FACTCHECK_SRC = /*__FACTCHECK__*/;
 const STYLE_SRC = /*__STYLE__*/;
-let localCheck, localStyle;
+let localCheck, localStyle;   // the compiled fact check module (factCheck, review, lineParts, trimAd …) and style check
 function compiled(src, pick) {
   try { const module = { exports: {} }; new Function("module", "require", src)(module, () => TITLES); return pick(module.exports) || null; }
   catch (err) { console.warn("A check can't run in this browser", err); return null; }
 }
-function recheck(text) {
-  if (localCheck === undefined) localCheck = compiled(FACTCHECK_SRC, m => m.factCheck);
-  if (!localCheck || !tl) return null;
+const checks = () => (localCheck === undefined ? (localCheck = compiled(FACTCHECK_SRC, m => m.review ? m : null)) : localCheck) || null;
+const cleanCheck = c => c && Array.isArray(c.issues) ? { ok: !!c.ok, issues: c.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) } : null;
+function cleanImpact(im) {
+  if (!im || typeof im !== "object") return null;
+  const n = x => Math.max(0, Math.min(999, Math.round(+x || 0))), list = a => (Array.isArray(a) ? a : []).slice(0, 12).map(x => String(x).slice(0, 40));
+  return { terms: n(im.terms), before: n(im.before), after: n(im.after), gained: list(im.gained), unsupported: list(im.unsupported), lost: list(im.lost) };
+}
+// The fact check, the sentence trace and (for a CV) the keyword match, worked out here with the server's own code
+function reviewText(text, { task = tl?.task, outLang, ad } = {}) {
+  const m = checks();
+  if (!m || !tl) return null;
   try {
-    const e = tlEntry(tl.id), o = e.out[tl.task];
-    const r = localCheck(text, { cv: store.get("jf-cv", ""), ad: e.ad ?? tl.adText ?? "", title: tl.title, employer: tl.employer, extra: e.extra || "", year: new Date().getFullYear(), task: tl.task, lang: o?.lang || e.lang || lang });
-    return { ok: r.ok, issues: r.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) };
+    const e = tlEntry(tl.id), o = e.out[task];
+    const r = m.review(text, { cv: store.get("jf-cv", ""), ad: ad ?? e.ad ?? tl.adText ?? "", title: tl.title, employer: tl.employer, extra: e.extra || "", year: new Date().getFullYear(), task, lang: outLang || o?.lang || e.lang || lang });
+    return { check: cleanCheck(r), trace: String(r.trace), impact: task === "cv" ? cleanImpact(r.impact) : null };
   } catch (err) { console.warn("The fact check failed", err); return null; }
 }
 function restyle(text) {
@@ -481,15 +502,126 @@ function restyle(text) {
   try { const e = tlEntry(tl.id); return cleanStyle(localStyle(text, { cv: store.get("jf-cv", ""), ad: e.ad ?? tl.adText ?? "", task: tl.task })); }
   catch (err) { console.warn("The style check failed", err); return null; }
 }
+
+/* ---------- Where each sentence comes from, and what stays out of downloads ----------
+   Every answer comes with a trace (review in server/factcheck.js): one letter per sentence, line by line, c from the CV,
+   a from the ad, i inferred by the AI, u unsupported. Unsupported sentences are marked in the text and left out of the
+   PDF, the Word file, the plain text and Copy until the person keeps them; a job heading that isn't in the CV takes the
+   lines under it with it. Edit text always shows everything. */
+function traceOf(o) {
+  if (typeof o?.trace !== "string") return null;
+  const tr = o.trace.split(","), n = String(o.text || "").split("\n").length;
+  return tr.length === n && tr.every(x => /^[caiu]*$/.test(x)) ? tr : null;
+}
+function partsOf(raw) {
+  const m = checks();
+  if (m?.lineParts) try { return m.lineParts(raw); } catch {}
+  const prefix = raw.match(/^(\s*(?:#{1,6}\s+|>\s*|[-+*•]\s+|\d+[.)]\s+)*)/)[1], body = raw.slice(prefix.length).trim();
+  return { prefix, sentences: body ? [body] : [] };
+}
+let annMemo = { key: null, value: null };
+// Per line: its prefix, its sentences, their labels, which are left out (q), and the job heading it sits under if that job is left out
+function annotate(o) {
+  const tr = traceOf(o);
+  if (!tr) return null;
+  const keep = new Set(Array.isArray(o.keep) ? o.keep.map(String) : []);
+  const key = [o.text, o.trace, [...keep].join(" "), checks() ? 1 : 0].join("\u0000");
+  if (annMemo.key === key) return annMemo.value;
+  let block = -1;
+  const value = String(o.text).split("\n").map((raw, li) => {
+    const t = tr[li], h = raw.match(/^\s*(#{1,6})\s/), p = partsOf(raw);
+    if (h) block = -1;
+    let kinds = t.split(""), parts = p.sentences;
+    // A heading is one unit, and so is a line whose sentences don't line up with the trace (it takes its worst label)
+    if (kinds.length && (h || kinds.length !== parts.length)) { kinds = [["u", "i", "a", "c"].find(k => t.includes(k))]; parts = [raw.slice(p.prefix.length).trim()]; }
+    if (!kinds.length) parts = [];
+    const a = { prefix: p.prefix, parts, kinds, block, head: false, q: [] };
+    if (h && h[1].length >= 3 && kinds[0] === "u") { block = li; a.block = li; a.head = true; }
+    a.q = kinds.map((k, si) => a.block >= 0 ? !keep.has(String(a.block)) : k === "u" && !keep.has(`${li}.${si}`));
+    return a;
+  });
+  annMemo = { key, value };
+  return value;
+}
+// The text that leaves the panel: the answer without what is left out
+function sendText(o) {
+  const ann = annotate(o);
+  if (!ann || !ann.some(a => a.q.some(Boolean))) return o.text;
+  const out = [];
+  String(o.text).split("\n").forEach((raw, li) => {
+    const a = ann[li];
+    if (!a.q.some(Boolean)) { out.push(raw); return; }
+    const kept = a.parts.filter((_, si) => !a.q[si]);
+    if (kept.length) out.push(a.prefix + kept.join(" "));
+  });
+  // A section heading left with nothing under it goes too
+  const next = i => out.slice(i + 1).find(x => x.trim());
+  return out.filter((l, i) => !/^\s*##\s/.test(l) || (next(i) && !/^\s*#{1,2}\s/.test(next(i)))).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+const plainLine = s => String(s).replace(/\*\*(.+?)\*\*/g, "$1").replace(/[*_`]/g, "");
+function quarantineHtml(o, ann) {
+  if (!ann) return "";
+  const keep = new Set(Array.isArray(o.keep) ? o.keep.map(String) : []), items = [];
+  ann.forEach((a, li) => {
+    if (a.head) { const n = ann.filter((x, i) => i > li && x.block === li && x.parts.length).length; items.push({ key: String(li), text: t(n === 0 ? "q.job0" : n === 1 ? "q.job1" : "q.job", { job: plainLine(a.parts[0]), n }) }); return; }
+    if (a.block < 0) a.kinds.forEach((k, si) => { if (k === "u") items.push({ key: `${li}.${si}`, text: plainLine(a.parts[si]) }); });
+  });
+  if (!items.length) return "";
+  const out = items.filter(x => !keep.has(x.key)).length;
+  return `<section class="q-panel" aria-labelledby="q-h"><p id="q-h"><b>${esc(out ? t("q.title", { n: out }) : t("q.allkept"))}</b></p>
+    <p class="tl-hint">${esc(t("q.how"))}</p>
+    <ul>${items.map(x => { const kept = keep.has(x.key); return `<li${kept ? ' class="kept"' : ""}><span class="q-text">${esc(x.text)}</span> <button class="btn ghost sm" type="button" data-tl="keep" data-k="${esc(x.key)}">${esc(t(kept ? "q.drop" : "q.keep"))}</button>${kept ? ` <span class="tl-hint">${esc(t("q.kept"))}</span>` : ""}</li>`; }).join("")}</ul></section>`;
+}
+// The keyword match (for a CV) and the evidence, as two separate lines, with the switch for marking every sentence
+function evidenceHtml(o, ann, task) {
+  if (!ann) return "";
+  const n = { c: 0, a: 0, i: 0, u: 0 };
+  ann.forEach(a => a.kinds.forEach(k => n[k]++));
+  if (!(n.c + n.a + n.i + n.u)) return "";
+  const counts = ["c", "a", "i", "u"].filter(k => n[k]).map(k => t("src.n." + k, { n: n[k] })).join(" · ");
+  const im = task === "cv" ? cleanImpact(o.impact) : null, words = a => a.join(", ");
+  const ats = im && im.terms ? `<p class="im-line"><b>${esc(t("im.title"))}</b> ${esc(t("im.line", im))}${im.gained.length ? " " + esc(t("im.gained", { words: words(im.gained) })) : ""}${im.lost.length ? " " + esc(t("im.lost", { words: words(im.lost) })) : ""}</p>
+    ${im.unsupported.length ? `<p class="im-warn"><b>${esc(t("im.not"))}</b> ${esc(t("im.notline", { words: words(im.unsupported) }))}</p>` : ""}` : "";
+  const across = o.lang && guessLang(store.get("jf-cv", "")) !== o.lang ? `<p class="tl-hint">${esc(t("src.across"))}</p>` : "";
+  const legend = tl.sources ? `<ul class="src-legend">${["c", "a", "i", "u"].map(k => `<li><span class="src src-${k}">${esc(t("src.k." + k))}</span> ${esc(t("src.d." + k))}</li>`).join("")}</ul>` : "";
+  return `<section class="src-sum" aria-label="${esc(t("src.aria"))}">${ats}<p class="src-line"><b>${esc(t(ats ? "src.evidence" : "src.title"))}</b> ${esc(counts)}.</p>${across}
+    <div class="row"><button class="btn ghost sm" type="button" data-tl="sources" aria-pressed="${tl.sources ? "true" : "false"}">${esc(t("src.show"))}</button></div>${legend}${ats ? `<p class="tl-hint">${esc(t("im.how"))}</p>` : ""}</section>`;
+}
+// The whole text as plain text in a box, for when downloads or the clipboard are blocked
+function plainHtml(o, ann) {
+  if (!tl.plain) return "";
+  const left = (ann || []).some(a => a.q.some(Boolean));
+  return `<section class="tl-plain"><label class="tl-label" for="tl-plain">${esc(t("pt.label"))}</label>
+    ${tl.plainMsg ? `<p class="tl-err" role="alert">${esc(t(tl.plainMsg))}</p>` : ""}
+    <textarea id="tl-plain" readonly rows="14" lang="${o.lang === "en" ? "en" : "sv"}">${esc(plainText(sendText(o)))}</textarea>
+    <p class="tl-hint">${esc(t("pt.hint"))}${left ? " " + esc(t("pt.left")) : ""}</p>
+    <div class="row"><button class="btn sm" type="button" data-tl="txt">${esc(t("pt.txt"))}</button><button class="btn ghost sm" type="button" data-tl="selectall">${esc(t("pt.select"))}</button></div></section>`;
+}
+/* ---------- How much of the ad there is ----------
+   A long ad or a short extract is a warning with a way forward, not a stop: the person can go ahead with the visible
+   excerpt. A long ad is cut at a paragraph first (trimAd in server/factcheck.js) and shown in the ad box, so what's
+   sent is what's on screen. */
+const MAX_AD = 20000, MIN_AD = 30, FULL_AD = 100;
+const fmtCount = n => Number(n).toLocaleString(lang === "sv" ? "sv-SE" : "en-GB");
+function adWarnHtml() {
+  if (!tl.adWarn) return "";
+  const long = tl.adWarn === "long";
+  return `<section class="tl-adwarn" role="alert"><p><b>${esc(t(long ? "xc.long.t" : "xc.short.t", { n: fmtCount(tl.adWarnLen || 0), max: fmtCount(MAX_AD) }))}</b></p>
+    <p>${esc(t(long ? "xc.long" : tl.adWarnWhy === "links" ? "xc.links" : "xc.short", { site: tl.source || t("othersite") }))}</p>
+    <div class="row"><button class="btn sm" type="button" data-tl="excerpt">${esc(t("xc.use"))}</button>${long || !tl.url ? "" : `<a class="btn ghost sm" href="${esc(tl.url)}" target="_blank" rel="noopener">${esc(t("xc.open"))}</a>`}</div></section>`;
+}
+const trimmedAd = text => { const m = checks(); return m?.trimAd ? m.trimAd(text, MAX_AD) : text.slice(0, MAX_AD); };
+
 // Saves what the person typed in Edit text, and checks it again
 function saveEdit() {
   if (!tl?.editing) return;
   const o = tlEntry(tl.id).out[tl.task], text = (tl.editDraft ?? "").replace(/\s+$/, "");
   tl.editing = false; tl.editDraft = null;
   if (!o || !text.trim() || text === o.text) return;
-  o.text = text; o.edited = new Date().toISOString(); delete o.cut; delete o.fixed;
-  const check = recheck(text), style = restyle(text);
-  if (check) o.check = check; else delete o.check;
+  o.text = text; o.edited = new Date().toISOString(); delete o.cut; delete o.fixed; delete o.keep;
+  const rv = reviewText(text), style = restyle(text);
+  if (rv) { o.check = rv.check; o.trace = rv.trace; if (rv.impact) o.impact = rv.impact; else delete o.impact; }
+  else { delete o.check; delete o.trace; delete o.impact; }
   if (style) o.style = style; else delete o.style;
   saveTailor();
 }
@@ -512,6 +644,12 @@ function appliedHtml(id) {
 }
 function tailorHtml() {
   const job = tl, e = tlEntry(job.id), task = tl.task, out = e.out[task];
+  // An answer saved before sentence traces existed is checked again once, so it gets one too
+  if (out && out.check && !traceOf(out) && !tl.editing) {
+    const rv = reviewText(out.text, { task, outLang: out.lang });
+    if (rv) { out.check = rv.check; out.trace = rv.trace; if (rv.impact) out.impact = rv.impact; saveTailor(); }
+  }
+  const ann = out ? annotate(out) : null;
   const code = store.get("jf-code", "");
   const outLang = e.lang || tl.lang || lang;
   return `<div class="tl-head">
@@ -541,19 +679,25 @@ function tailorHtml() {
         <div class="row"><button class="btn" type="button" data-tl="go"${tl.busy ? " disabled" : ""}>${esc(tl.busy ? t("tl.busy") : out ? t("tl.again") : t("tl.go"))}</button><span class="tl-status" id="tl-status">${esc(tl.status || "")}</span></div>
         ${out ? "" : `<p class="tl-hint">${esc(t("ai.before"))}</p>`}
         ${tl.error ? `<p class="tl-err" role="alert">${tl.error}</p>` : ""}
+        ${adWarnHtml()}
         ${out ? `${aiNoteHtml(task === "match" ? "ai.match" : task === "interview" ? "ai.interview" : "ai.write", t("tl.t." + task))}
           ${out.cut ? `<p class="tl-err" role="alert">${esc(t("tl.cut"))}</p>` : ""}
+          ${out.excerpt ? `<p class="tl-hint tl-fill">${esc(t("xc.made"))}</p>` : ""}
+          ${out.adTrimmed ? `<p class="tl-hint tl-fill">${esc(t("xc.trimmed", { n: fmtCount(+out.adTrimmed.to || MAX_AD) }))}</p>` : ""}
           ${factCheckHtml(out.check, out.edited, out.fixed)}
           ${styleHtml(out.style)}
+          ${tl.editing ? "" : evidenceHtml(out, ann, task) + quarantineHtml(out, ann)}
           ${tl.editing ? `<div class="tl-edit"><label class="tl-label" for="tl-edit">${esc(t("tl.edit.label"))}</label>
             <textarea id="tl-edit" data-tl="edit-text" rows="22" lang="${out.lang === "en" ? "en" : "sv"}">${esc(tl.editDraft ?? out.text)}</textarea>
             <p class="tl-hint">${esc(t("tl.edit.hint"))}</p>
             <div class="row"><button class="btn sm" type="button" data-tl="save">${esc(t("tl.edit.save"))}</button><button class="btn ghost sm" type="button" data-tl="cancel">${esc(t("tl.edit.cancel"))}</button></div></div>`
-          : `<div class="tl-out" tabindex="-1">${mdHtml(out.text)}</div>
-          <div class="row">${DOC_TASKS.has(task) ? `<button class="btn sm" type="button" data-tl="pdf">${esc(t("tl.pdfdl"))}</button>` : ""}<button class="btn ghost sm" type="button" data-tl="word">${esc(t("tl.word"))}</button><button class="btn ghost sm" type="button" data-tl="edit">${esc(t("tl.edit"))}</button><button class="btn ghost sm" type="button" data-tl="copy">${esc(t("copy"))}</button>${applyHtml(job, true)}
+          : `<div class="tl-out${tl.sources ? " show-src" : ""}" tabindex="-1">${mdHtml(out.text, ann, tl.sources)}</div>
+          <div class="row">${DOC_TASKS.has(task) ? `<button class="btn sm" type="button" data-tl="pdf">${esc(t("tl.pdfdl"))}</button>` : ""}<button class="btn ghost sm" type="button" data-tl="word">${esc(t("tl.word"))}</button><button class="btn ghost sm" type="button" data-tl="edit">${esc(t("tl.edit"))}</button><button class="btn ghost sm" type="button" data-tl="copy">${esc(t("copy"))}</button><button class="btn ghost sm" type="button" data-tl="plain" aria-expanded="${tl.plain ? "true" : "false"}">${esc(t("pt.btn"))}</button>${applyHtml(job, true)}
           <span class="tl-hint">${esc(t("tl.made", { date: fmtDate(localDay(new Date(out.at))) }))}${out.edited ? ` · ${esc(t("tl.edited", { date: fmtDate(localDay(new Date(out.edited))) }))}` : ""}</span></div>
           ${DOC_TASKS.has(task) && /\[[^\]\n]{2,60}\]/.test(out.text) ? `<p class="tl-hint tl-fill">${esc(t("tl.fill"))}</p>` : ""}
-          ${tl.pdfLost ? `<p class="tl-hint" role="status">${esc(t("tl.pdflost", { n: tl.pdfLost }))}</p>` : ""}`}
+          ${tl.pdfLost ? `<p class="tl-hint" role="status">${esc(t("tl.pdflost", { n: tl.pdfLost }))}</p>` : ""}
+          ${embedded && !tl.plain ? `<p class="tl-hint">${esc(t("pt.embedded"))}</p>` : ""}
+          ${plainHtml(out, ann)}`}
           ${appliedHtml(job.id)}` : appliedHtml(job.id)}
       </section>
       <p class="tl-hint tl-privacy">${esc(t("tl.privacy"))}</p>
@@ -597,9 +741,17 @@ async function generate() {
   const stop = (k, sel, v) => { tl.error = esc(t(k, v)); drawTailor(sel); };
   if (!code) return stop("tl.e.nocode", "#tl-code");
   if (cv.length < 200) return stop("tl.e.cv", "#tl-cv");
-  if (ad.length < 100) return stop("tl.e.ad", "#tl-ad");
+  if (ad.length < MIN_AD) return stop("tl.e.ad", "#tl-ad");
+  // Only the listing's extract (an ad on another site, or a fetch that failed), a very short ad, or one longer than the
+  // server reads: say so and offer the visible excerpt, once per panel
+  const snippet = String(tl.snippet || "").trim(), fromListing = (tl.src !== "pb" || adFails.has(id)) && Boolean(snippet) && ad === snippet;
+  if (!tl.adOk && (ad.length > MAX_AD || ad.length < FULL_AD || fromListing)) {
+    tl.adWarn = ad.length > MAX_AD ? "long" : "short"; tl.adWarnLen = ad.length; tl.adWarnWhy = fromListing && tl.src !== "pb" ? "links" : ""; tl.error = "";
+    return drawTailor('[data-tl="excerpt"]');
+  }
+  const excerpt = ad.length <= MAX_AD && (ad.length < FULL_AD || fromListing), cutFrom = tl.adCutFrom || 0;
   store.set("jf-cv", cv); store.set("jf-code", code); e.ad = ad; e.extra = extra; e.lang = outLang; saveTailor();
-  tl.busy = true; tl.error = ""; tl.status = t("tl.wait", { s: 0 }); tl.editing = false; tl.editDraft = null; tl.pdfLost = 0;
+  tl.busy = true; tl.error = ""; tl.adWarn = ""; tl.status = t("tl.wait", { s: 0 }); tl.editing = false; tl.editDraft = null; tl.pdfLost = 0; tl.plain = false; tl.plainMsg = "";
   drawTailor('[data-tl="go"]');
   const started = Date.now(), tick = setInterval(() => { if (tl?.id === id && tl.busy) { tl.status = t("tl.wait", { s: Math.round((Date.now() - started) / 1000) }); const s = $("tl-status"); if (s) s.textContent = tl.status; } }, 1000);
   const ctrl = new AbortController(); tl.ctrl = ctrl;
@@ -607,10 +759,15 @@ async function generate() {
   let msg = "";
   try {
     const r = await fetch(ABOUT.tailor, { method: "POST", headers: { "Content-Type": "application/json" }, signal: ctrl.signal,
-      body: JSON.stringify({ code, task, lang: outLang, cv, extra, job: { title: tl.title, employer: tl.employer, text: ad } }) });
+      body: JSON.stringify({ code, task, lang: outLang, cv, extra, job: { title: tl.title, employer: tl.employer, text: ad }, ...(excerpt || cutFrom ? { excerpt: true } : {}) }) });
     const j = await r.json().catch(() => ({}));
     if (r.ok && j.text) {
-      e.out[task] = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.cut ? { cut: true } : {}), ...(+j.fixed > 0 ? { fixed: Math.min(99, +j.fixed) } : {}), ...(cleanStyle(j.style) ? { style: cleanStyle(j.style) } : {}), ...(j.check && Array.isArray(j.check.issues) ? { check: { ok: !!j.check.ok, issues: j.check.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) } } : {}) };
+      const o = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.cut ? { cut: true } : {}), ...(+j.fixed > 0 ? { fixed: Math.min(99, +j.fixed) } : {}), ...(cleanStyle(j.style) ? { style: cleanStyle(j.style) } : {}), ...(cleanCheck(j.check) ? { check: cleanCheck(j.check) } : {}),
+        ...(typeof j.trace === "string" ? { trace: j.trace } : {}), ...(cleanImpact(j.impact) ? { impact: cleanImpact(j.impact) } : {}),
+        ...(excerpt ? { excerpt: true } : {}), ...(j.adTrimmed ? { adTrimmed: { from: +j.adTrimmed.from || 0, to: +j.adTrimmed.to || 0 } } : cutFrom ? { adTrimmed: { from: cutFrom, to: ad.length } } : {}) };
+      // A server from before the trace: the same code works it out here
+      if (!traceOf(o)) { delete o.trace; const rv = reviewText(o.text, { task, outLang, ad }); if (rv) { o.check = rv.check; o.trace = rv.trace; if (rv.impact) o.impact = rv.impact; } }
+      e.out[task] = o;
       e.lastTask = task; e.lang = outLang;
       saveTailor();
       if (!apps[id]?.status) setStatus(id, "Saved");
@@ -629,7 +786,31 @@ function onTailorClick(e) {
   const el = e.target.closest("[data-tl]"); if (!el || !tl) return;
   const k = el.dataset.tl;
   if (k === "close") closeTailor();
-  else if (k === "task") { flushTailor(); saveEdit(); tl.task = el.dataset.task; tl.error = ""; tl.pdfLost = 0; tlEntry(tl.id).lastTask = tl.task; saveTailor(); drawTailor(`[data-task="${tl.task}"]`); }
+  else if (k === "task") { flushTailor(); saveEdit(); tl.task = el.dataset.task; tl.error = ""; tl.pdfLost = 0; tl.plain = false; tl.plainMsg = ""; tlEntry(tl.id).lastTask = tl.task; saveTailor(); drawTailor(`[data-task="${tl.task}"]`); }
+  else if (k === "excerpt") {
+    // A long ad is cut at a paragraph here, in the ad box, so what is sent is what the person sees
+    const ta = $("tl-ad");
+    if (tl.adWarn === "long" && ta) { tl.adCutFrom = ta.value.trim().length; ta.value = trimmedAd(ta.value); saveField("ad", ta.value); }
+    tl.adOk = true; tl.adWarn = ""; generate();
+  }
+  else if (k === "sources") { tl.sources = !tl.sources; drawTailor('[data-tl="sources"]'); }
+  else if (k === "keep") {
+    const o = tlEntry(tl.id).out[tl.task], key = el.dataset.k; if (!o || !key) return;
+    const keep = new Set(Array.isArray(o.keep) ? o.keep.map(String) : []);
+    if (keep.has(key)) keep.delete(key); else keep.add(key);
+    o.keep = [...keep]; if (!o.keep.length) delete o.keep; saveTailor();
+    drawTailor(`[data-tl="keep"][data-k="${CSS.escape(key)}"]`);
+  }
+  else if (k === "plain") {
+    tl.plain = !tl.plain; tl.plainMsg = "";
+    drawTailor(tl.plain ? "#tl-plain" : '[data-tl="plain"]');
+    if (tl.plain) $("tl-plain")?.select();
+  }
+  else if (k === "selectall") { const ta = $("tl-plain"); if (ta) { ta.focus(); ta.select(); } }
+  else if (k === "txt") {
+    const o = tlEntry(tl.id).out[tl.task]; if (!o) return;
+    download(new Blob([plainText(sendText(o)) + "\n"], { type: "text/plain;charset=utf-8" }), docName(o, "txt"));
+  }
   else if (k === "edit") { tl.editing = true; tl.editDraft = null; tl.pdfLost = 0; drawTailor("#tl-edit"); }
   else if (k === "save") { flushTailor(); saveEdit(); drawTailor(".fc"); }
   else if (k === "cancel") { tl.editing = false; tl.editDraft = null; drawTailor('[data-tl="edit"]'); }
@@ -637,7 +818,7 @@ function onTailorClick(e) {
     const o = tlEntry(tl.id).out[tl.task]; if (!o) return;
     const name = cvName(tlEntry(tl.id).out.cv?.text || "");
     const title = tl.task === "cv" ? `CV – ${name || tl.title}` : `${o.lang === "en" ? "Cover letter" : "Personligt brev"} – ${tl.employer || tl.title}`;
-    const pdf = pdfBlob(o.text, { title, author: name, lang: o.lang, letter: tl.task === "letter" });
+    const pdf = pdfBlob(sendText(o), { title, author: name, lang: o.lang, letter: tl.task === "letter" });
     download(pdf.blob, docName(o, "pdf"));
     if (pdf.lost !== tl.pdfLost) { tl.pdfLost = pdf.lost; drawTailor('[data-tl="pdf"]'); }
   }
@@ -651,11 +832,15 @@ function onTailorClick(e) {
     const art = document.querySelector(`#list article.role[data-ad="${CSS.escape(tl.id)}"]`)?.closest("article.co"); if (art) rerenderCompany(art.dataset.id);
     drawTailor(".tl-close");
   }
-  else if (k === "copy") { const o = tlEntry(tl.id).out[tl.task]; if (o) copyText(plainText(o.text), el); }
+  else if (k === "copy") {
+    const o = tlEntry(tl.id).out[tl.task]; if (!o) return;
+    // When the browser won't let the page copy, the whole text is shown, selected, to copy by hand
+    copyText(plainText(sendText(o)), el).then(ok => { if (!ok && tl) { tl.plain = true; tl.plainMsg = "pt.copyfail"; drawTailor("#tl-plain"); $("tl-plain")?.select(); } });
+  }
   else if (k === "word") {
     const o = tlEntry(tl.id).out[tl.task]; if (!o) return;
     const title = DOC_TASKS.has(tl.task) ? "" : `${t("tl.t." + tl.task)}: ${tl.title}${tl.employer ? `, ${tl.employer}` : ""}`;
-    download(docxBlob(o.text, title, o.lang), docName(o, "docx"));
+    download(docxBlob(sendText(o), title, o.lang), docName(o, "docx"));
   }
 }
 const tlTimers = {};
@@ -673,6 +858,7 @@ function onTailorInput(e) {
   const el = e.target, k = el.dataset.tl;
   if (k === "edit-text" && tl) { tl.editDraft = el.value; return; }
   if (!["cv", "code", "ad", "extra", "lang"].includes(k) || !tl) return;
+  if (k === "ad") { tl.adOk = false; tl.adCutFrom = 0; }   // a changed ad is looked at again before it's sent
   clearTimeout(tlTimers[k]);
   tlTimers[k] = setTimeout(() => saveField(k, el.value), k === "lang" ? 0 : 400);
 }
