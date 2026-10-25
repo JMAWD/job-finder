@@ -29,10 +29,10 @@ const MENTOR = {
     { title: "Production Manager", tier: "pivot", directions: ["change", "lead"], match: 40, why: "You know the shop floor well.", gaps: ["Budget responsibility"], gap_months: 24, search: "produktionschef tillverkning" },
   ],
   courses: [
-    course("AIAG-VDA FMEA (2019 method)", "Classroom, 2 days", "class", { hours: 16, days: 2, cost_sek: 14000, ramp_months: 0 }, ["deeper", "advise"], { deeper: 10, advise: 9 }, "FMEA", "Kvalitetsingenjör", "Brings your strongest skill up to the current method."),
+    course("AIAG-VDA FMEA (2019 method)", "VDA QMC", "class", { hours: 16, days: 2, cost_sek: 14000, ramp_months: 0 }, ["deeper", "advise"], { deeper: 10, advise: 9 }, "FMEA", "Kvalitetsingenjör", "Brings your strongest skill up to the current method."),
     course("Python for engineers", "Self-paced online", "self", { hours: 40, cost_sek: 0, ramp_months: 2 }, ["change", "deeper"], { change: 9, deeper: 5 }, "Python", "Kvalitetsingenjör", "Lets you analyse test data yourself."),
-    course("UGL leadership course", "Residential course, 5 days", "class", { hours: 40, days: 5, cost_sek: 26000, ramp_months: 3 }, ["lead"], { lead: 10 }, "ledarskap", "Quality Manager", "The usual first leadership course in Swedish industry."),
-    course("ISO 26262 Functional Safety Engineer", "Course, 4 days plus exam", "class", { hours: 110, days: 4, cost_sek: 35000, ramp_months: 24 }, ["deeper"], { deeper: 7 }, "ISO 26262", "Functional Safety Engineer", "The entry ticket for functional safety roles."),
+    course("UGL leadership course", "Försvarshögskolan", "class", { hours: 40, days: 5, cost_sek: 26000, ramp_months: 3 }, ["lead"], { lead: 10 }, "ledarskap", "Quality Manager", "The usual first leadership course in Swedish industry."),
+    course("ISO 26262 Functional Safety Engineer", "TÜV SÜD", "class", { hours: 110, days: 4, cost_sek: 35000, ramp_months: 24 }, ["deeper"], { deeper: 7 }, "ISO 26262", "Functional Safety Engineer", "The entry ticket for functional safety roles."),
     course("Software testing, university course", "University, 25% pace, one term", "program", { hours: 200, months: 5, hours_per_week: 10, cost_sek: 0, ramp_months: 0 }, ["change"], { change: 7 }, "testning", "Software Test Engineer", "Free and gives formal credits."),
     course("AI tools for quality work", "Self-paced online", "self", { hours: 6, cost_sek: 0, ramp_months: 0 }, ["deeper", "lead", "change", "advise"], 6, "AI", "Kvalitetsingenjör", "A few hours is enough to start saving time."),
     course("Train the trainer", "Classroom, 2 days", "class", { hours: 16, days: 2, cost_sek: 11000, ramp_months: 1 }, ["advise"], { advise: 8 }, "utbildning", "Kvalitetsingenjör", "Helps you teach what you know."),
