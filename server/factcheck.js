@@ -617,10 +617,10 @@ function traceText(output, { cv = "", ad = "", title = "", employer = "", extra 
    same thing in other words, and the ad's word is used for it) or by claiming what the CV doesn't have. Only the first is
    an improvement, so the gain is split: terms the CV backs up are counted, terms only the ad has are listed apart and never
    counted. The ad's terms are its names (FMEA, SAP, ISO), the words of its title, and longer words it uses at least twice. */
-function keywordImpact(output, { cv = "", ad = "", title = "", employer = "", extra = "", lang = "" } = {}) {
-  const outLang = lang || guessLangOf(output);
-  const ordinary = guessLangOf(ad) === outLang && guessLangOf(cv) === outLang;   // across languages only names can be counted
-  const empTok = new Set(tokens(employer)), compact = s => fold(s).replace(/[^a-z0-9+#]/g, "");
+// The ad's key terms, and a test for whether a text has one (the same word, or the same word with another ending)
+const compactOf = s => fold(s).replace(/[^a-z0-9+#]/g, "");
+function adTermList(ad, { title = "", employer = "", ordinary = true } = {}) {
+  const empTok = new Set(tokens(employer)), compact = compactOf;
   const adText = String(ad || "").split(/\r?\n/).filter(l => !capsHeading(l)).join("\n");
   // The short lines of the ad's lists ("- Python", "- Erfarenhet av FMEA") are usually its requirements
   const listLine = l => /^\s*(?:[-*•+]|\d+[.)])\s/.test(l) && l.trim().split(/\s+/).length <= 6;
@@ -634,14 +634,19 @@ function keywordImpact(output, { cv = "", ad = "", title = "", employer = "", ex
     const t = terms.get(key) || { shown: prod || named || from === "list" ? raw : raw.toLowerCase(), w, prod, n: 0, keep: false };
     t.n++; t.keep = t.keep || Boolean(from) || named; terms.set(key, t);
   }
-  const list = [...terms.values()].filter(t => t.prod || t.n >= 2 || t.keep)
+  return [...terms.values()].filter(t => t.prod || t.n >= 2 || t.keep)
     .sort((a, b) => (b.prod - a.prod) || (b.keep - a.keep) || (b.n - a.n)).slice(0, 40);
-  // Is the term written in the text, as an ATS would see it: the same word or the same word with another ending
-  const presence = text => {
-    const ws = [...new Set(tokens(text))], whole = compact(text);
-    return t => t.prod ? (ws.includes(t.w) || (compact(t.shown).length >= 3 && whole.includes(compact(t.shown))))
-      : ws.some(s => s === t.w || sameWord(s, t.w) || (enStem(t.w).length >= 4 && enStem(s) === enStem(t.w)));
-  };
+}
+// Is the term written in the text, as an ATS would see it: the same word or the same word with another ending
+const presence = text => {
+  const ws = [...new Set(tokens(text))], whole = compactOf(text);
+  return t => t.prod ? (ws.includes(t.w) || (compactOf(t.shown).length >= 3 && whole.includes(compactOf(t.shown))))
+    : ws.some(s => s === t.w || sameWord(s, t.w) || (enStem(t.w).length >= 4 && enStem(s) === enStem(t.w)));
+};
+function keywordImpact(output, { cv = "", ad = "", title = "", employer = "", extra = "", lang = "" } = {}) {
+  const outLang = lang || guessLangOf(output);
+  const ordinary = guessLangOf(ad) === outLang && guessLangOf(cv) === outLang;   // across languages only names can be counted
+  const list = adTermList(ad, { title, employer, ordinary });
   const ownText = [cv, extra].join("\n"), inCv = presence(ownText), inOut = presence(output);
   const cvWords = new Set(tokens(ownText)), cvText = fold(ownText);
   const before = list.filter(inCv), gained = list.filter(t => inOut(t) && !inCv(t)), lost = before.filter(t => !inOut(t));
@@ -649,6 +654,15 @@ function keywordImpact(output, { cv = "", ad = "", title = "", employer = "", ex
   const names = a => a.slice(0, 12).map(t => t.shown.slice(0, 40));
   return { terms: list.length, before: before.length, after: before.length - lost.length + supported.length,
     gained: names(supported), unsupported: names(unsupported), lost: names(lost) };
+}
+
+// The ad's key terms that the CV (and what the person added) doesn't use, for the checklist in step 2: the person ticks
+// only what is true for them and says how in their own words, and from then on it counts as theirs. Ordinary words are
+// only compared when the CV and the ad are in the same language.
+function missingTerms(cv, ad, { title = "", employer = "", max = 12 } = {}) {
+  const ordinary = guessLangOf(ad) === guessLangOf(cv);
+  const inCv = presence(cv), cvWords = new Set(tokens(cv)), cvText = fold(cv);
+  return adTermList(ad, { title, employer, ordinary }).filter(t => !inCv(t) && !backed(t.w, cvWords, cvText)).slice(0, max).map(t => t.shown.slice(0, 40));
 }
 
 /* ---------- The ad text itself ----------
@@ -699,5 +713,5 @@ function licenceGap(cv, ad) {
   if (!m || LICENCE_CV.test(String(cv || ""))) return null;
   return { asked: m[1] };
 }
-module.exports = { factCheck, checkAll, review, traceText, lineParts, keywordImpact, cleanAd, trimAd, licenceGap,
+module.exports = { factCheck, checkAll, review, traceText, lineParts, keywordImpact, missingTerms, cleanAd, trimAd, licenceGap,
   _test: { inSource, titleInSource, tokens, isTitle, isNameLike, isGeneric, degreeLevels, claimCheck, figures, isProductName } };

@@ -169,6 +169,13 @@ async def main():
                   and await pg.evaluate("document.querySelector('.tl-out').compareDocumentPosition(document.querySelector('.fc')) & 4"), await fc.all_inner_texts())
             await fsum.locator('[data-tl=tochecks]').click()
             check('the line links down to the checks', await pg.evaluate("document.activeElement.id") == 'tl-checks')
+            # The ad's words the CV doesn't use, to pick only if true and say how in your own words
+            terms = await dlg.locator('.tl-terms [data-tl=term]').all_inner_texts()
+            check('words from the ad the CV lacks are offered to pick, place names left out', 'Python' in terms and 'Göteborg' not in terms, terms)
+            await dlg.locator('.tl-terms [data-tl=term][data-w=Python]').click()
+            check('picking one starts a line to say how, with the cursor there', (await pg.input_value('#tl-facts')).endswith('- Python: ') and await pg.evaluate("document.activeElement.id") == 'tl-facts'
+                  and await dlg.locator('.tl-terms [data-w=Python]').get_attribute('aria-pressed') == 'true')
+            await pg.fill('#tl-facts', ''); await pg.wait_for_timeout(500)
             report = await note.locator('a[data-fb=ai]').get_attribute('href')
             check('the note links to a report about the answer', '%5BAI%5D' in report and 'Part%3A%20Match%20check' in report, report)
             sent = last_ai()['body']

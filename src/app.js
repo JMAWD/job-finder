@@ -38,7 +38,19 @@ const I18N = {
   "showonly": ["Show only", "Visa bara"], "f.all": ["Ads with every keyword", "Annonser med alla sökord"], "f.new": ["New since last search", "Nya sedan senaste sökningen"], "f.direct": ["Employers hiring directly", "Arbetsgivare som anställer direkt"], "f.hidden": ["Show employers I've hidden", "Visa dolda arbetsgivare"],
   "expand": ["Expand all", "Öppna alla"], "collapse": ["Collapse all", "Stäng alla"], "expand.confirm": ["Open all {n}? Click again", "Öppna alla {n}? Klicka igen"], "export": ["Export CSV", "Exportera CSV"], "export.xlsx": ["Excel file", "Excel-fil"],
   "count.hidden": ["{n} roles hidden by {f}", "{n} jobb dolda av {f}"], "count.clear": ["Clear filters", "Rensa filter"],
-  "edit.search": ["Edit search", "Ändra sökningen"], "filters.btn": ["Filter and sort", "Filtrera och sortera"],
+  "edit.search": ["Edit search", "Ändra sökningen"],
+  "next.label": ["Next:", "Nästa steg:"], "next.mail": ["Email {name}", "Mejla {name}"], "next.copy": ["Copy a message to send", "Kopiera ett meddelande"],
+  "next.applied": ["If you haven't heard back in a week or two, follow up. The card at the top will remind you.", "Har du inte hört något om en vecka eller två, hör av dig. Kortet överst påminner dig."],
+  "next.applied.body": ["Hi{name},\n\nI applied for the {role} role and wanted to ask how the recruitment is going. I'm still very interested and happy to tell you more.\n\nKind regards", "Hej{name}!\n\nJag sökte tjänsten som {role} och ville höra hur rekryteringen går. Jag är fortfarande mycket intresserad och berättar gärna mer.\n\nVänliga hälsningar"],
+  "next.interview": ["Prepare with likely questions and answers from your own CV.", "Förbered dig med troliga frågor och svar från ditt eget CV."], "next.prep": ["Interview prep", "Intervjuförberedelse"],
+  "next.rejected": ["Ask what made the difference. A short, friendly email often gets an answer, and it helps with the next one.", "Fråga vad som avgjorde. Ett kort och vänligt mejl får ofta svar, och det hjälper inför nästa ansökan."],
+  "next.fb.subject": ["Feedback on my application for {role}", "Återkoppling på min ansökan till {role}"],
+  "next.rejected.body": ["Hi{name},\n\nThank you for letting me know about the {role} role. If you have a moment, could you tell me briefly what made the difference, or what I could do better next time? It would help me a lot.\n\nKind regards", "Hej{name}!\n\nTack för beskedet om tjänsten som {role}. Har du möjlighet att kort berätta vad som avgjorde, eller vad jag kan göra bättre till nästa gång? Det skulle hjälpa mig mycket.\n\nVänliga hälsningar"],
+  "next.offer": ["Congratulations! Before you say yes, get the salary, start date, hours and kind of employment in writing.", "Grattis! Innan du tackar ja, få lön, startdatum, arbetstid och anställningsform skriftligt."],
+  "fn.title": ["How it's going", "Så går det"], "fn.sent": ["applications sent", "skickade ansökningar"], "fn.talks": ["interviews or offers", "intervjuer eller erbjudanden"],
+  "fn.offers": ["offers", "erbjudanden"], "fn.no": ["said no", "nej"], "fn.waiting": ["waiting to hear", "väntar på svar"],
+  "fn.line": ["{talks} of your {sent} applications have reached an interview or an offer.", "{talks} av dina {sent} ansökningar har lett till intervju eller erbjudande."],
+  "fn.line0": ["None of your {sent} applications has reached an interview yet. Most job searches take many applications, so this is common.", "Ingen av dina {sent} ansökningar har lett till intervju ännu. De flesta behöver söka många jobb, så det är vanligt."], "filters.btn": ["Filter and sort", "Filtrera och sortera"],
   "how": ["How this works", "Så fungerar det"],
   "foot.sources": ["<b>Sources.</b> Sweden: live ads on Platsbanken (Arbetsförmedlingen) and other Swedish job sites collected by JobTech, such as The Hub and Ledigajobb. Each search goes straight from your browser to those open services. More countries can be added later.",
     "<b>Källor.</b> Sverige: aktuella annonser i Platsbanken (Arbetsförmedlingen) och från andra svenska jobbsajter som JobTech samlar in, till exempel The Hub och Ledigajobb. Varje sökning går direkt från din webbläsare till de öppna tjänsterna. Fler länder kan läggas till senare."],
@@ -91,6 +103,7 @@ const I18N = {
   "tl.extra.ph": ["e.g. keep it short, mention that I can start in March", "t.ex. håll det kort, nämn att jag kan börja i mars"],
   // What the CV leaves out: written under an answer, used like the CV for this job, and the task run again
   "tl.more": ["Anything your CV leaves out?", "Något som ditt CV saknar?"],
+  "terms.hint": ["Words from the ad that your CV doesn't use. Pick one only if it's true for you, then say how below, for example which job it was in. Only what you write there counts as yours.", "Ord från annonsen som ditt CV inte använder. Välj ett bara om det stämmer för dig, och skriv sedan hur nedanför, till exempel i vilket jobb. Bara det du skriver där räknas som ditt."],
   "tl.more.hint": ["Something true you forgot, like a course, a tool you used or a task in one of your jobs. Say which job it belongs to. It's used like your CV for this job only, and the fact check counts it as yours, so write only what you could talk about in an interview.",
     "Något som stämmer men som du glömt, till exempel en kurs, ett verktyg du använt eller en uppgift i ett av dina jobb. Skriv vilket jobb det hör till. Det används som ditt CV, bara för det här jobbet, och faktakontrollen räknar det som ditt, så skriv bara det du kan berätta om på en intervju."],
   "tl.more.ph": ["e.g. In my last job I also trained new staff. Forklift licence, 2019.", "t.ex. I mitt senaste jobb lärde jag också upp nyanställda. Truckkort, 2019."],
@@ -1345,6 +1358,22 @@ function statusSelect(id, s) {
   return `<select data-role="status" data-ad="${esc(id)}" data-s="${esc(s)}" aria-label="${esc(t("status"))}"><option value="">${esc(t("notracked"))}</option>${STATUSES.map(x => `<option value="${x}"${x === s ? " selected" : ""}>${esc(t(x))}</option>`).join("")}</select>`;
 }
 const tailorBtn = id => ABOUT.tailor ? `<button class="btn sm tl-btn" type="button" data-tailor="${esc(id)}">${esc(t("tl.open"))}${tailorStore[id] && Object.keys(tailorStore[id].out || {}).length ? ' <span class="tl-dot" aria-hidden="true">●</span>' : ""}</button>` : "";
+// One next step for where an application stands: follow up after applying, prepare for an interview, ask for feedback
+// after a no. A message to the contact named in the ad is written out, ready to send from the person's own email.
+function nextHtml(id, status, sn = {}) {
+  if (!["Applied", "Interview", "Rejected", "Offer"].includes(status)) return "";
+  const who = followUpContact(sn), first = (who?.n || "").trim().split(/\s+/)[0] || "", role = sn.title || t("role");
+  const mail = (subjectKey, bodyKey) => {
+    const subject = t(subjectKey, { role }), body = t(bodyKey, { name: first ? " " + first : "", role });
+    return who?.e ? `<a class="btn ghost sm" href="mailto:${esc(who.e)}?subject=${esc(encodeURIComponent(subject))}&amp;body=${esc(encodeURIComponent(body))}">${esc(t("next.mail", { name: who.n }))}</a>`
+      : `<button class="btn ghost sm" type="button" data-act="copy" data-copy="${esc(body)}">${esc(t("next.copy"))}</button>`;
+  };
+  const step = status === "Applied" ? [t("next.applied"), mail("wb.subject", "next.applied.body")]
+    : status === "Interview" ? [t("next.interview"), ABOUT.tailor ? `<button class="btn ghost sm" type="button" data-tailor="${esc(id)}" data-task="interview">${esc(t("next.prep"))}</button>` : ""]
+    : status === "Rejected" ? [t("next.rejected"), mail("next.fb.subject", "next.rejected.body")]
+    : [t("next.offer"), ""];
+  return `<div class="next-step"><p><b>${esc(t("next.label"))}</b> ${esc(step[0])}</p>${step[1] ? `<div class="row">${step[1]}</div>` : ""}</div>`;
+}
 function noteHtml(id, title, note) {
   return `<textarea data-role="note" data-ad="${esc(id)}" aria-label="${esc(t("note.aria", { title }))}" placeholder="${esc(t("note.ph"))}">${esc(note || "")}</textarea><span class="saved" data-saved="${esc(id)}"></span>`;
 }
@@ -1368,7 +1397,7 @@ function roleHtml(c, a) {
       <div class="row">${statusSelect(a.id, app.status || "")}
         ${applyHref ? `<a class="btn ghost sm" href="${esc(applyHref)}" target="_blank" rel="noopener">${esc(t("howapply"))}</a>` : ""}
         <a class="btn ghost sm" href="${esc(a.url || adUrl(a.id))}" target="_blank" rel="noopener">${esc(t("readad"))}</a>${translateBtn(a.id)}${tailorBtn(a.id)}</div>
-      ${app.status || app.note ? noteHtml(a.id, a.title, app.note) : ""}
+      ${app.status || app.note ? noteHtml(a.id, a.title, app.note) : ""}${app.status ? nextHtml(a.id, app.status, app.snap || snapOf(a)) : ""}
       ${bkPromptHtml(a.id)}
     </div>
     ${contacts.length ? `<div class="role-contact">${esc(t("contactin"))} ${contacts.map(p => { const li = p.li || ln[contactKey(p)]; const role = p.t ? `, ${esc(p.t.toLowerCase())}` : p.kind === "recruiter" ? `, ${esc(t("recruiter.lc"))}` : ""; return `${li ? `<a href="${esc(li)}" target="_blank" rel="noopener"><b>${esc(p.n)}</b></a>` : `<b>${esc(p.n)}</b>`}${role}`; }).join("; ")}</div>` : ""}
@@ -1522,6 +1551,17 @@ function backupHtml() {
     <p>${esc(at ? t("bk.last", { date: fmtDate(at) }) : t("bk.never"))}${at && changed ? " " + esc(tn(changed, "bk.since1", "bk.sinceN")) : ""}</p>${msg}
   </section>`;
 }
+// How the applications are going: how many were sent, and how many have reached an interview or an offer. Plain counts of
+// the person's own statuses, worked out here; no comparison with anyone else.
+function funnelHtml(entries) {
+  const n = s => entries.filter(([, x]) => x.status === s).length;
+  const sent = entries.filter(([, x]) => SENT.has(x.status)).length, talks = n("Interview") + n("Offer");
+  if (!sent) return "";
+  const tile = (v, k) => `<div class="stat"><b>${v}</b><span>${esc(t(k))}</span></div>`;
+  return `<section class="funnel" aria-labelledby="funnel-h"><h3 id="funnel-h">${esc(t("fn.title"))}</h3>
+    <div class="stats">${tile(sent, "fn.sent")}${tile(talks, "fn.talks")}${tile(n("Offer"), "fn.offers")}${tile(n("Rejected"), "fn.no")}${tile(n("Applied"), "fn.waiting")}</div>
+    <p class="tl-hint">${esc(t(talks ? "fn.line" : "fn.line0", { talks, sent }))}</p></section>`;
+}
 function renderApps() {
   const entries = Object.entries(apps).filter(([, x]) => x.status);
   const order = ["Interview", "Offer", "Applied", "Saved", "Rejected", "Not interested"];
@@ -1535,10 +1575,10 @@ function renderApps() {
         <div class="role-meta"><b>${esc(sn.company || "")}</b>${sn.muni ? `<span>${esc(sn.muni)}</span>` : ""}${sn.deadline ? deadlineHtml(sn.deadline, ["Rejected", "Not interested"].includes(s)) : ""}${x.appliedAt && SENT.has(s) ? `<span>${esc(t("app.applied", { date: fmtDate(localDay(new Date(x.appliedAt))) }))}</span>` : ""}${x.followedUp && SENT.has(s) ? `<span>${esc(t("app.followed", { date: fmtDate(x.followedUp) }))}</span>` : ""}<span>${esc(t("updated", { date: fmtDate(localDay(new Date(x.updatedAt || Date.now()))) }))}</span>${live ? "" : `<span>${esc(t("notlive"))}</span>`}</div>
         ${(sn.contacts || []).length ? `<div class="role-contact">${esc(t("contact"))} ${sn.contacts.map(p => `<b>${esc(p.n)}</b>${p.e ? ` <a href="mailto:${esc(p.e)}">${esc(p.e)}</a>` : ""}`).join("; ")}</div>` : ""}
         <div class="track"><div class="row">${statusSelect(id, s)}${sn.apply ? `<a class="btn ghost sm" href="${esc(sn.apply)}" target="_blank" rel="noopener">${esc(t("howapply"))}</a>` : ""}${tailorBtn(id)}</div>
-          ${noteHtml(id, sn.title || t("role"), x.note)}${bkPromptHtml(id)}</div>
+          ${noteHtml(id, sn.title || t("role"), x.note)}${nextHtml(id, s, sn)}${bkPromptHtml(id)}</div>
       </div>`; }).join("")}</div></div>`;
   }).join("") : `<div class="empty"><strong>${esc(t("apps.empty.title"))}</strong>${esc(t("apps.empty.text"))}</div>`;
-  $("apps").innerHTML = backupHtml() + groups;
+  $("apps").innerHTML = backupHtml() + funnelHtml(entries) + groups;
 }
 // Moving to Applied from Saved, Not interested or no status starts a new application, so its date and any follow-up are reset.
 // Moving back to Applied from Interview, Offer or Rejected keeps the original date.
@@ -1620,6 +1660,7 @@ function restoreBackup(file) {
 $("apps").addEventListener("click", e => {
   if (e.target.id === "bk-down") downloadBackup();
   else if (e.target.id === "bk-up") $("bk-file").click();
+  else { const b = e.target.closest('[data-act="copy"]'); if (b) copyText(b.dataset.copy, b); }
 });
 $("apps").addEventListener("change", e => { if (e.target.id === "bk-file" && e.target.files[0]) { restoreBackup(e.target.files[0]); e.target.value = ""; } });
 

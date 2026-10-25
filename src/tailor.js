@@ -687,6 +687,19 @@ function factsState(out, f, task) {
 const wouldLose = o => Boolean(o && (o.edited || (Array.isArray(o.keep) && o.keep.length)));
 const loseHtml = () => `<div class="tl-adwarn tl-lose" role="alert"><p>${esc(t("tl.lose"))}</p>
     <div class="row"><button class="btn sm" type="button" data-tl="replace">${esc(t("tl.lose.go"))}</button><button class="btn ghost sm" type="button" data-tl="noreplace">${esc(t("tl.lose.no"))}</button></div></div>`;
+// The ad's key terms your CV doesn't use, as a checklist. Ticking one only adds a line to the box below, for you to say how
+// it's true in your own words; nothing counts as yours until it's written there. The keyword match can then go up honestly.
+// Place names are left out, since where the job is says nothing about you.
+const PLACE_NAMES = new Set(MUNIS.flatMap(([m, c]) => [fold(m), fold(c)]));
+function termsHtml(out, e) {
+  const m = checks(), ad = e.ad ?? tl.adText ?? "";
+  if (!out || !m?.missingTerms || !ad) return "";
+  const facts = fold(e.facts || ""), list = m.missingTerms(store.get("jf-cv", ""), ad, { title: tl.title, employer: tl.employer, max: 16 })
+    .filter(w => !PLACE_NAMES.has(fold(w))).slice(0, 12);
+  if (!list.length) return "";
+  return `<div class="tl-terms"><p class="tl-hint" id="tl-terms-h">${esc(t("terms.hint"))}</p>
+    <div class="row" role="group" aria-labelledby="tl-terms-h">${list.map(w => { const on = facts.includes(fold(w)); return `<button class="chip-btn${on ? " on" : ""}" type="button" data-tl="term" data-w="${esc(w)}" aria-pressed="${on}">${esc(w)}</button>`; }).join("")}</div></div>`;
+}
 function factsHtml(out, e, task) {
   const f = String(e.facts || "").trim();
   if (!out && !f && !tl.factsMsg) return "";
@@ -694,6 +707,7 @@ function factsHtml(out, e, task) {
   return `<section class="tl-more" aria-labelledby="tl-more-l">
       <label class="tl-label" id="tl-more-l" for="tl-facts">${esc(t("tl.more"))}</label>
       <p class="tl-hint" id="tl-facts-hint">${esc(t("tl.more.hint"))}</p>
+      ${termsHtml(out, e)}
       <textarea id="tl-facts" data-tl="facts" rows="3" maxlength="${MAX_FACTS}" aria-describedby="tl-facts-hint tl-facts-state" placeholder="${esc(t("tl.more.ph"))}">${esc(e.facts || "")}</textarea>
       <p class="tl-hint${state === "tl.more.used" ? " tl-ok" : ""}" id="tl-facts-state"${state ? "" : " hidden"}>${state ? esc(t(state)) : ""}</p>
       <div class="row">${out ? `<button class="btn sm" type="button" data-tl="regen"${tl.busy ? " disabled" : ""}>${esc(t(DOC_TASKS.has(task) ? "tl.more.go.doc" : "tl.more.go"))}</button>` : ""}<button class="btn ghost sm" type="button" data-tl="tocv">${esc(t("tl.more.tocv"))}</button></div>
@@ -912,6 +926,14 @@ function onTailorClick(e) {
     download(pdf.blob, docName(o, "pdf"));
     if (pdf.lost !== tl.pdfLost) { tl.pdfLost = pdf.lost; drawTailor('[data-tl="pdf"]'); }
   }
+  else if (k === "term") {
+    // Adds "- term: " to what your CV leaves out, with the cursor after it, unless the term is there already
+    const ta = $("tl-facts"); if (!ta) return;
+    const w = el.dataset.w;
+    if (!fold(ta.value).includes(fold(w))) { ta.value = (ta.value.trim() ? ta.value.replace(/\s*$/, "\n") : "") + `- ${w}: `; saveField("facts", ta.value); }
+    ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+    el.classList.add("on"); el.setAttribute("aria-pressed", "true");
+  }
   else if (k === "tochecks") { e.preventDefault(); const c = $("tl-checks"); if (c) { c.scrollIntoView({ block: "start" }); c.focus({ preventScroll: true }); } }
   else if (k === "go" || k === "regen" || k === "restale") {
     flushTailor();
@@ -999,7 +1021,11 @@ function initTailor() {
     const back = id && document.querySelector(`${from === "apps" ? "#apps" : "#list"} [data-tailor="${CSS.escape(id)}"]`); if (back) back.focus();
   });
   for (const where of ["list", "apps"]) $(where).addEventListener("click", onTranslateClick);
-  for (const where of ["list", "apps"]) $(where).addEventListener("click", e => { const b = e.target.closest("[data-tailor]"); if (b) openTailor(b.dataset.tailor, where); });
+  for (const where of ["list", "apps"]) $(where).addEventListener("click", e => {
+    const b = e.target.closest("[data-tailor]"); if (!b) return;
+    if (b.dataset.task && TASKS.includes(b.dataset.task)) { tlEntry(b.dataset.tailor).lastTask = b.dataset.task; saveTailor(); }   // "Interview prep" opens on that task
+    openTailor(b.dataset.tailor, where);
+  });
   d.addEventListener("keydown", e => {
     const tab = e.target.closest?.(".tl-task"); if (!tab || !["ArrowLeft", "ArrowRight"].includes(e.key)) return;
     e.preventDefault(); const i = TASKS.indexOf(tab.dataset.task), next = TASKS[(i + (e.key === "ArrowRight" ? 1 : TASKS.length - 1)) % TASKS.length];

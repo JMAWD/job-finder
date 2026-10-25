@@ -200,6 +200,20 @@ async def beta_checks(browser, errors):
     await pg.locator('#apps select[data-ad="101"]').select_option('Applied')
     check('changes since the copy are counted', '1 change since your last copy.' in await pg.locator('#backup').inner_text(), await pg.locator('#backup').inner_text())
     check('focus follows the role when its status changes', await pg.evaluate("document.activeElement.dataset.ad") == '101')
+    # A next step for each status, and how the applications are going
+    nxt = pg.locator('#apps .app[data-ad="101"] .next-step')
+    href = await nxt.locator('a[href^="mailto:"]').get_attribute('href')
+    check('after applying: follow up, with a message to the contact in the ad', 'follow up' in await nxt.inner_text() and href.startswith('mailto:anna.svensson@acme.example?subject=My%20application')
+          and 'body=Hi%20Anna' in href, href)
+    fn = await pg.locator('#apps .funnel').inner_text()
+    check('how it is going, in plain counts', '1\napplications sent' in fn and 'None of your 1 applications has reached an interview yet' in fn, fn)
+    await pg.locator('#apps select[data-ad="101"]').select_option('Interview')
+    check('an interview offers interview prep', await pg.locator('#apps .app[data-ad="101"] .next-step [data-tailor="101"][data-task=interview]').count() == 1)
+    check('and counts as an interview', '1 of your 1 applications have reached an interview or an offer' in await pg.locator('#apps .funnel').inner_text())
+    await pg.locator('#apps select[data-ad="101"]').select_option('Rejected')
+    href = await pg.locator('#apps .app[data-ad="101"] .next-step a[href^="mailto:"]').get_attribute('href')
+    check('a no suggests asking for feedback, with the message written', 'subject=Feedback%20on%20my%20application' in href and 'what%20made%20the%20difference' in href, href)
+    await pg.locator('#apps select[data-ad="101"]').select_option('Applied')
 
     # Old results say so and offer a fresh search; a search that fails on top of them keeps them and says why
     await pg.click('#tab-res')
@@ -288,7 +302,10 @@ async def main():
         await ctx.route('https://links.api.jobtechdev.se/**', joblinks)
         await ctx.route('https://historical.api.jobtechdev.se/**', history)
         # Lets a test set the time of the last visit for the next load. The page saves the visit time when it unloads, so it can't be set before a reload.
-        await ctx.add_init_script("const v = sessionStorage.getItem('wb-visit'); if (v) { localStorage.setItem('jf-visit', v); sessionStorage.removeItem('wb-visit'); }")
+        # A visit time can also come in the address (?wbvisit=…), which doesn't depend on a storage write landing before the reload
+        await ctx.add_init_script("""const u = new URLSearchParams(location.search).get('wbvisit');
+          if (u) { localStorage.setItem('jf-visit', JSON.stringify(u)); history.replaceState(null, '', location.pathname + location.hash); }
+          const v = sessionStorage.getItem('wb-visit'); if (v) { localStorage.setItem('jf-visit', v); sessionStorage.removeItem('wb-visit'); }""")
         pg = await ctx.new_page(); errors = []; pg.on('pageerror', lambda e: errors.append(str(e)))
         await pg.goto(PAGE)
 
@@ -410,10 +427,7 @@ async def main():
         check('no greeting again on a reload, the one-off filter is gone', await wbx.is_hidden() and not await pg.locator('#f-new').is_checked())
 
         await pg.click('.lang button[data-lang=sv]')
-        await pg.evaluate("v => sessionStorage.setItem('wb-visit', JSON.stringify(v))", ago(1))
-        # Chromium commits storage writes a moment later; reading it back makes sure the reload below sees it
-        await pg.evaluate("sessionStorage.getItem('wb-visit')")
-        await pg.reload()
+        await pg.goto(PAGE + '?wbvisit=' + ago(1))
         await pg.wait_for_function(counted('Kollar'), timeout=15000)
         txt = await wbx.inner_text()
         check('Swedish welcome, nothing new since the search, followed-up role left out', txt.startswith('Välkommen tillbaka.') and 'Inget nytt i Platsbanken sedan tidigare i dag' in txt
