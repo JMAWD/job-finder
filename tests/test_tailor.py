@@ -198,7 +198,7 @@ async def main():
             check('the whole CV is shown: the name, both jobs and the education', await out.locator('h3').inner_text() == 'Eva Lindqvist'
                   and await out.locator('h5').count() == 3 and 'Svea Bearings' in await out.inner_text() and 'Chalmers' in await out.inner_text())
             check('the whole CV passes the fact check', await dlg.locator('.fc-ok').count() == 1)
-            row = dlg.locator('.tl-result .row').last
+            row = dlg.locator('.tl-result .row', has=pg.locator('[data-tl=pdf]'))
             check('PDF comes first, then Word, Edit text, Copy and Plain text', [await b.get_attribute('data-tl') for b in await row.locator('button').all()] == ['pdf', 'word', 'edit', 'copy', 'plain'])
             check('no reminder about brackets when there are none', await dlg.locator('.tl-fill').count() == 0)
             async with pg.expect_download() as dl: await dlg.locator('[data-tl=pdf]').click()
@@ -228,7 +228,7 @@ async def main():
             cv_paras = [x.text for x in docx.Document(str(cv_word)).paragraphs]
             check('the Word CV starts with the name, with no title of ours', d.suggested_filename == 'cv-eva-lindqvist-acme-robotics.docx' and cv_paras[0] == 'Eva Lindqvist'
                   and not any('Anpassat CV' in x or 'Tailored CV' in x for x in cv_paras) and 'Kvalitetsingenjör, Nordvik Automotive AB, Göteborg (2018 - nu)' in cv_paras, cv_paras[:4])
-            await dlg.locator('.tl-result .row').last.scroll_into_view_if_needed()
+            await dlg.locator('.tl-result .row', has=pg.locator('[data-tl=pdf]')).scroll_into_view_if_needed()
             await pg.screenshot(path=str(SHOTS / 'cv-en.png'))
 
             # Edit text: what the person changes is checked again in the browser, with the server's own code
@@ -272,7 +272,16 @@ async def main():
             check("the prompt carries Job Tailor's writing rules", all(x in last_ai()['body']['messages'][0]['content'] for x in ['Använd inte tankstreck', 'inga modeord', 'blir aldrig "ledde"'])
                   and all(x in ask for x in ['Vikta tjänsterna ojämnt', 'Ge aldrig alla tjänster lika många punkter', 'Börja inte varje punkt med ett verb i dåtid']))
             post(FAKE + '/mode', {'tone': True})
-            await dlg.locator('[data-tl=go]').click(); await pg.wait_for_selector('#tailor .fc-style', timeout=10000)
+            calls = last_ai()['count']
+            await dlg.locator('[data-tl=go]').click()
+            lose = dlg.locator('.tl-lose')
+            check('generating again over an edited text asks first, with focus on Replace it', await lose.count() == 1 and 'with your changes' in await lose.inner_text()
+                  and await lose.get_attribute('role') == 'alert' and await pg.evaluate("document.activeElement.dataset.tl") == 'replace' and last_ai()['count'] == calls)
+            await lose.locator('[data-tl=noreplace]').click()
+            check('Keep this text leaves the edited text alone, with focus back on Generate again', await dlg.locator('.tl-lose').count() == 0 and last_ai()['count'] == calls
+                  and '李' in await dlg.locator('.tl-out').inner_text() and await pg.evaluate("document.activeElement.dataset.tl") == 'go')
+            await dlg.locator('[data-tl=go]').click(); await dlg.locator('.tl-lose [data-tl=replace]').click()
+            await pg.wait_for_selector('#tailor .fc-style', timeout=10000)
             shown = await dlg.locator('.tl-out').inner_text()
             check('dashes the model used are taken out before the CV is shown', '\u2014' not in shown and '\u2013' not in shown and 'Kvalitetsingenjör, drivande' in shown, shown[:300])
             note = await dlg.locator('.fc-style').inner_text()
@@ -289,7 +298,8 @@ async def main():
 
             # An answer the model stopped mid-way is marked as cut off
             post(FAKE + '/mode', {'cut': True})
-            await dlg.locator('[data-tl=go]').click(); await pg.wait_for_selector('#tailor .tl-out >> nth=0', timeout=10000)
+            await dlg.locator('[data-tl=go]').click(); await dlg.locator('.tl-lose [data-tl=replace]').click()
+            await pg.wait_for_selector('#tailor .tl-out >> nth=0', timeout=10000)
             await pg.wait_for_function("!document.querySelector('#tailor [data-tl=go]').disabled", timeout=10000)
             check('a cut-off answer says the end may be missing', 'stopped before the end' in await dlg.locator('.tl-result').inner_text() and 'Chalmers' not in await dlg.locator('.tl-out').inner_text())
             check('the new answer replaced the edited one', await pg.evaluate("JSON.parse(localStorage.getItem('jf-tailor'))['101'].out.cv.edited") is None)
@@ -363,6 +373,62 @@ async def main():
             check('when the browser blocks copying, the text is shown and selected instead', "didn't let the page copy" in await dlg.locator('.tl-plain').inner_text()
                   and await pg.evaluate("document.activeElement.id") == 'tl-plain')
             await pg.evaluate("[navigator.clipboard.writeText, document.execCommand] = window.__clip")
+
+            # Something the CV leaves out: written under the answer, used like the CV for this job, and the CV tailored again
+            more = dlg.locator('.tl-more')
+            check('under the answer there is a box for what the CV leaves out, with a button to tailor again', await more.count() == 1
+                  and await more.locator('label').text_content() == 'Anything your CV leaves out?' and await more.locator('[data-tl=regen]').inner_text() == 'Tailor again with this'
+                  and await pg.evaluate("document.querySelector('.tl-out').compareDocumentPosition(document.querySelector('.tl-more')) & 4")
+                  and await dlg.locator('#tl-facts-state').is_hidden())
+            added = 'Skrev testskript i Python för provriggen på Nordvik Automotive AB.'
+            await dlg.locator('#tl-facts').fill(added)
+            check('typing says it is not used yet', await dlg.locator('#tl-facts-state').inner_text() == 'Not used yet. Press Tailor again with this.')
+            await more.locator('[data-tl=regen]').click()
+            await pg.wait_for_function("!document.querySelector('#tailor [data-tl=go]').disabled", timeout=10000)
+            ask = last_ai()['body']['messages'][1]['content']
+            check('the addition reaches the model at the end of the CV, with the note on how to use it', 'Tillagt av personen:\n' + added + '\n</cv>' in ask
+                  and 'räknas som en del av det' in ask and 'Gör inget eget avsnitt av dem' in ask, ask[-400:])
+            out_text = await dlg.locator('.tl-out').inner_text()
+            check('the new CV has it, and nothing is marked as not in the CV', added.rstrip('.') in out_text and await dlg.locator('.tl-out .src-u').count() == 0
+                  and await dlg.locator('.q-panel').count() == 0 and await dlg.locator('.fc-ok').count() == 1, out_text[:600])
+            smt = await dlg.locator('.src-sum').inner_text()
+            check('Python now counts as backed up in the keyword match', 'Not counted' not in smt, smt)
+            check('the box says the text used it, and keeps it for this job', await dlg.locator('#tl-facts-state').inner_text() == 'This text was written with what you added.'
+                  and await dlg.locator('#tl-facts').input_value() == added
+                  and await pg.evaluate("JSON.parse(localStorage.getItem('jf-tailor'))['101'].facts") == added
+                  and await pg.evaluate("JSON.parse(localStorage.getItem('jf-tailor'))['101'].out.cv.facts") == added)
+            check('the saved CV is unchanged', added not in await pg.evaluate("JSON.parse(localStorage.getItem('jf-cv'))"))
+            await dlg.locator('.tl-more').scroll_into_view_if_needed(); await pg.evaluate("document.querySelector('#tailor .tl-more').scrollIntoView({block: 'center'})")
+            await pg.screenshot(path=str(SHOTS / 'retailor-en.png'))
+            # Edited after reading: tailoring again asks first, inside the box
+            await dlg.locator('[data-tl=edit]').click(); await dlg.locator('#tl-edit').fill((await dlg.locator('#tl-edit').input_value()).replace('Utbildade kollegor', 'Lärde upp kollegor'))
+            await dlg.locator('[data-tl=save]').click()
+            await more.locator('[data-tl=regen]').click()
+            check('tailoring again over an edited text asks first, in the box', await dlg.locator('.tl-more .tl-lose').count() == 1)
+            await dlg.locator('.tl-lose [data-tl=noreplace]').click()
+            check('and Keep this text puts focus back on Tailor again', await pg.evaluate("document.activeElement.dataset.tl") == 'regen' and 'Lärde upp kollegor' in await dlg.locator('.tl-out').inner_text())
+            # Into the saved CV for every job and the Mentor, and out of the box so it isn't sent twice
+            await more.locator('[data-tl=tocv]').click()
+            cv_now = await pg.input_value('#tl-cv')
+            check('Add to my CV puts it at the end of the CV box and the saved CV', cv_now.endswith('\n\n' + added) and await pg.evaluate("JSON.parse(localStorage.getItem('jf-cv'))") == cv_now)
+            check('the box is emptied, with a note on where it went', await dlg.locator('#tl-facts').input_value() == '' and 'Added to the end of your CV' in await dlg.locator('.tl-more [role=status]').inner_text()
+                  and await pg.evaluate("JSON.parse(localStorage.getItem('jf-tailor'))['101'].facts") == '' and await pg.evaluate("document.activeElement.dataset.tl") == 'tocv')
+            await more.locator('[data-tl=tocv]').click()
+            check('an empty box says what to do', 'Write what your CV leaves out first' in await dlg.locator('.tl-more [role=alert]').inner_text())
+            # A server from before additions ignores them: the panel says so instead of claiming they were used
+            async def old_server(route):
+                r = await route.fetch(); j = await r.json(); j.pop('facts', None)
+                await route.fulfill(response=r, json=j)
+            await pg.route(SERVER + '/**', old_server)
+            await dlg.locator('#tl-facts').fill('Truckkort sedan 2019.')
+            await more.locator('[data-tl=regen]').click(); await dlg.locator('.tl-lose [data-tl=replace]').click()   # the text on screen was edited above
+            await pg.wait_for_function("!document.querySelector('#tailor [data-tl=go]').disabled", timeout=10000)
+            await pg.unroute(SERVER + '/**', old_server)
+            check('a server that ignored the addition is reported, and the text is not called up to date', "couldn't read what you added yet" in await dlg.locator('.tl-more [role=alert]').inner_text()
+                  and await dlg.locator('#tl-facts-state').inner_text() == 'Not used yet. Press Tailor again with this.'
+                  and await pg.evaluate("JSON.parse(localStorage.getItem('jf-tailor'))['101'].out.cv.facts") is None)
+            await dlg.locator('#tl-facts').fill('')
+            await pg.fill('#tl-cv', FULL_CV); await pg.dispatch_event('#tl-cv', 'input')
 
             await dlg.locator('[data-task=letter]').click()
             check('the letter shows its own check', await dlg.locator('.fc-ok').count() == 1 and await dlg.locator('.fc-warn').count() == 0)
@@ -503,6 +569,12 @@ async def main():
             check('panel fits a phone', await dlg.evaluate('d => d.scrollWidth <= d.clientWidth && d.getBoundingClientRect().width <= 375'))
             check('ad and CV stacked on a phone', await pg.evaluate("document.getElementById('tl-cv').getBoundingClientRect().top > document.getElementById('tl-ad').getBoundingClientRect().bottom"))
             await pg.screenshot(path=str(SHOTS / 'tailor-phone-sv.png'))
+            check('the box for what the CV leaves out is in Swedish and fits a phone', await dlg.locator('.tl-more label').text_content() == 'Något som ditt CV saknar?'
+                  and await dlg.locator('.tl-more [data-tl=regen]').count() == 1
+                  and await pg.evaluate("(() => { const b = document.querySelector('#tailor .tl-more').getBoundingClientRect(), d = document.getElementById('tailor').getBoundingClientRect(); return b.left >= d.left && b.right <= d.right; })()"))
+            if os.environ.get('SHOT_DIR'):
+                await pg.evaluate("document.querySelector('#tailor .tl-more').scrollIntoView({block: 'center'})")
+                await pg.screenshot(path=os.path.join(os.environ['SHOT_DIR'], 'more-phone-sv.png'))
             await pg.keyboard.press('Escape'); await pg.set_viewport_size({'width': 1280, 'height': 1000})
 
             # The backup carries the CV and the texts

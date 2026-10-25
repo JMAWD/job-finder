@@ -353,3 +353,64 @@ test("a tailored CV comes back with a sentence trace and the keyword match kept 
   assert.ok(log.sentences.u >= 1 && log.unsupported === 1);
   assert.doesNotMatch(logs.at(-1), /PPAP|Nordvik/);   // sizes and counts only
 });
+
+test("what the person adds that the CV leaves out is read as part of the CV, by the model and by every check", async () => {
+  const say = content => ({ status: 200, body: { choices: [{ message: { content }, finish_reason: "stop" }] } });
+  const cv = "Eva Lind\nGöteborg · eva.lind@example.com\n\nKvalitetsingenjör, Nordvik Automotive, 2018 – nu\n- Ledde FMEA och 8D för bromssystem\n- Utbildade kollegor i riskanalys\n\nUtbildning\nHögskoleingenjör, Chalmers, 2013 – 2016\n" + "Kunskaper: FMEA, 8D, Minitab. ".repeat(4);
+  const ad = "Acme söker en kvalitetsingenjör som kan FMEA, PPAP och ISO 9001 och vill arbeta nära inköp och konstruktion.";
+  const facts = "På Nordvik Automotive var jag även internrevisor för ISO 9001 från 2020.\nInnan dess arbetade jag som Kvalitetstekniker på Volvo Lastvagnar, 2016 – 2018, med PPAP mot leverantörer.";
+  const answer = "# Eva Lind\nGöteborg · eva.lind@example.com\n\n## Nyckelkompetenser\n- FMEA\n- ISO 9001\n- PPAP\n\n## Erfarenhet\n### Kvalitetsingenjör, Nordvik Automotive (2018 - nu)\n- Ledde FMEA och 8D för bromssystem\n- Internrevisor för ISO 9001 sedan 2020\n### Kvalitetstekniker, Volvo Lastvagnar (2016 - 2018)\n- PPAP mot leverantörer";
+  const job = { title: "Kvalitetsingenjör", employer: "Acme", text: ad };
+  // Without the additions, the forgotten job, ISO 9001 and PPAP are all flagged and a correction call follows
+  _test.usage.clear(); sent.length = 0; aiReplies = [say(answer), say(answer)];
+  const without = json(await call(ok({ task: "cv", cv, job })));
+  assert.equal(sent.length, 2);
+  assert.ok(without.check.issues.some(i => i.kind === "employer" && i.text === "Volvo Lastvagnar"), JSON.stringify(without.check));
+  assert.ok(without.check.issues.some(i => i.text === "ISO"));
+  // With them: the model gets them at the end of the CV with a note on how to use them, and nothing is flagged
+  _test.usage.clear(); sent.length = 0; aiReplies = [say(answer), say("x")];
+  const r = json(await call(ok({ task: "cv", cv, job, facts: "  " + facts + "\n" })));
+  aiReplies = null;
+  assert.equal(sent.length, 1, "nothing to correct");
+  const prompt = sent[0].body.messages[1].content;
+  assert.match(prompt, /<cv>[\s\S]*Chalmers[\s\S]*Tillagt av personen:\nPå Nordvik Automotive[\s\S]*Volvo Lastvagnar[\s\S]*<\/cv>/);
+  assert.match(prompt, /räknas som en del av det överallt där de här instruktionerna säger "CV:t"/);
+  assert.match(prompt, /Gör inget eget avsnitt av dem/, "a tailored CV is told where the additions go");
+  assert.deepEqual(r.check, { ok: true, issues: [] });
+  assert.equal(r.facts, true, "the reply says the additions were read");
+  assert.equal(without.facts, undefined);
+  assert.ok(!r.trace.includes("u"), r.trace);
+  assert.deepEqual(r.impact.unsupported, []);
+  assert.equal(JSON.parse(logs.at(-1)).factsChars, facts.length);
+  assert.doesNotMatch(logs.at(-1), /Volvo|internrevisor/, "sizes only, never the words");
+  // The letter and the other tasks get the note too, without the CV's placement rule; English has its own wording
+  _test.usage.clear(); sent.length = 0; aiReply = say("ok");
+  await call(ok({ task: "letter", lang: "en", cv, job, facts }));
+  const letter = sent[0].body.messages[1].content;
+  assert.match(letter, /Added by the person:\nPå Nordvik/);
+  assert.match(letter, /count as part of it everywhere these instructions say "the CV"/);
+  assert.doesNotMatch(letter, /Don't make a section of its own/);
+  // A correction call, when one is needed, sees the additions as part of the CV too
+  _test.usage.clear(); sent.length = 0; aiReplies = [say(answer + "\n- Arbetade med Six Sigma Black Belt"), say(answer)];
+  const fixedOne = json(await call(ok({ task: "cv", cv, job, facts })));
+  aiReplies = null;
+  assert.equal(sent.length, 2);
+  assert.match(sent[1].body.messages[1].content, /<cv>[\s\S]*Tillagt av personen:\nPå Nordvik[\s\S]*<\/cv>/);
+  assert.equal(fixedOne.fixed > 0, true, JSON.stringify(fixedOne));
+  // Capped in length, left out when empty, and never sent with the Mentor or a translation
+  _test.usage.clear(); sent.length = 0; aiReply = say("ok");
+  await call(ok({ task: "match", cv, job, facts: "Ö".repeat(5000) }));
+  assert.equal((sent[0].body.messages[1].content.match(/Ö/g) || []).length, 3000);
+  _test.usage.clear(); sent.length = 0;
+  await call(ok({ task: "match", cv, job, facts: "   " }));
+  assert.doesNotMatch(sent[0].body.messages[1].content, /Tillagt av personen/);
+  assert.equal(JSON.parse(logs.at(-1)).factsChars, undefined);
+  _test.usage.clear(); sent.length = 0;
+  aiReply = { status: 200, body: { choices: [{ message: { content: '{"roles":[{"title":"x"}],"courses":[{"name":"y"}]}' } }] } };
+  await call(mentorReq({ facts }));
+  assert.doesNotMatch(sent[0].body.messages[1].content, /Volvo Lastvagnar|Tillagt/);
+  _test.usage.clear(); sent.length = 0; aiReply = say("ok");
+  await call({ code: CODE, task: "translate", lang: "en", job: { text: AD }, facts });
+  assert.doesNotMatch(sent[0].body.messages[1].content, /Volvo Lastvagnar|Added by/);
+  aiReply = say("ok");
+});

@@ -85,8 +85,23 @@ const I18N = {
   "tl.code": ["Access code", "Åtkomstkod"], "tl.lang": ["Write in", "Skriv på"],
   "tl.code.hint": ["The AI step is a free beta. Ask {who} for an access code.", "AI-steget är en gratis beta. Be {who} om en åtkomstkod."],
   "tl.code.who": ["the person who shared Job Finder with you", "den som delade Job Finder med dig"],
-  "tl.extra": ["Anything to add? (optional)", "Något att lägga till? (valfritt)"],
+  "tl.extra": ["Wishes for the text (optional)", "Önskemål om texten (valfritt)"],
   "tl.extra.ph": ["e.g. keep it short, mention that I can start in March", "t.ex. håll det kort, nämn att jag kan börja i mars"],
+  // What the CV leaves out: written under an answer, used like the CV for this job, and the task run again
+  "tl.more": ["Anything your CV leaves out?", "Något som ditt CV saknar?"],
+  "tl.more.hint": ["Something true you forgot, like a course, a tool you used or a task in one of your jobs. Say which job it belongs to. It's used like your CV for this job only, and the fact check counts it as yours, so write only what you could talk about in an interview.",
+    "Något som stämmer men som du glömt, till exempel en kurs, ett verktyg du använt eller en uppgift i ett av dina jobb. Skriv vilket jobb det hör till. Det används som ditt CV, bara för det här jobbet, och faktakontrollen räknar det som ditt, så skriv bara det du kan berätta om på en intervju."],
+  "tl.more.ph": ["e.g. In my last job I also trained new staff. Forklift licence, 2019.", "t.ex. I mitt senaste jobb lärde jag också upp nyanställda. Truckkort, 2019."],
+  "tl.more.go.doc": ["Tailor again with this", "Anpassa igen med detta"], "tl.more.go": ["Generate again with this", "Skapa igen med detta"],
+  "tl.more.tocv": ["Add to my CV for every job", "Lägg till i mitt CV för alla jobb"],
+  "tl.more.used": ["This text was written with what you added.", "Den här texten skrevs med det du lade till."],
+  "tl.more.notyet.doc": ["Not used yet. Press Tailor again with this.", "Inte använt än. Tryck på Anpassa igen med detta."],
+  "tl.more.notyet": ["Not used yet. Press Generate again with this.", "Inte använt än. Tryck på Skapa igen med detta."],
+  "tl.more.added": ["Added to the end of your CV, so every job and the Mentor can use it. You can move it to the right place in the CV box.", "Tillagt sist i ditt CV, så att alla jobb och Mentorn kan använda det. Du kan flytta det till rätt ställe i CV-rutan."],
+  "tl.more.empty": ["Write what your CV leaves out first.", "Skriv först det som ditt CV saknar."],
+  "tl.more.old": ["The server couldn't read what you added yet, so this text was written without it. Add it to your CV for every job instead, or try again later.", "Servern kunde inte läsa det du lade till än, så texten skrevs utan det. Lägg till det i ditt CV för alla jobb i stället, eller försök igen senare."],
+  "tl.lose": ["Generating again replaces this text, with your changes and the sentences you chose to keep. Download or copy it first if you want it.", "Om du skapar igen ersätts den här texten, med dina ändringar och meningarna du valde att behålla. Ladda ner eller kopiera den först om du vill ha kvar den."],
+  "tl.lose.go": ["Replace it", "Ersätt den"], "tl.lose.no": ["Keep this text", "Behåll texten"],
   "tl.what": ["What to write", "Vad ska skrivas"],
   "tl.t.match": ["Match check", "Matchning"], "tl.t.cv": ["Tailored CV", "Anpassat CV"], "tl.t.letter": ["Cover letter", "Personligt brev"], "tl.t.interview": ["Interview prep", "Intervjuförberedelse"],
   "tl.d.match": ["How well your CV fits this ad, what's missing, and which words from the ad to use where they're true.", "Hur väl ditt CV passar annonsen, vad som saknas och vilka ord från annonsen du kan använda där de stämmer."],
@@ -107,8 +122,8 @@ const I18N = {
   "tl.applyon": ["Apply on {site}", "Sök på {site}"],
   "tl.markq": ["Sent your application?", "Har du skickat ansökan?"], "tl.mark": ["Mark as applied", "Markera som sökt"],
   "tl.marked": ["Marked as applied. You'll find it under My applications.", "Markerad som sökt. Du hittar den under Mina ansökningar."],
-  "tl.privacy": ["When you press Generate, your CV, the ad and your wishes are sent to the Job Finder server and on to an AI model hosted by Scaleway in Paris. Translate ad sends only the ad text; your CV is not needed or sent. The server keeps no copy. Your CV and the answers are saved only in this browser.",
-    "När du trycker på Skapa skickas ditt CV, annonsen och dina önskemål till Job Finders server och vidare till en AI-modell hos Scaleway i Paris. Översätt annons skickar bara annonstexten; ditt CV behövs inte och skickas inte. Servern sparar ingen kopia. Ditt CV och svaren sparas bara i den här webbläsaren."],
+  "tl.privacy": ["When you press Generate, your CV, the ad, your wishes and anything you added to your CV are sent to the Job Finder server and on to an AI model hosted by Scaleway in Paris. Translate ad sends only the ad text; your CV is not needed or sent. The server keeps no copy. Your CV and the answers are saved only in this browser.",
+    "När du trycker på Skapa skickas ditt CV, annonsen, dina önskemål och det du lagt till i ditt CV till Job Finders server och vidare till en AI-modell hos Scaleway i Paris. Översätt annons skickar bara annonstexten; ditt CV behövs inte och skickas inte. Servern sparar ingen kopia. Ditt CV och svaren sparas bara i den här webbläsaren."],
   "tl.e.nocode": ["Enter your access code first.", "Skriv in din åtkomstkod först."],
   "tl.e.code": ["That access code wasn't accepted. Check it, or ask for a new one.", "Åtkomstkoden godkändes inte. Kontrollera den eller be om en ny."],
   "tl.e.limit": ["Your code has reached its limit ({perHour} an hour, {perDay} a day). Try again later.", "Din kod har nått sin gräns ({perHour} i timmen, {perDay} per dag). Försök igen senare."],
@@ -1511,7 +1526,7 @@ function restoreBackup(file) {
     if (isObj(d.seen)) store.set("jf-seen", { ...d.seen, ...store.get("jf-seen", {}) });
     if (isObj(d.search) && !store.get("jf-search", null)) { store.set("jf-search", d.search); fillForm(d.search); }
     if (typeof d.cv === "string" && d.cv.trim() && !store.get("jf-cv", "").trim()) store.set("jf-cv", d.cv);
-    if (isObj(d.tailor)) { for (const [id, x] of Object.entries(d.tailor)) if (isObj(x) && !tailorStore[id]) tailorStore[id] = { ad: typeof x.ad === "string" ? x.ad : undefined, extra: String(x.extra || ""), lang: x.lang === "en" ? "en" : x.lang === "sv" ? "sv" : undefined, lastTask: TASKS.includes(x.lastTask) ? x.lastTask : undefined, out: isObj(x.out) ? Object.fromEntries(Object.entries(x.out).filter(([k, o]) => TASKS.includes(k) && isObj(o) && typeof o.text === "string")) : {} }; saveTailor(); }
+    if (isObj(d.tailor)) { for (const [id, x] of Object.entries(d.tailor)) if (isObj(x) && !tailorStore[id]) tailorStore[id] = { ad: typeof x.ad === "string" ? x.ad : undefined, extra: String(x.extra || ""), ...(x.facts ? { facts: String(x.facts).slice(0, 3000) } : {}), lang: x.lang === "en" ? "en" : x.lang === "sv" ? "sv" : undefined, lastTask: TASKS.includes(x.lastTask) ? x.lastTask : undefined, out: isObj(x.out) ? Object.fromEntries(Object.entries(x.out).filter(([k, o]) => TASKS.includes(k) && isObj(o) && typeof o.text === "string")) : {} }; saveTailor(); }
     if (validMentor(d.mentor) && !mentor) { mentor = { at: String(d.mentor.at || ""), lang: d.mentor.lang === "en" ? "en" : "sv", cvHash: String(d.mentor.cvHash || ""), data: d.mentor.data, counts: null }; store.set("jf-mentor", mentor); }
     if (isObj(d.mentorAnswers) && !store.get("jf-mentor-ans", null)) { for (const [k, opts] of MT_Q) if (opts.includes(d.mentorAnswers[k])) mtAns[k] = d.mentorAnswers[k]; store.set("jf-mentor-ans", mtAns); }
     const ok = [store.set("jf-apps", apps), store.set("jf-hidden", [...hidden]), store.set("jf-people", people), store.set("jf-links", links)].every(Boolean);
