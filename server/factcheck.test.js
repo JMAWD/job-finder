@@ -313,6 +313,27 @@ test("worked examples in Swedish and English", () => {
   bad("Anställd sedan mars 2018 på Nordvik.", "date", "mars 2018");
 });
 
+test("true sentences found in the audit of 25 Oct 2026 pass: a range written out, and a year range after an employer", () => {
+  const cv = `Sara Lindqvist\nUndersköterska, Malmö stad, hemtjänst Limhamn (2021 - nu)\n- Besöker 8-10 brukare per pass, dag och kväll\n\nUndersköterska, Attendo Kronan, särskilt boende (2018 - 2021)\n- Demensavdelning med 12 boende`;
+  const src = { cv, ad: "Forenede Care söker undersköterskor till hemtjänsten i Lund.", title: "Undersköterska", employer: "Forenede Care", year: 2026 };
+  assert.deepEqual(factCheck("At Malmö stad’s hemtjänst Limhamn, I visit 8 to 10 users per shift.", { ...src, task: "letter", lang: "en" }).issues, []);
+  assert.deepEqual(factCheck("Jag besöker 8–10 brukare per pass.", { ...src, task: "letter", lang: "sv" }).issues, []);
+  assert.deepEqual(factCheck("- Arbetade på demensavdelning med 12 boende på Attendo Kronan 2018–2021.", { ...src, task: "interview" }).issues, []);
+  // and the same sentences with something invented are still caught
+  assert.ok(factCheck("I visit 8 to 14 users per shift.", { ...src, task: "letter", lang: "en" }).issues.some(i => i.kind === "figure" && i.text === "14"));
+  assert.ok(factCheck("- Arbetade på demensavdelning på Humana Kronan 2018–2021.", { ...src, task: "interview" }).issues.some(i => i.kind === "employer" && i.text === "Humana Kronan"));
+});
+
+test("a licence or certificate the ad asks for and the CV doesn't mention is noted", () => {
+  const { licenceGap } = require("./factcheck.js");
+  const ad = "För att vara aktuell behöver du ett intyg från Socialstyrelsen som undersköterska och B-körkort.";
+  assert.deepEqual(licenceGap("Undersköterskeexamen, Komvux Malmö (2017)", ad), { asked: "intyg från Socialstyrelsen" });
+  assert.equal(licenceGap("Undersköterskeexamen (2017). Bevis om skyddad yrkestitel från Socialstyrelsen (2024).", ad), null);
+  assert.equal(licenceGap("Leg. sjuksköterska sedan 2015", "Vi söker en legitimerad sjuksköterska."), null);
+  assert.deepEqual(licenceGap("Sjuksköterskeexamen, Lunds universitet", "Vi söker en legitimerad sjuksköterska."), { asked: "legitimerad" });
+  assert.equal(licenceGap("Kvalitetsingenjör", "Vi söker en kvalitetsingenjör med FMEA."), null);
+});
+
 test("titles.json matches src/titles.txt (run python3 build.py after editing titles.txt)", () => {
   const txt = fs.readFileSync(path.join(__dirname, "..", "src", "titles.txt"), "utf8");
   const want = txt.split(/\r?\n/).filter(l => l.trim() && !l.trimStart().startsWith("#")).map(l => l.split("|").map(side => side.split(",").map(w => w.trim()).filter(Boolean)));

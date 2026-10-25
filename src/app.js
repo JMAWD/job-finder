@@ -36,7 +36,9 @@ const I18N = {
   "field": ["Field", "Yrkesområde"], "allfields": ["All fields", "Alla yrkesområden"], "employment": ["Employment", "Anställning"], "any": ["Any", "Alla"], "perm": ["Permanent", "Tillsvidare"], "temp": ["Temporary", "Tidsbegränsad"],
   "sort": ["Sort", "Sortera"], "sort.roles": ["Most matching roles", "Flest matchande jobb"], "sort.newest": ["Newest ad", "Nyaste annonsen"], "sort.deadline": ["Closing soonest", "Sista ansökningsdag först"], "sort.name": ["A–Z", "A–Ö"],
   "showonly": ["Show only", "Visa bara"], "f.all": ["Ads with every keyword", "Annonser med alla sökord"], "f.new": ["New since last search", "Nya sedan senaste sökningen"], "f.direct": ["Employers hiring directly", "Arbetsgivare som anställer direkt"], "f.hidden": ["Show employers I've hidden", "Visa dolda arbetsgivare"],
-  "expand": ["Expand all", "Öppna alla"], "collapse": ["Collapse all", "Stäng alla"], "expand.confirm": ["Open all {n}? Click again", "Öppna alla {n}? Klicka igen"], "export": ["Export CSV", "Exportera CSV"],
+  "expand": ["Expand all", "Öppna alla"], "collapse": ["Collapse all", "Stäng alla"], "expand.confirm": ["Open all {n}? Click again", "Öppna alla {n}? Klicka igen"], "export": ["Export CSV", "Exportera CSV"], "export.xlsx": ["Excel file", "Excel-fil"],
+  "count.hidden": ["{n} roles hidden by {f}", "{n} jobb dolda av {f}"], "count.clear": ["Clear filters", "Rensa filter"],
+  "edit.search": ["Edit search", "Ändra sökningen"], "filters.btn": ["Filter and sort", "Filtrera och sortera"],
   "how": ["How this works", "Så fungerar det"],
   "foot.sources": ["<b>Sources.</b> Sweden: live ads on Platsbanken (Arbetsförmedlingen) and other Swedish job sites collected by JobTech, such as The Hub and Ledigajobb. Each search goes straight from your browser to those open services. More countries can be added later.",
     "<b>Källor.</b> Sverige: aktuella annonser i Platsbanken (Arbetsförmedlingen) och från andra svenska jobbsajter som JobTech samlar in, till exempel The Hub och Ledigajobb. Varje sökning går direkt från din webbläsare till de öppna tjänsterna. Fler länder kan läggas till senare."],
@@ -106,7 +108,7 @@ const I18N = {
   "tl.t.match": ["Match check", "Matchning"], "tl.t.cv": ["Tailored CV", "Anpassat CV"], "tl.t.letter": ["Cover letter", "Personligt brev"], "tl.t.interview": ["Interview prep", "Intervjuförberedelse"],
   "tl.d.match": ["How well your CV fits this ad, what's missing, and which words from the ad to use where they're true.", "Hur väl ditt CV passar annonsen, vad som saknas och vilka ord från annonsen du kan använda där de stämmer."],
   "tl.d.cv": ["Your whole CV rewritten for this job: profile, key skills, every job and your education, ready to download as a PDF or Word file. Read it through and fix anything that isn't right with Edit text before you send it.", "Hela ditt CV omskrivet för det här jobbet: profil, nyckelkompetenser, alla tjänster och din utbildning, färdigt att ladda ner som PDF eller Word-fil. Läs igenom det och rätta det som inte stämmer med Redigera text innan du skickar det."],
-  "tl.d.letter": ["A cover letter of 250–350 words built only on what's in your CV.", "Ett personligt brev på 250–350 ord som bara bygger på det som står i ditt CV."],
+  "tl.d.letter": ["A cover letter of 180–250 words built only on what's in your CV.", "Ett personligt brev på 180–250 ord som bara bygger på det som står i ditt CV."],
   "tl.d.interview": ["Likely questions with points for your answers, the hardest ones for you, and questions to ask them.", "Troliga frågor med stödpunkter för dina svar, de svåraste för just dig och frågor att ställa till dem."],
   "tl.go": ["Generate", "Skapa"], "tl.again": ["Generate again", "Skapa igen"], "tl.busy": ["Writing…", "Skriver…"],
   "tl.wait": ["Usually 20–60 seconds · {s} s", "Brukar ta 20–60 sekunder · {s} s"],
@@ -139,9 +141,20 @@ const I18N = {
   "fc.warn1": ["Fact check: one thing here is not in your CV. Remove or correct it before you use the text.", "Faktakoll: en sak här finns inte i ditt CV. Ta bort eller rätta den innan du använder texten."],
   "fc.warn": ["Fact check: {n} things here are not in your CV. Remove or correct them before you use the text.", "Faktakoll: {n} saker här finns inte i ditt CV. Ta bort eller rätta dem innan du använder texten."],
   "fc.how": ["Checked by plain code against your CV, not by the AI. It looks at employers, job titles, schools, degrees, dates and figures, at names of tools and standards, at leading or results your CV never claims, and at words that come from the ad but not from your CV. Something from the ad can be fine if it's true and your CV just doesn't say it, but then you should be able to back it up.", "Kontrollerat med vanlig kod mot ditt CV, inte av AI:n. Den tittar på arbetsgivare, titlar, skolor, examina, datum och siffror, på namn på verktyg och standarder, på ledarskap eller resultat som ditt CV aldrig påstår, och på ord som kommer från annonsen men inte från ditt CV. Något från annonsen kan stämma även om ditt CV inte säger det, men då ska du kunna stå för det."],
-  "fc.k.employer": ["Employer", "Arbetsgivare"], "fc.k.title": ["Job title", "Titel"], "fc.k.date": ["Date", "Datum"], "fc.k.dates": ["Dates for a role", "Datum för en tjänst"],
-  "fc.k.school": ["School", "Skola"], "fc.k.degree": ["Degree", "Examen"],
-  "fc.k.claim": ["From the ad", "Från annonsen"], "fc.k.figure": ["Figure", "Siffra"],
+  "fc.k.employer": ["Employer not in your CV", "Arbetsgivare som inte finns i ditt CV"], "fc.k.title": ["Job title not in your CV", "Titel som inte finns i ditt CV"],
+  "fc.k.date": ["Year not in your CV", "Årtal som inte finns i ditt CV"], "fc.k.dates": ["Years that differ from your CV", "Årtal som skiljer sig från ditt CV"],
+  "fc.k.school": ["School not in your CV", "Skola som inte finns i ditt CV"], "fc.k.degree": ["Degree your CV doesn't have", "Examen som ditt CV inte har"],
+  "fc.k.claim": ["Taken from the ad", "Hämtat från annonsen"], "fc.k.figure": ["Number not in your CV", "Siffra som inte finns i ditt CV"],
+  "fc.in": ["in “{line}”", "i ”{line}”"],
+  "sum.ok": ["Fact check passed", "Faktakollen godkänd"], "sum.issue1": ["1 thing not in your CV", "1 sak som inte finns i ditt CV"], "sum.issues": ["{n} things not in your CV", "{n} saker som inte finns i ditt CV"],
+  "sum.held1": ["1 sentence held back from downloads", "1 mening hålls utanför nedladdningar"], "sum.held": ["{n} sentences held back from downloads", "{n} meningar hålls utanför nedladdningar"],
+  "sum.style": ["style notes", "stilnoteringar"], "sum.see": ["See the checks below", "Se kontrollerna nedanför"],
+  "tl.stale.cv": ["Made with an earlier version of your CV. Generate it again to use the CV you have now.", "Gjord med en tidigare version av ditt CV. Skapa den igen för att använda det CV du har nu."],
+  "tl.stale.go": ["Make it again", "Gör om den"],
+  "tl.stale.ad": ["Made from an earlier version of the ad text. Generate it again to use the ad as it is now.", "Gjord från en tidigare version av annonstexten. Skapa den igen för att använda annonsen som den är nu."],
+  "lic.title": ["The ad asks for {asked}, and your CV doesn't mention it.", "Annonsen kräver {asked}, och ditt CV nämner det inte."],
+  "lic.text": ["An exam or a course is not the same thing. If you have the licence or certificate, add it to your CV. If not, check how to apply at Socialstyrelsen (health care jobs) or Skolverket (teachers).", "En examen eller en kurs är inte samma sak. Har du legitimationen eller beviset, lägg till det i ditt CV. Annars, se hur du ansöker hos Socialstyrelsen (vårdyrken) eller Skolverket (lärare)."],
+  "st.order": ["Word order that reads like English: {words}. In Swedish the verb comes second, as in \"Jag berättar gärna\".", "Ordföljd som låter engelsk: {words}. På svenska kommer verbet på andra plats, som i \"Jag berättar gärna\"."],
   "fc.again": ["Checked again after your edits.", "Kontrollerad igen efter dina ändringar."],
   "fc.fixed1": ["The AI's first draft had one thing your CV doesn't back up, and it was taken out before you saw this.", "AI:ns första utkast hade en sak som ditt CV inte stöder, och den togs bort innan du fick se texten."],
   "fc.fixed": ["The AI's first draft had {n} things your CV doesn't back up, and they were taken out before you saw this.", "AI:ns första utkast hade {n} saker som ditt CV inte stöder, och de togs bort innan du fick se texten."],
@@ -152,7 +165,7 @@ const I18N = {
   "st.dash1": ["A dash is used as punctuation. A comma or a full stop reads more like you.", "Ett tankstreck används som skiljetecken. Ett kommatecken eller en punkt låter mer som du."],
   "st.dashes": ["{n} dashes are used as punctuation. A comma or a full stop reads more like you.", "{n} tankstreck används som skiljetecken. Ett kommatecken eller en punkt låter mer som du."],
   "fc.unchecked": ["Your edits couldn't be checked in this browser. Read the employers, job titles and dates through yourself before you send it.", "Dina ändringar kunde inte kontrolleras i den här webbläsaren. Läs igenom arbetsgivare, titlar och datum själv innan du skickar."],
-  "fc.k.name": ["New name", "Nytt namn"], "fc.k.responsibility": ["Bigger role", "Större roll"], "fc.k.outcome": ["Result", "Resultat"],
+  "fc.k.name": ["Name not in your CV", "Namn som inte finns i ditt CV"], "fc.k.responsibility": ["Bigger role than your CV says", "Större roll än ditt CV säger"], "fc.k.outcome": ["Result your CV doesn't claim", "Resultat som ditt CV inte påstår"],
   "src.title": ["Sentence by sentence:", "Mening för mening:"], "src.evidence": ["Evidence:", "Belägg:"],
   "src.n.c": ["{n} from your CV", "{n} från ditt CV"], "src.n.a": ["{n} from the ad", "{n} från annonsen"],
   "src.n.i": ["{n} inferred by the AI", "{n} tolkade av AI:n"], "src.n.u": ["{n} not in your CV", "{n} som inte står i ditt CV"],
@@ -253,7 +266,7 @@ const I18N = {
   "mt.gaps": ["Gaps", "Luckor"], "mt.nogaps": ["None that matter", "Inga som spelar roll"],
   "mt.open1": ["{n} open ad", "{n} ledigt jobb"], "mt.openN": ["{n} open ads", "{n} lediga jobb"], "mt.open0": ["No open ads right now", "Inga lediga jobb just nu"],
   "mt.open0.nat": ["None here right now · {n} in Sweden", "Inga här just nu · {n} i Sverige"], "mt.search.all": ["Search all of Sweden", "Sök i hela Sverige"],
-  "mt.search": ["Search these jobs", "Sök de här jobben"],
+  "mt.search": ["Search these jobs", "Sök de här jobben"], "mt.as": [" for \"{q}\"", " för \"{q}\""],
   "mt.learn.title": ["What to learn next", "Vad du kan lära dig härnäst"], "mt.learn.sub": ["Best fit first, matched to your four answers", "Bäst passande först, utifrån dina fyra svar"],
   "mt.quick": ["Quick win", "Snabb vinst"], "mt.free": ["Free", "Gratis"], "mt.cost": ["≈ {n} SEK", "≈ {n} kr"], "mt.costabout": ["about {n} SEK", "ungefär {n} kr"],
   "mt.eff.self": ["{h} h · {d} at {pace}", "{h} h · {d} med {pace}"], "mt.eff.class1": ["1 day, usually in work time", "1 dag, oftast på arbetstid"], "mt.eff.class": ["{n} days, usually in work time", "{n} dagar, oftast på arbetstid"],
@@ -503,6 +516,27 @@ const allWords = p => [...new Set(p.terms.flatMap(x => variants(p, x)))];
 // A keyword as messages show it: "project leader" (+ projektledare)
 const termText = (p, x) => `"${x}"` + ((p.alts || {})[x]?.length ? ` (+ ${p.alts[x].join(", ")})` : "");
 const termRe = t => new RegExp("(^|[^a-z0-9])" + fold(t).trim().split(/\s+/).map(escRe).join("[\\s\\-/]+") + "($|[^a-z0-9])");
+// A word to leave out also leaves out the words it starts: "natt" catches "nattpatrull" and "nattjobb", as Swedish
+// makes compounds of almost anything.
+const exRe = t => new RegExp("(^|[^a-z0-9])" + fold(t).trim().split(/\s+/).map(escRe).join("[\\s\\-/]+"));
+// Whether an ad mentions a keyword, with Swedish in mind: plural and definite forms ("undersköterskor",
+// "projektledaren") and, for a single long word, compounds that end in it ("specialistundersköterska"). A short
+// keyword like "lean" only matches itself, so "clean" doesn't count.
+function swForms(w) {
+  const f = [w, w + "s", w + "n", w + "en", w + "et", w + "er", w + "ar", w + "na", w + "r"];
+  if (w.endsWith("a")) { const st = w.slice(0, -1); f.push(st + "or", st + "orna", st + "an"); }
+  if (w.endsWith("e")) { const st = w.slice(0, -1); f.push(st + "ar", st + "arna", st + "en"); }
+  return [...new Set(f)];
+}
+const kwMemo = new Map();
+function kwRe(t) {
+  if (kwMemo.has(t)) return kwMemo.get(t);
+  const words = fold(t).trim().split(/\s+/), last = words.pop();
+  const tail = last.length >= 4 ? "(?:" + swForms(last).map(escRe).join("|") + ")" : escRe(last);
+  const lead = !words.length && last.length >= 6 ? "(^|[^a-z0-9]|[a-z]{2,})" : "(^|[^a-z0-9])";
+  const re = new RegExp(lead + [...words.map(escRe), tail].join("[\\s\\-/]+") + "($|[^a-z0-9])");
+  kwMemo.set(t, re); return re;
+}
 const cleanTitle = s => (s || "").replace(/\s+/g, " ").trim();
 const shortName = n => (n || "").replace(/\s+(i Sverige AB|Sverige AB|Sweden AB|AB \(publ\)|Aktiebolag|\(publ\)|AB|HB|KB)$/i, "").trim();
 const normName = s => fold(shortName(s || "")).replace(/\b(aktiebolag|ab|publ|sverige|sweden|group|nordic)\b/g, "").replace(/[^a-z0-9]+/g, "");
@@ -702,7 +736,7 @@ function splitTerm(term, parts) {
   const fresh = parts.filter(x => !terms.some(y => fold(y) === fold(x)));
   terms.splice(i, 1, ...fresh); delete alts[term];
   for (const x of fresh) { const sv = swedishFor(x); if (sv.length) alts[x] = sv; }
-  $("f-all").checked = true; savePrefs();
+  allForThisSearch();
   kwBox.draw(); showHint({ kind: "done", parts });
   if (results?.params.terms.includes(term)) runSearch(); else $("kw-input").focus();
 }
@@ -780,7 +814,7 @@ async function resolvePlace(raw) {
   const pk = placeKind(raw);
   if (pk.kind === "all") return { mode: "all", label: "" };
   const cache = store.get("jf-geo", {}), key = fold(pk.name);
-  if (cache[key]) return cache[key];
+  if (cache[key] && !(cache[key].mode === "county" && cache[key].lat == null)) return cache[key];   // counties saved before 1.8 have no centre
   const term = pk.kind === "county" ? pk.short : pk.name;
   const j = await getJSON(`${JS_API}/search?q=${encodeURIComponent(/\s/.test(term) ? `"${term}"` : term)}&qfields=location&limit=100`);
   const was = j.hits.map(h => h.workplace_address || {});
@@ -788,7 +822,7 @@ async function resolvePlace(raw) {
   let geo = null;
   if (pk.kind === "county") {
     const m = was.filter(w => fold(w.region) === fold(pk.name) && w.region_concept_id);
-    if (m.length) geo = { mode: "county", label: pk.name, regionId: mode(m.map(w => w.region_concept_id)) };
+    if (m.length) geo = { mode: "county", label: pk.name, regionId: mode(m.map(w => w.region_concept_id)), ...coords(m) };
   } else {
     let m = was.filter(w => fold(w.municipality) === key && w.municipality_concept_id);
     if (!m.length) m = was.filter(w => fold(w.city) === key || fold(w.city).includes(key));
@@ -891,7 +925,7 @@ function fromPB(h) {
     apply: h.application_details?.url || "", applyEmail: h.application_details?.email || "",
     occ: h.occupation?.label || "", group: h.occupation_group?.label || "", groupId: h.occupation_group?.concept_id || "", field: h.occupation_field?.label || "", fieldId: h.occupation_field?.concept_id || "",
     duration: h.duration?.label || "", hours: h.working_hours_type?.label || "", vacancies: h.number_of_vacancies || 1, exp: h.experience_required,
-    agency, client: !agency && CLIENT_TEXT.test(desc), contacts: adContacts(h, agency), snippet: desc.slice(0, 500), adLang: adLang(`${h.headline} ${desc}`), _text: fold(`${h.headline} ${desc} ${emp.name || ""}`),
+    agency, client: !agency && CLIENT_TEXT.test(desc), contacts: adContacts(h, agency), snippet: desc.slice(0, 500), _desc: desc, adLang: adLang(`${h.headline} ${desc}`), _text: fold(`${h.headline} ${desc} ${emp.name || ""}`),
     _c: inSweden(wa.coordinates), _city: wa.city || "" };
 }
 function fromLinks(h) {
@@ -900,13 +934,14 @@ function fromLinks(h) {
     muni: wa.municipality || "", muniId: wa.municipality_concept_id || "", region: wa.region || "", regionId: wa.region_concept_id || "",
     pub: (h.publication_date || "").slice(0, 10), deadline: "", url: link.url || "", source: siteLabel(link), apply: "", applyEmail: "",
     occ: "", group: h.occupation_group?.label || "", groupId: h.occupation_group?.concept_id || "", field: h.occupation_field?.label || "", fieldId: h.occupation_field?.concept_id || "",
-    duration: "", hours: "", vacancies: 1, exp: null, agency: STAFFING.test(emp), client: CLIENT_TEXT.test(brief), contacts: [], snippet: brief.slice(0, 500), _text: fold(`${h.headline} ${brief} ${emp}`) };
+    duration: "", hours: "", vacancies: 1, exp: null, agency: STAFFING.test(emp), client: CLIENT_TEXT.test(brief), contacts: [], snippet: brief.slice(0, 500), _desc: brief, _text: fold(`${h.headline} ${brief} ${emp}`) };
 }
 
 /* ---------- The search ---------- */
 async function runSearch() {
   if (searching) return;
   const p = readParams();
+  if (autoAll && termsKey(p.terms) !== autoAll) { $("f-all").checked = !!store.get("jf-prefs", {}).all; autoAll = null; }
   $("msg").textContent = ""; $("msg").className = "msg";
   if (!p.terms.length && placeKind(p.place).kind === "all") { $("msg").textContent = t("need.input"); $("kw-input").focus(); return; }
   searching = true; $("go").disabled = true;
@@ -915,7 +950,7 @@ async function runSearch() {
     const geo = await resolvePlace(p.place);
     const loc = locationParam(geo, p.radius);
     const extra = (p.since ? `&published-after=${p.since}` : "") + (p.remote ? "&remote=true" : "") + (p.noexp ? "&experience=false" : "");
-    const exRes = p.excludes.map(termRe);
+    const exRes = p.excludes.map(exRe);
     // Each keyword and each Swedish word added for it is its own search. An ad found by a Swedish word counts for its keyword.
     const queries = p.terms.length ? allWords(p) : [""];
     const parentOf = new Map(p.terms.flatMap(x => variants(p, x).map(v => [v, x])));
@@ -977,16 +1012,25 @@ async function runSearch() {
     }
 
     // Leave out unwanted words and duplicates of Platsbanken ads, then note which keywords each ad really mentions
-    const pbKeys = new Set([...ads.values()].filter(a => a.src === "pb").map(a => normName(a.employer) + "|" + fold(a.title)));
+    // The same ad on another site often has the employer written another way ("Helsingborgs stad" for "Helsingborgs
+    // kommun", "Svalövs kommun, Ängslyckan"), so the first word of the name and the title are enough
+    const empHead = s => fold(shortName(s || "")).split(/[^a-z0-9]+/).filter(Boolean)[0] || "";
+    const pbAds = [...ads.values()].filter(a => a.src === "pb");
+    const pbKeys = new Set([...pbAds.map(a => normName(a.employer) + "|" + fold(a.title)), ...pbAds.map(a => "h:" + empHead(a.employer) + "|" + fold(a.title))]);
     const list = [];
     for (const a of ads.values()) {
       if (exRes.some(re => re.test(a._text))) continue;
-      if (a.src === "links" && pbKeys.has(normName(a.employer) + "|" + fold(a.title))) continue;
+      if (a.src === "links" && (pbKeys.has(normName(a.employer) + "|" + fold(a.title)) || (empHead(a.employer) && pbKeys.has("h:" + empHead(a.employer) + "|" + fold(a.title))))) continue;
       // keys: the keywords the ad mentions, in any of their words. terms: the word it actually uses for each, for the tags.
-      a.keys = p.terms.filter(x => variants(p, x).some(v => termRe(v).test(a._text)));
-      a.terms = a.keys.map(x => variants(p, x).find(v => termRe(v).test(a._text)));
+      a.keys = p.terms.filter(x => variants(p, x).some(v => kwRe(v).test(a._text)));
+      a.terms = a.keys.map(x => variants(p, x).find(v => kwRe(v).test(a._text)));
       a.loose = p.terms.filter(x => a._by.has(x) && !a.keys.includes(x));
-      delete a._text; delete a._by; delete a._c; delete a._city;
+      // The snippet starts a little before the first keyword, so it shows why the ad is here, not the employer's intro
+      const d = a._desc || "", fd = fold(d);
+      let at = -1;
+      for (const v of a.terms) { const m = fd.match(kwRe(v)); if (m && (at < 0 || m.index < at)) at = m.index; }
+      if (at > 200) { const start = d.lastIndexOf(" ", at - 120) + 1; a.snippet = "…" + d.slice(start, start + 500); }
+      delete a._text; delete a._by; delete a._c; delete a._city; delete a._desc;
       list.push(a);
       if (a.src === "links") linksCount++;
     }
@@ -1009,6 +1053,7 @@ async function runSearch() {
     openIds = new Set([...openIds].filter(k => list.some(a => companyKey(a) === k)));
     searchFail = null;
     render();
+    if (PHONE.matches) { foldForm(true); window.scrollTo(0, 0); }
     checkPhrases(p.terms);   // catches phrases that came from a saved search or the Mentor rather than the box
   } catch (e) {
     console.error(e);
@@ -1021,6 +1066,20 @@ async function runSearch() {
   }
 }
 $("search").addEventListener("submit", e => { e.preventDefault(); runSearch(); });
+// On a phone the search form takes the whole first screen. After a search, and when someone comes back to saved
+// results, it folds into one line ("undersköterska · Skåne län · Edit search") and the filters fold behind a button.
+const PHONE = matchMedia("(max-width: 720px)");
+function foldForm(on) {
+  document.body.classList.toggle("folded", on && !!results);
+  if (!results) return;
+  const p = results.params;
+  $("search-sum-text").textContent = [p.terms.length ? p.terms.join(", ") : t("note.all"), placeLabel(results.geo) + (hasRadius(results.geo, p) ? ` + ${p.radius} km` : "")].filter(Boolean).join(" · ");
+}
+$("search-edit").addEventListener("click", () => { foldForm(false); $("kw-input").focus(); });
+$("filters-btn").addEventListener("click", () => {
+  const c = document.querySelector(".controls"), open = !c.classList.contains("open");
+  c.classList.toggle("open", open); $("filters-btn").setAttribute("aria-expanded", String(open));
+});
 
 /* ---------- Employers ---------- */
 const nameKeys = new Map();
@@ -1145,7 +1204,12 @@ function loadPrefs() {
   if (p.sort) $("sort").value = p.sort; if (p.emp) $("emp").value = p.emp;
   for (const k of FILTERS) if (p[k] !== undefined) $("f-" + k).checked = p[k];
 }
-function savePrefs() { const p = { sort: $("sort").value, emp: $("emp").value }; for (const k of FILTERS) p[k] = $("f-" + k).checked; store.set("jf-prefs", p); }
+// "Ads with every keyword" switched on by the app (splitting a phrase, or a search from the Mentor) holds for that set of
+// keywords only and is never saved as the person's own choice. A search for other keywords puts back what they chose.
+let autoAll = null;
+const termsKey = list => list.map(fold).sort().join("|");
+function allForThisSearch() { if (!$("f-all").checked) { $("f-all").checked = true; autoAll = termsKey(terms); } }
+function savePrefs() { const p = { sort: $("sort").value, emp: $("emp").value }; for (const k of FILTERS) p[k] = k === "all" && autoAll ? !!store.get("jf-prefs", {}).all : $("f-" + k).checked; store.set("jf-prefs", p); }
 const isPerm = a => a.duration === "Tills vidare";
 function adVisible(a) {
   if ($("f-all").checked && results && (a.keys || a.terms).length < results.params.terms.length) return false;
@@ -1157,6 +1221,19 @@ function adVisible(a) {
   const fld = $("field").value;
   return !fld || a.field === fld;
 }
+// The filters that are on, by their names on screen
+function activeFilters() {
+  const on = [];
+  if ($("q").value.trim()) on.push(t("filter")); if ($("field").value) on.push(t("field")); if ($("emp").value) on.push(t("employment"));
+  for (const k of ["all", "new", "direct"]) if ($("f-" + k).checked) on.push(t("f." + k));
+  return on;
+}
+function clearFilters() {
+  $("q").value = ""; $("field").value = ""; $("emp").value = "";
+  for (const k of ["all", "new", "direct"]) $("f-" + k).checked = false;
+  autoAll = null; savePrefs(); render();
+}
+$("count").addEventListener("click", e => { if (e.target.closest('[data-act="clear-filters"]')) { clearFilters(); $("q").focus(); } });
 function visible() {
   const q = fold($("q").value.trim()), showHidden = $("f-hidden").checked, list = [];
   for (const c of companies) {
@@ -1190,7 +1267,7 @@ function snippetFor(a, ts) {
   const s = a.snippet || "";
   if (!ts.length) return s.slice(0, 260) + (s.length > 260 ? "…" : "");
   const f = fold(s); let at = -1;
-  for (const x of ts) { const m = f.match(termRe(x)); if (m && (at < 0 || m.index < at)) at = m.index; }
+  for (const x of ts) { const m = f.match(kwRe(x)); if (m && (at < 0 || m.index < at)) at = m.index; }
   if (at < 160) return s.slice(0, 260) + (s.length > 260 ? "…" : "");
   const start = s.lastIndexOf(" ", at - 80);
   return "…" + s.slice(start + 1, start + 280) + (s.length > start + 280 ? "…" : "");
@@ -1352,9 +1429,13 @@ function render() {
       <div class="empty-mentor"><span>${esc(t("empty.mentor"))}</span><button class="btn ghost sm" type="button" data-act="goto-mentor">${esc(t("empty.mentor.go"))}</button></div>` : ""}</div>`;
     $("count").textContent = ""; renderNoteBar();
   } else {
+    const ev = $("events"); if (ev && ev.parentElement === $("list")) $("list").before(ev);   // kept out of the way of the redraw
     $("list").innerHTML = vis.length ? vis.map(companyHtml).join("") : `<div class="empty"><strong>${esc(t("nomatch.title"))}</strong>${esc(t("nomatch.text"))}</div>`;
+    const cards = $("list").querySelectorAll(":scope > article.co"); if (ev && cards.length) cards[Math.min(2, cards.length - 1)].after(ev);
     const total = companies.filter(c => $("f-hidden").checked || !hidden.has(c.key)).length;
-    $("count").textContent = vis.length === total ? tn(vis.length, "count.all", "count.allN") : t("count.some", { v: vis.length, n: total });
+    const roles = vis.reduce((n, c) => n + c.view.length, 0), allRoles = results.ads.length, on = activeFilters();
+    $("count").innerHTML = esc(vis.length === total ? tn(vis.length, "count.all", "count.allN") : t("count.some", { v: vis.length, n: total }))
+      + (on.length && (vis.length < total || roles < allRoles) ? ` · ${esc(t("count.hidden", { n: allRoles - roles, f: joinList(on) }))} <button class="linkbtn" type="button" data-act="clear-filters">${esc(t("count.clear"))}</button>` : "");
     renderNoteBar();
   }
   $("expand-all").textContent = t(vis.length && vis.every(c => openIds.has(c.key)) ? "collapse" : "expand");
@@ -1619,6 +1700,7 @@ function onNote(e) {
   noteTimers.set(el.dataset.ad, setTimeout(() => flushNote(el), 400));
 }
 for (const id of ["list", "apps"]) { $(id).addEventListener("change", onStatus); $(id).addEventListener("input", onNote); }
+$("f-all").addEventListener("change", () => { autoAll = null; }, { capture: true });   // the person's own choice from now on
 for (const id of ["q", "field", "emp", "sort", ...FILTERS.map(k => "f-" + k)]) $(id).addEventListener(id === "q" ? "input" : "change", () => { savePrefs(); render(); });
 $("expand-all").addEventListener("click", () => {
   const b = $("expand-all"), vis = visible(), all = vis.length && vis.every(c => openIds.has(c.key));
@@ -1656,7 +1738,7 @@ $("goto-backup").addEventListener("click", () => { selectTab("app"); $("backup")
 
 /* ---------- CSV export ---------- */
 function csvCell(v) { const s = String(v ?? ""); return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }
-$("export").addEventListener("click", () => {
+function exportRows() {
   const rows = [t("csv")];
   for (const c of visible()) {
     const mine = (people[c.key] || []).map(p => [p.n, p.t, p.e, p.p, p.li].filter(Boolean).join(", ")).join(" | ");
@@ -1664,10 +1746,18 @@ $("export").addEventListener("click", () => {
       const ps = a.contacts || [], app = apps[a.id] || {};
       rows.push([coName(c), fmtOrg(c.org), a.title, a.terms.join(", "), a.field, a.muni, a.pub, a.deadline, a.duration ? durLabel(a.duration) : "", a.hours ? hoursLabel(a.hours) : "",
         a.src === "links" ? (a.source || t("othersite")) : "Platsbanken", a.url, a.apply || a.applyEmail, ps.map(p => `${p.n} (${p.t || kindLabel(p.kind)})`).join(" | "),
-        ps.map(p => p.e).filter(Boolean).join(" | "), ps.map(p => p.p).filter(Boolean).join(" | "), mine, app.status ? t(app.status) : "", app.note || ""]);
+        ps.map(p => p.e).filter(Boolean).join(" | "), ps.map(p => p.p).filter(Boolean).join(" | "), mine, app.status ? t(app.status) : "", app.note || ""].map(v => typeof v === "string" ? v.replace(/[ \t]{2,}/g, " ") : v));
     }
   }
-  downloadBlob("﻿" + rows.map(r => r.map(csvCell).join(",")).join("\r\n"), `job-finder-${today()}.csv`, "text/csv;charset=utf-8");
+  return rows;
+}
+$("export").addEventListener("click", () => {
+  downloadBlob("﻿" + exportRows().map(r => r.map(csvCell).join(",")).join("\r\n"), `job-finder-${today()}.csv`, "text/csv;charset=utf-8");
+});
+// A CSV opens in one column in Excel set up for Sweden, which expects semicolons; an .xlsx opens right everywhere
+$("export-xlsx").addEventListener("click", () => {
+  const blob = xlsxBlob(exportRows(), "Job Finder"), url = URL.createObjectURL(blob), link = document.createElement("a");
+  link.href = url; link.download = `job-finder-${today()}.xlsx`; document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
 });
 
 /* ---------- Feedback during the beta ---------- */
@@ -1733,7 +1823,7 @@ async function newAdsSinceSearch() {
   if (!r || !r.params || !r.geo || !r.at) throw new Error("no saved search");
   const p = r.params, mins = Math.max(1, Math.ceil((Date.now() - new Date(r.at)) / 60000));
   const extra = `&published-after=${p.since ? Math.min(mins, +p.since) : mins}` + (p.remote ? "&remote=true" : "") + (p.noexp ? "&experience=false" : "");
-  const loc = locationParam(r.geo, p.radius), exRes = (p.excludes || []).map(termRe);
+  const loc = locationParam(r.geo, p.radius), exRes = (p.excludes || []).map(exRe);
   const known = new Set(store.get("jf-seen", {})[r.sig] || r.ads.map(a => a.id)), fresh = new Map();
   let more = false;
   await pool(p.terms.length ? allWords(p) : [""], 3, async q0 => {
@@ -1832,5 +1922,6 @@ applyPalette();
 loadPrefs();
 fillForm(store.get("jf-search", null) || { country: "SE", place: "", radius: 25, terms: [], excludes: [], links: true });
 render();
+if (PHONE.matches && results) foldForm(true);
 selectTab({ "#mentor": "mentor", "#market": "market", "#applications": "app", "#jobs": "res" }[location.hash] || store.get("jf-tab", "res"));
 initWelcome();

@@ -103,7 +103,7 @@ function styleCheck(text, { cv = "", ad = "", task = "cv" } = {}) {
   // Date ranges and number ranges don't count.
   const rest = out.replace(DATE_RANGE, "").replace(/\d\s*[\u2013\u2014]\s*\d/g, "");
   const dashes = (rest.match(/[ \t][\u2013\u2014](?=[ \t])|\u2014/g) || []).length;
-  return { even: (v !== null && v < UNIFORM && !twoDiffer) || sameBullets, words, dashes };
+  return { even: (v !== null && v < UNIFORM && !twoDiffer) || sameBullets, words, dashes, order: wordOrderSlips(out).slice(0, 5) };
 }
 
 // The tailored CV's form, made consistent in code so the PDF always looks the same, whatever the model did:
@@ -169,4 +169,12 @@ function keepContact(md, cv) {
   return lines.join("\n");
 }
 
-module.exports = { stripDashes, styleCheck, tidyCv, keepContact, _test: { roleBlocks, variation, UNIFORM, sentencesOf } };
+// Swedish main clauses put the verb second: "Jag berättar gärna mer", not "Jag gärna berättar mer". A model that writes
+// Swedish with English habits gets this wrong, and a native reader notices at once, so the answer is put right in code
+// like the dashes. Only a sentence that starts with its subject is touched: after "att", "som" or "när" the adverb
+// goes first ("att jag gärna berättar") and that is correct.
+const V2_ADV = "gärna|också|även|inte|aldrig|alltid|ofta|redan|verkligen|särskilt";
+const V2 = new RegExp(`(^|[.!?]\\s+|\\n[ \\t]*(?:[-*•][ \\t]+)?)(Jag|Vi|Du|Hon|Han|Ni|De)\\s+(${V2_ADV})\\s+(\\p{Ll}+(?:ar|er|ir|or|ur|yr|år|ade|de|te))(?![\\p{L}])`, "gu");
+const fixWordOrder = text => String(text || "").replace(V2, (m, pre, subj, adv, verb) => `${pre}${subj} ${verb} ${adv}`);
+const wordOrderSlips = text => [...String(text || "").matchAll(V2)].map(m => `${m[2]} ${m[3]} ${m[4]}`);
+module.exports = { stripDashes, styleCheck, tidyCv, keepContact, fixWordOrder, wordOrderSlips, _test: { roleBlocks, variation, UNIFORM, sentencesOf } };

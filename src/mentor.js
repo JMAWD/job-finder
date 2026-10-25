@@ -117,25 +117,46 @@ const MT_GENERIC = new Set(["utbildning", "utbildningar", "erfarenhet", "ledarsk
   "education", "experience", "leadership", "communication", "teamwork", "training", "quality", "management", "project", "english", "swedish",
   "driving licence", "driving license", "consulting"]);
 const mtRoleFor = (d, c) => { const f = fold(c.forRole); return f ? d.roles.find(r => fold(r.title) === f) || d.roles.find(r => fold(r.title).includes(f) || f.includes(fold(r.title))) : null; };
-const mtCountsHere = () => { const c = mentor?.counts; return c && c.loc === mtPlace().loc ? c : null; };
+const MT_COUNT_V = 2;   // 1.8 counts by the role's words, not the model's quoted phrase; older counts are made again
+const mtCountsHere = () => { const c = mentor?.counts; return c && c.loc === mtPlace().loc && c.v === MT_COUNT_V ? c : null; };
+// Small words that say nothing about a role, left out of the count's search
+const MT_SMALL = new Set(["i", "inom", "med", "for", "och", "till", "pa", "av", "mot", "vid", "hos", "som", "the", "in", "of", "with", "and", "to", "at", "on", "a", "an"]);
+const mtWords = s => String(s || "").trim().split(/\s+/).filter(w => w && !MT_SMALL.has(fold(w)));
+// How a suggested role is counted. The model's "search" is a phrase like "sjuksköterska äldreomsorg" that ads rarely
+// write word for word, so its words are searched together without quotes: every word somewhere in the ad. When that
+// finds nothing, its first word ("undersköterska" in "undersköterska medicinsk inriktning") is counted instead, and the
+// card says which word it counted. A first word shorter than five letters ("ISO" in "ISO 26262") says too little.
+function mtQueries(r) {
+  const ws = mtWords(r.search), words = ws.join(" "), head = ws.length > 1 ? ws[0] : "";
+  const qs = words ? [words] : [];
+  if (head.length >= 5 && !MT_GENERIC.has(fold(head)) && fold(head) !== fold(words)) qs.push(head);
+  return qs;
+}
+async function mtOpen(r, loc, n) {
+  const qs = mtQueries(r);
+  for (let i = 0; i < qs.length; i++) {
+    const j = await getJSON(`${JS_API}/search?q=${encodeURIComponent(qs[i])}&${loc}&limit=${n}`, 2), total = +j.total?.value || 0;
+    if (total || i === qs.length - 1) return { total, q: qs[i], broad: i > 0, hits: j.hits || [] };
+  }
+  return { total: 0, q: "", broad: false, hits: [] };
+}
 async function mtCount() {
   if (!mentor || mt.counting) return;
   const { loc } = mtPlace(), cur = mentor.counts;
-  if ((cur && cur.loc === loc && Date.now() - new Date(cur.at) < 864e5) || mt.countFailedFor === loc) return;
+  if ((cur && cur.loc === loc && cur.v === MT_COUNT_V && Date.now() - new Date(cur.at) < 864e5) || mt.countFailedFor === loc) return;
   mt.counting = true; renderMentorMain();
-  const d = mentor.data, sampled = new Set(d.courses.map(c => mtRoleFor(d, c)).filter(Boolean)), texts = new Map(), roles = {};
+  const d = mentor.data, sampled = new Set(d.courses.map(c => mtRoleFor(d, c)).filter(Boolean)), texts = new Map(), roles = {}, query = {};
   try {
     await pool(d.roles, 3, async r => {
-      const q = encodeURIComponent(/\s/.test(r.search) ? `"${r.search}"` : r.search), n = sampled.has(r) ? 60 : 1;
-      const j = await getJSON(`${JS_API}/search?q=${q}&${loc}&limit=${n}`, 2);
-      roles[fold(r.title)] = +j.total?.value || 0;
-      if (n > 1) texts.set(r, (j.hits || []).map(h => fold(`${h.headline || ""} ${h.description?.text || ""}`)));
+      const n = sampled.has(r) ? 60 : 1, o = await mtOpen(r, loc, n);
+      roles[fold(r.title)] = o.total; query[fold(r.title)] = { q: o.q, broad: o.broad };
+      if (n > 1) texts.set(r, o.hits.map(h => fold(`${h.headline || ""} ${h.description?.text || ""}`)));
     });
     // Roles with no ads here get the count for all of Sweden, so a suggestion isn't written off because of the place
     const national = {}, countryLoc = `country=${SE_ID}`;
     if (loc !== countryLoc) await pool(d.roles.filter(r => roles[fold(r.title)] === 0), 3, async r => {
-      const q = encodeURIComponent(/\s/.test(r.search) ? `"${r.search}"` : r.search);
-      national[fold(r.title)] = +(await getJSON(`${JS_API}/search?q=${q}&${countryLoc}&limit=1`, 2)).total?.value || 0;
+      const o = await mtOpen(r, countryLoc, 1);
+      national[fold(r.title)] = o.total; if (o.total) query[fold(r.title)] = { q: o.q, broad: o.broad };
     });
     const demand = {};
     for (const c of d.courses) {
@@ -144,7 +165,7 @@ async function mtCount() {
       const re = termRe(c.skill);
       demand[fold(c.name)] = { p: Math.round(100 * list.filter(x => re.test(x)).length / list.length), n: list.length, role: r.title };
     }
-    if (mentor && mentor.data === d) { mentor.counts = { loc, at: new Date().toISOString(), roles, national, demand }; store.set("jf-mentor", mentor); }
+    if (mentor && mentor.data === d) { mentor.counts = { v: MT_COUNT_V, loc, at: new Date().toISOString(), roles, national, demand, query }; store.set("jf-mentor", mentor); }
   } catch (e) { console.warn("Open-ad counts could not be loaded", e); mt.countFailedFor = loc; }
   mt.counting = false; renderMentorMain();
 }
@@ -207,16 +228,17 @@ function mtRoleCard(r, tier) {
   const badges = [], counts = mtCountsHere(), n = counts ? counts.roles[fold(r.title)] : undefined;
   if (tier !== "direct" && mtAns.dir !== "any" && r.dirs.includes(mtAns.dir)) badges.push(`<span class="mt-badge fit">${esc(t("mt.fit"))}</span>`);
   if (r.gapMonths > MT_H[mtAns.horizon]) badges.push(`<span class="mt-badge long">${esc(cap(t("mt.long", { d: mtDur(r.gapMonths) })))}</span>`);
-  const nat = n === 0 ? counts.national?.[fold(r.title)] || 0 : 0;
-  const open = mt.counting && !counts ? "…" : n == null ? "" : n ? tn(n, "mt.open1", "mt.openN", { n: n.toLocaleString(numLoc()) })
-    : nat ? t("mt.open0.nat", { n: nat.toLocaleString(numLoc()) }) : t("mt.open0");
+  const nat = n === 0 ? counts.national?.[fold(r.title)] || 0 : 0, qi = counts?.query?.[fold(r.title)] || null;
+  const q = qi?.q || mtQueries(r)[0] || r.title, as = qi?.broad ? t("mt.as", { q }) : "";
+  const open = mt.counting && !counts ? "…" : n == null ? "" : n ? tn(n, "mt.open1", "mt.openN", { n: n.toLocaleString(numLoc()) }) + as
+    : nat ? t("mt.open0.nat", { n: nat.toLocaleString(numLoc()) }) + as : t("mt.open0");
   return `<article class="mt-role t-${tier}">
     <div class="mt-role-top"><h4>${esc(r.title)}</h4>
       <div class="mt-match" title="${esc(t("mt.match"))}"><span>${r.match}%</span><span class="mt-meter" aria-hidden="true"><i style="width:${r.match}%"></i></span></div></div>
     ${badges.length ? `<div class="mt-badges">${badges.join("")}</div>` : ""}
     ${r.why ? `<p class="mt-why">${esc(r.why)}</p>` : ""}
     <div class="mt-gaps"><span class="label">${esc(t("mt.gaps"))}</span>${r.gaps.length ? r.gaps.map(g => `<span class="chip cat">${esc(g)}</span>`).join("") : `<span class="mt-muted">${esc(t("mt.nogaps"))}</span>`}</div>
-    <div class="mt-role-foot"><span class="mono mt-open">${esc(open)}</span><button class="btn sm" type="button" data-mt="search" data-q="${esc(r.search)}"${nat ? ' data-all="1"' : ""}>${esc(t(nat ? "mt.search.all" : "mt.search"))}</button></div>
+    <div class="mt-role-foot"><span class="mono mt-open">${esc(open)}</span><button class="btn sm" type="button" data-mt="search" data-q="${esc(q)}"${nat ? ' data-all="1"' : ""}>${esc(t(nat ? "mt.search.all" : "mt.search"))}</button></div>
   </article>`;
 }
 function mtTier(tier, sub, roles) {
@@ -336,7 +358,8 @@ async function getAdvice() {
 function mtSearch(q, all) {
   selectTab("res");
   if (all) { $("place").value = ""; syncRadius(); }
-  terms.splice(0, terms.length, q); setAlts(); kwBox.draw(); showHint({ kind: "" });
+  // A phrase that no ads use word for word gets the offer to search its words separately (checkPhrases), as when typed
+  terms.splice(0, terms.length, q.trim()); setAlts(); kwBox.draw(); showHint({ kind: "" });
   window.scrollTo(0, 0);
   runSearch();
 }

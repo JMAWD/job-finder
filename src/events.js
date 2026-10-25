@@ -23,6 +23,9 @@ Object.assign(I18N, {
 });
 
 const EV_TTL = 12 * 36e5, EV_RETRY = 30 * 6e4, EV_SHOW = 4, EV_JOBFAIR_KM = 100, EV_NEAR_KM = 60, EV_AHEAD_DAYS = 400;
+// A trade fair or conference further away than this is left out of a search for one place: Stockholm is too far from
+// Malmö for a day's networking, but not from Göteborg
+const EV_FAR_KM = 450;
 const EV_SOURCES = { sm: "Stockholmsmässan", kista: "Kistamässan", malmo: "Malmömässan", vs: "Visit Sweden" };
 // Where the venues are, for the distance to the searched place. Stockholmsmässan also lists a few events held elsewhere.
 const EV_VENUES = {
@@ -200,6 +203,7 @@ function evList(I) {
       const kw = I.words.find(x => x.re.test(hay));
       why = kw ? t("ev.why.kw", { w: kw.w }) : t("ev.why.jobfair");
     } else {
+      if (I.geo.mode !== "all" && km !== null && km > EV_FAR_KM) continue;
       const kw = I.words.find(x => x.re.test(e.kind === "public" ? name : hay));
       if (e.kind === "public" && !kw) continue;   // fairs for the general public only when their name has a keyword
       const tp = kw ? null : I.topics.find(k => evInTopic(e, k));

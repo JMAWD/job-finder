@@ -83,7 +83,7 @@ async function docxText(buf) {
 /* ---------- Writing a simple .docx from the AI's answer, so it opens in Word, Pages or Google Docs ---------- */
 const CRC_TABLE = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 const crc32 = u8 => { let c = 0xffffffff; for (const b of u8) c = CRC_TABLE[(c ^ b) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
-function zipStore(files) {   // files: [[name, Uint8Array]] stored without compression
+function zipStore(files, type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {   // files: [[name, Uint8Array]] stored without compression
   const enc = new TextEncoder(), parts = [], central = []; let offset = 0;
   for (const [name, data] of files) {
     const nb = enc.encode(name), crc = crc32(data);
@@ -99,7 +99,27 @@ function zipStore(files) {   // files: [[name, Uint8Array]] stored without compr
   }
   const cenSize = central.reduce((n, b) => n + b.length, 0), end = new DataView(new ArrayBuffer(22));
   end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true); end.setUint32(12, cenSize, true); end.setUint32(16, offset, true);
-  return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+  return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type });
+}
+// An Excel file of rows of text, the first row bold and frozen as headings. Made here, like the Word file, with nothing sent.
+function xlsxBlob(rows, sheetName = "Sheet1") {
+  const enc = new TextEncoder(), x = v => String(v ?? "").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const col = i => { let s = ""; for (i++; i; i = Math.floor((i - 1) / 26)) s = String.fromCharCode(65 + (i - 1) % 26) + s; return s; };
+  const head = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n', ns = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"';
+  const widths = (rows[0] || []).map((_, ci) => Math.min(60, Math.max(8, ...rows.slice(0, 200).map(r => String(r[ci] ?? "").length + 2))));
+  const sheet = `${head}<worksheet ${ns}><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>`
+    + `<cols>${widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols><sheetData>`
+    + rows.map((r, ri) => `<row r="${ri + 1}">${r.map((v, ci) => `<c r="${col(ci)}${ri + 1}" t="inlineStr"${ri === 0 ? ' s="1"' : ""}><is><t xml:space="preserve">${x(v)}</t></is></c>`).join("")}</row>`).join("")
+    + `</sheetData>${rows.length > 1 ? `<autoFilter ref="A1:${col((rows[0] || []).length - 1)}${rows.length}"/>` : ""}</worksheet>`;
+  const files = [
+    ["[Content_Types].xml", `${head}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`],
+    ["_rels/.rels", `${head}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+    ["xl/workbook.xml", `${head}<workbook ${ns} xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${x(sheetName).slice(0, 31)}" sheetId="1" r:id="rId1"/></sheets></workbook>`],
+    ["xl/_rels/workbook.xml.rels", `${head}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+    ["xl/styles.xml", `${head}<styleSheet ${ns}><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="2"><xf fontId="0"/><xf fontId="1" applyFont="1"/></cellXfs></styleSheet>`],
+    ["xl/worksheets/sheet1.xml", sheet],
+  ];
+  return zipStore(files.map(([n, v]) => [n, enc.encode(v)]), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 }
 function docxBlob(md, title, textLang) {
   const x = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -455,7 +475,9 @@ function factCheckHtml(check, edited, fixed) {
   const again = edited ? ` ${esc(t("fc.again"))}` : fixed ? ` ${esc(t(fixed === 1 ? "fc.fixed1" : "fc.fixed", { n: fixed }))}` : "";
   if (!check.issues.length) return `<p class="fc fc-ok" role="status">${esc(t("fc.ok"))}${again}</p>`;
   return `<section class="fc fc-warn" role="alert"><p><b>${esc(check.issues.length === 1 ? t("fc.warn1") : t("fc.warn", { n: check.issues.length }))}</b>${again}</p>
-    <ul>${check.issues.map(i => `<li><span class="fc-kind">${esc(t("fc.k." + i.kind))}</span>${esc(i.text)}</li>`).join("")}</ul>
+    <ul>${check.issues.map(i => { const ctx = i.line ? plainLine(i.line).replace(/^\s*(?:#{1,6}\s+|>\s*|[-*•+]\s+|\d+[.)]\s+)+/, "").trim() : "";
+      const inLine = ctx && fold(ctx) !== fold(i.text) ? `<span class="fc-in">${esc(t("fc.in", { line: ctx.length > 140 ? ctx.slice(0, 137) + "…" : ctx }))}</span>` : "";
+      return `<li><span class="fc-kind">${esc(t("fc.k." + i.kind))}:</span> <b>${esc(i.text)}</b>${inLine}</li>`; }).join("")}</ul>
     <p class="tl-hint">${esc(t("fc.how"))}</p></section>`;
 }
 // The style check (server/style.js): what still makes a CV or letter sound machine written after the server has taken
@@ -466,10 +488,11 @@ function styleHtml(st) {
   if (st.even) notes.push(t("st.even"));
   if (st.words?.length) notes.push(t("st.words", { words: st.words.join(", ") }));
   if (st.dashes) notes.push(t(st.dashes === 1 ? "st.dash1" : "st.dashes", { n: st.dashes }));
+  if (st.order?.length) notes.push(t("st.order", { words: st.order.map(x => `"${x}"`).join(", ") }));
   if (!notes.length) return "";
   return `<section class="fc fc-style" role="status"><p><b>${esc(t("st.title"))}</b></p><ul>${notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul></section>`;
 }
-const cleanStyle = st => st && typeof st === "object" ? { even: !!st.even, words: (Array.isArray(st.words) ? st.words : []).slice(0, 10).map(w => String(w).slice(0, 40)), dashes: +st.dashes || 0 } : null;
+const cleanStyle = st => st && typeof st === "object" ? { even: !!st.even, words: (Array.isArray(st.words) ? st.words : []).slice(0, 10).map(w => String(w).slice(0, 40)), dashes: +st.dashes || 0, order: (Array.isArray(st.order) ? st.order : []).slice(0, 5).map(w => String(w).slice(0, 60)) } : null;
 
 // server/factcheck.js and server/style.js, built into the page by build.py and compiled on first use. A browser too old
 // for their patterns goes without, and the panel says the edits weren't checked.
@@ -481,7 +504,7 @@ function compiled(src, pick) {
   catch (err) { console.warn("A check can't run in this browser", err); return null; }
 }
 const checks = () => (localCheck === undefined ? (localCheck = compiled(FACTCHECK_SRC, m => m.review ? m : null)) : localCheck) || null;
-const cleanCheck = c => c && Array.isArray(c.issues) ? { ok: !!c.ok, issues: c.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200) })) } : null;
+const cleanCheck = c => c && Array.isArray(c.issues) ? { ok: !!c.ok, issues: c.issues.slice(0, 30).map(i => ({ kind: String(i.kind), text: String(i.text).slice(0, 200), ...(i.line ? { line: String(i.line).slice(0, 200) } : {}) })) } : null;
 function cleanImpact(im) {
   if (!im || typeof im !== "object") return null;
   const n = x => Math.max(0, Math.min(999, Math.round(+x || 0))), list = a => (Array.isArray(a) ? a : []).slice(0, 12).map(x => String(x).slice(0, 40));
@@ -588,6 +611,18 @@ function evidenceHtml(o, ann, task) {
   return `<section class="src-sum" aria-label="${esc(t("src.aria"))}">${ats}<p class="src-line"><b>${esc(t(ats ? "src.evidence" : "src.title"))}</b> ${esc(counts)}.</p>${across}
     <div class="row"><button class="btn ghost sm" type="button" data-tl="sources" aria-pressed="${tl.sources ? "true" : "false"}">${esc(t("src.show"))}</button></div>${legend}${ats ? `<p class="tl-hint">${esc(t("im.how"))}</p>` : ""}</section>`;
 }
+// One line above the text on how the checks came out, so the text itself is on the first screen. The checks follow the
+// text in full.
+function checkSumHtml(o, ann) {
+  const c = o.check;
+  if (!c || !Array.isArray(c.issues)) return "";
+  const held = (ann || []).reduce((n, a) => n + a.q.filter(Boolean).length, 0);
+  const style = o.style && (o.style.even || o.style.words?.length || o.style.dashes || o.style.order?.length);
+  const parts = [c.issues.length ? t(c.issues.length === 1 ? "sum.issue1" : "sum.issues", { n: c.issues.length }) : t("sum.ok")];
+  if (held) parts.push(t(held === 1 ? "sum.held1" : "sum.held", { n: held }));
+  if (style) parts.push(t("sum.style"));
+  return `<p class="fc-sum ${c.issues.length ? "warn" : "ok"}" role="status">${esc(parts.join(" · "))} <a href="#tl-checks" class="linkbtn" data-tl="tochecks">${esc(t("sum.see"))}</a></p>`;
+}
 // The whole text as plain text in a box, for when downloads or the clipboard are blocked
 function plainHtml(o, ann) {
   if (!tl.plain) return "";
@@ -679,7 +714,7 @@ function tailorHtml() {
     const rv = reviewText(out.text, { task, outLang: out.lang });
     if (rv) { out.check = rv.check; out.trace = rv.trace; if (rv.impact) out.impact = rv.impact; saveTailor(); }
   }
-  const ann = out ? annotate(out) : null;
+  const ann = out ? annotate(out) : null, stale = staleOf(out, e);
   const code = store.get("jf-code", "");
   const outLang = e.lang || tl.lang || lang;
   return `<div class="tl-head">
@@ -716,9 +751,9 @@ function tailorHtml() {
           ${out.cut ? `<p class="tl-err" role="alert">${esc(t("tl.cut"))}</p>` : ""}
           ${out.excerpt ? `<p class="tl-hint tl-fill">${esc(t("xc.made"))}</p>` : ""}
           ${out.adTrimmed ? `<p class="tl-hint tl-fill">${esc(t("xc.trimmed", { n: fmtCount(+out.adTrimmed.to || MAX_AD) }))}</p>` : ""}
-          ${factCheckHtml(out.check, out.edited, out.fixed)}
-          ${styleHtml(out.style)}
-          ${tl.editing ? "" : evidenceHtml(out, ann, task) + quarantineHtml(out, ann)}
+          ${stale ? `<div class="tl-stale" role="status"><p>${esc(t(stale === "cv" ? "tl.stale.cv" : "tl.stale.ad"))}</p><button class="btn sm" type="button" data-tl="restale"${tl.busy ? " disabled" : ""}>${esc(t("tl.stale.go"))}</button></div>` : ""}
+          ${licenceHtml(e)}
+          ${tl.editing ? factCheckHtml(out.check, out.edited, out.fixed) + styleHtml(out.style) : checkSumHtml(out, ann)}
           ${tl.editing ? `<div class="tl-edit"><label class="tl-label" for="tl-edit">${esc(t("tl.edit.label"))}</label>
             <textarea id="tl-edit" data-tl="edit-text" rows="22" lang="${out.lang === "en" ? "en" : "sv"}">${esc(tl.editDraft ?? out.text)}</textarea>
             <p class="tl-hint">${esc(t("tl.edit.hint"))}</p>
@@ -729,7 +764,8 @@ function tailorHtml() {
           ${DOC_TASKS.has(task) && /\[[^\]\n]{2,60}\]/.test(out.text) ? `<p class="tl-hint tl-fill">${esc(t("tl.fill"))}</p>` : ""}
           ${tl.pdfLost ? `<p class="tl-hint" role="status">${esc(t("tl.pdflost", { n: tl.pdfLost }))}</p>` : ""}
           ${embedded && !tl.plain ? `<p class="tl-hint">${esc(t("pt.embedded"))}</p>` : ""}
-          ${plainHtml(out, ann)}`}
+          ${plainHtml(out, ann)}
+          <div class="tl-checks" id="tl-checks" tabindex="-1">${factCheckHtml(out.check, out.edited, out.fixed)}${styleHtml(out.style)}${evidenceHtml(out, ann, task)}${quarantineHtml(out, ann)}</div>`}
           ${tl.editing ? "" : factsHtml(out, e, task)}
           ${appliedHtml(job.id)}` : appliedHtml(job.id)}
       </section>
@@ -800,7 +836,7 @@ async function generate() {
       // The server says it read the additions; one from before they existed ignores them, and the panel says so
       const usedFacts = Boolean(facts && j.facts === true);
       if (facts && !usedFacts) tl.factsMsg = "tl.more.old";
-      const o = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(usedFacts ? { facts } : {}), ...(j.cut ? { cut: true } : {}), ...(+j.fixed > 0 ? { fixed: Math.min(99, +j.fixed) } : {}), ...(cleanStyle(j.style) ? { style: cleanStyle(j.style) } : {}), ...(cleanCheck(j.check) ? { check: cleanCheck(j.check) } : {}),
+      const o = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, cvH: tlHash(facts ? `${cv}\n\n${facts}` : cv), adH: tlHash(ad), ...(usedFacts ? { facts } : {}), ...(j.cut ? { cut: true } : {}), ...(+j.fixed > 0 ? { fixed: Math.min(99, +j.fixed) } : {}), ...(cleanStyle(j.style) ? { style: cleanStyle(j.style) } : {}), ...(cleanCheck(j.check) ? { check: cleanCheck(j.check) } : {}),
         ...(typeof j.trace === "string" ? { trace: j.trace } : {}), ...(cleanImpact(j.impact) ? { impact: cleanImpact(j.impact) } : {}),
         ...(excerpt ? { excerpt: true } : {}), ...(j.adTrimmed ? { adTrimmed: { from: +j.adTrimmed.from || 0, to: +j.adTrimmed.to || 0 } } : cutFrom ? { adTrimmed: { from: cutFrom, to: ad.length } } : {}) };
       // A server from before the trace: the same code works it out here
@@ -818,6 +854,22 @@ async function generate() {
     clearTimeout(timer); clearInterval(tick);
     if (tl && tl.id === id) { tl.busy = false; tl.ctrl = null; tl.status = ""; tl.error = esc(msg); if ($("tailor").open) drawTailor(msg ? null : ".ai-note"); }
   }
+}
+// A short fingerprint of a text, to tell whether the CV or the ad has changed since an answer was made
+const tlHash = s => { s = String(s || "").trim(); let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
+// "cv" or "ad" when the answer was made from another version of it than the one in the panel now, "" otherwise.
+// Answers saved before 1.8 have no fingerprints and are never called out of date.
+function staleOf(o, e) {
+  if (!o || !o.cvH) return "";
+  if (tlHash(cvWithFacts(e)) !== o.cvH) return "cv";
+  const ad = e.ad ?? tl.adText ?? "";
+  return o.adH && ad && tlHash(ad) !== o.adH ? "ad" : "";
+}
+// The ad asks for a licence or a certificate from an authority and the CV doesn't mention one (see licenceGap in
+// server/factcheck.js). Said in code, whatever the AI wrote.
+function licenceHtml(e) {
+  const m = checks(), gap = m?.licenceGap ? m.licenceGap(cvWithFacts(e), e.ad ?? tl.adText ?? "") : null;
+  return gap ? `<p class="tl-licence" role="note"><b>${esc(t("lic.title", { asked: gap.asked }))}</b> ${esc(t("lic.text"))}</p>` : "";
 }
 const slugify = s => fold(s).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
 function onTailorClick(e) {
@@ -860,9 +912,10 @@ function onTailorClick(e) {
     download(pdf.blob, docName(o, "pdf"));
     if (pdf.lost !== tl.pdfLost) { tl.pdfLost = pdf.lost; drawTailor('[data-tl="pdf"]'); }
   }
-  else if (k === "go" || k === "regen") {
+  else if (k === "tochecks") { e.preventDefault(); const c = $("tl-checks"); if (c) { c.scrollIntoView({ block: "start" }); c.focus({ preventScroll: true }); } }
+  else if (k === "go" || k === "regen" || k === "restale") {
     flushTailor();
-    if (wouldLose(tlEntry(tl.id).out[tl.task])) { tl.confirm = k; drawTailor('[data-tl="replace"]'); }
+    if (wouldLose(tlEntry(tl.id).out[tl.task])) { tl.confirm = k === "restale" ? "go" : k; drawTailor('[data-tl="replace"]'); }
     else generate();
   }
   else if (k === "replace") generate();

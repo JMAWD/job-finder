@@ -411,6 +411,8 @@ async def main():
 
         await pg.click('.lang button[data-lang=sv]')
         await pg.evaluate("v => sessionStorage.setItem('wb-visit', JSON.stringify(v))", ago(1))
+        # Chromium commits storage writes a moment later; reading it back makes sure the reload below sees it
+        await pg.evaluate("sessionStorage.getItem('wb-visit')")
         await pg.reload()
         await pg.wait_for_function(counted('Kollar'), timeout=15000)
         txt = await wbx.inner_text()
