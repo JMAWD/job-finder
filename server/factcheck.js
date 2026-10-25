@@ -174,6 +174,8 @@ const SPLIT = new RegExp(`\\s*(?:,|;|\\||·|•|–|—|\\s-\\s|@|\\(|\\)|:|\\/|
 const OPEN_ALL = new RegExp(OPEN.source, "giu"), SINCE = new RegExp(words(["sedan", "since", "from", "från", "until", "till", "to"]), "giu");
 const stripDates = s => s.replace(MONTH_YEAR, " ").replace(/(19[5-9]\d|20[0-4]\d)/g, " ").replace(OPEN_ALL, " ").replace(SINCE, " ");
 
+// The first word of a sentence about what someone did, not of a role line: past tense verbs and the like
+const VERB_START = /^(?:\p{L}{3,}(?:ade|ades|erade)|var|har|hade|ledde|led|was|were|worked|managed|handled|helped|deltog|gick|tog|gjorde|skrev|startade|byggde)$/u;
 // The candidate role text on a line: a heading, a bold lead, or a short line with a year range
 function roleSegments(raw) {
   const segs = [];
@@ -280,6 +282,12 @@ function figures(text) {
     const raw = m[1], n = Number(raw.replace(/[ \u00a0]/g, "").replace(",", "."));
     if (/^(19|20)\d\d$/.test(raw)) continue;   // years are the date check's job
     out.push({ raw, n, years: YEARS_AFTER.test(f.slice(m.index + m[0].length, m.index + m[0].length + 14)) });
+  }
+  // The second number of a range ("8-10 brukare") is skipped above as part of a name like COVID-19, so it's added here:
+  // a CV that says 8-10 backs "8 to 10" in a translation
+  for (const m of String(text || "").matchAll(/(?<![\p{L}\d.,-])\d{1,3}\s*[-–—]\s*(\d{1,3})(?![\p{L}\d]|[.,]\d)/gu)) {
+    const n = Number(m[1]);
+    if (!out.some(o => o.n === n)) out.push({ raw: m[1], n, years: YEARS_AFTER.test(f.slice(m.index + m[0].length, m.index + m[0].length + 14)) });
   }
   for (const m of f.matchAll(/(?<![a-z])(tva|tre|fyra|fem|sex|sju|atta|nio|tio|elva|tolv|femton|tjugo|trettio|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty)(?![a-z])/g))
     out.push({ raw: m[1], n: NUMBER_WORDS[m[1]], years: YEARS_AFTER.test(f.slice(m.index + m[0].length, m.index + m[0].length + 14)) });
@@ -453,7 +461,8 @@ function checkAll(output, { cv = "", ad = "", title = "", employer = "", extra =
       const parts = stripDates(seg).split(SPLIT).map(s => s.trim()).filter(s => /\p{L}/u.test(s) && !isGeneric(s));
       if (!dated && parts.length < 2) continue;
       const found = [], school = parts.some(part => degreeLevels(part).size);   // names next to a degree are schools
-      for (const part of parts) {
+      for (const [pi, part] of parts.entries()) {
+        if (pi === 0 && VERB_START.test(fold(part.trim().split(/\s+/)[0]))) continue;   // "Arbetade på …" starts a sentence, not a name
         const levels = degreeLevels(part);
         if (levels.size) {                                     // a degree: translated is fine, a higher level is not
           if (!inSource(part, cvTok) && ![...levels].every(l => cvLevels.has(l))) flag("degree", part, raw);
@@ -483,7 +492,9 @@ function checkAll(output, { cv = "", ad = "", title = "", employer = "", extra =
 
     // Employers after a preposition (the name itself must start with a capital letter, so no "i" flag here)
     for (const m of line.split(/(?<=[.!?])\s+/).flatMap(sentence => [...sentence.matchAll(EMPLOYER_AFTER)])) {
-      const prep = fold(m[1]), name = m[2].replace(/[.'’-]+$/, "");
+      // A year or range right after the name ("på Attendo Kronan 2018–2021") is a date, which the date check handles
+      const prep = fold(m[1]), name = m[2].replace(/[.'’-]+$/, "").replace(/(?:\s+\d[\d.\/–—-]*)+$/u, "");
+      if (!name) continue;
       const words = core(name);
       if (!words.length || (words.length === 1 && NOT_EMPLOYER.has(words[0])) || words.every(w => /^\d+$/.test(w))) continue;
       if (isTitle(name)) continue;                          // "for Quality Engineer" is a title, checked below
@@ -606,10 +617,10 @@ function traceText(output, { cv = "", ad = "", title = "", employer = "", extra 
    same thing in other words, and the ad's word is used for it) or by claiming what the CV doesn't have. Only the first is
    an improvement, so the gain is split: terms the CV backs up are counted, terms only the ad has are listed apart and never
    counted. The ad's terms are its names (FMEA, SAP, ISO), the words of its title, and longer words it uses at least twice. */
-function keywordImpact(output, { cv = "", ad = "", title = "", employer = "", extra = "", lang = "" } = {}) {
-  const outLang = lang || guessLangOf(output);
-  const ordinary = guessLangOf(ad) === outLang && guessLangOf(cv) === outLang;   // across languages only names can be counted
-  const empTok = new Set(tokens(employer)), compact = s => fold(s).replace(/[^a-z0-9+#]/g, "");
+// The ad's key terms, and a test for whether a text has one (the same word, or the same word with another ending)
+const compactOf = s => fold(s).replace(/[^a-z0-9+#]/g, "");
+function adTermList(ad, { title = "", employer = "", ordinary = true } = {}) {
+  const empTok = new Set(tokens(employer)), compact = compactOf;
   const adText = String(ad || "").split(/\r?\n/).filter(l => !capsHeading(l)).join("\n");
   // The short lines of the ad's lists ("- Python", "- Erfarenhet av FMEA") are usually its requirements
   const listLine = l => /^\s*(?:[-*•+]|\d+[.)])\s/.test(l) && l.trim().split(/\s+/).length <= 6;
@@ -623,14 +634,19 @@ function keywordImpact(output, { cv = "", ad = "", title = "", employer = "", ex
     const t = terms.get(key) || { shown: prod || named || from === "list" ? raw : raw.toLowerCase(), w, prod, n: 0, keep: false };
     t.n++; t.keep = t.keep || Boolean(from) || named; terms.set(key, t);
   }
-  const list = [...terms.values()].filter(t => t.prod || t.n >= 2 || t.keep)
+  return [...terms.values()].filter(t => t.prod || t.n >= 2 || t.keep)
     .sort((a, b) => (b.prod - a.prod) || (b.keep - a.keep) || (b.n - a.n)).slice(0, 40);
-  // Is the term written in the text, as an ATS would see it: the same word or the same word with another ending
-  const presence = text => {
-    const ws = [...new Set(tokens(text))], whole = compact(text);
-    return t => t.prod ? (ws.includes(t.w) || (compact(t.shown).length >= 3 && whole.includes(compact(t.shown))))
-      : ws.some(s => s === t.w || sameWord(s, t.w) || (enStem(t.w).length >= 4 && enStem(s) === enStem(t.w)));
-  };
+}
+// Is the term written in the text, as an ATS would see it: the same word or the same word with another ending
+const presence = text => {
+  const ws = [...new Set(tokens(text))], whole = compactOf(text);
+  return t => t.prod ? (ws.includes(t.w) || (compactOf(t.shown).length >= 3 && whole.includes(compactOf(t.shown))))
+    : ws.some(s => s === t.w || sameWord(s, t.w) || (enStem(t.w).length >= 4 && enStem(s) === enStem(t.w)));
+};
+function keywordImpact(output, { cv = "", ad = "", title = "", employer = "", extra = "", lang = "" } = {}) {
+  const outLang = lang || guessLangOf(output);
+  const ordinary = guessLangOf(ad) === outLang && guessLangOf(cv) === outLang;   // across languages only names can be counted
+  const list = adTermList(ad, { title, employer, ordinary });
   const ownText = [cv, extra].join("\n"), inCv = presence(ownText), inOut = presence(output);
   const cvWords = new Set(tokens(ownText)), cvText = fold(ownText);
   const before = list.filter(inCv), gained = list.filter(t => inOut(t) && !inCv(t)), lost = before.filter(t => !inOut(t));
@@ -638,6 +654,15 @@ function keywordImpact(output, { cv = "", ad = "", title = "", employer = "", ex
   const names = a => a.slice(0, 12).map(t => t.shown.slice(0, 40));
   return { terms: list.length, before: before.length, after: before.length - lost.length + supported.length,
     gained: names(supported), unsupported: names(unsupported), lost: names(lost) };
+}
+
+// The ad's key terms that the CV (and what the person added) doesn't use, for the checklist in step 2: the person ticks
+// only what is true for them and says how in their own words, and from then on it counts as theirs. Ordinary words are
+// only compared when the CV and the ad are in the same language.
+function missingTerms(cv, ad, { title = "", employer = "", max = 12 } = {}) {
+  const ordinary = guessLangOf(ad) === guessLangOf(cv);
+  const inCv = presence(cv), cvWords = new Set(tokens(cv)), cvText = fold(cv);
+  return adTermList(ad, { title, employer, ordinary }).filter(t => !inCv(t) && !backed(t.w, cvWords, cvText)).slice(0, max).map(t => t.shown.slice(0, 40));
 }
 
 /* ---------- The ad text itself ----------
@@ -677,5 +702,16 @@ function review(output, src = {}) {
   return { ok: r.ok, issues: r.issues, trace: lines.join(","), counts, impact: src.task === "cv" ? keywordImpact(output, src) : null };
 }
 
-module.exports = { factCheck, checkAll, review, traceText, lineParts, keywordImpact, cleanAd, trimAd,
+/* ---------- A licence or certificate the ad asks for and the CV doesn't mention ----------
+   Some jobs need proof from an authority: Socialstyrelsen's certificate for undersköterskor (since 1 July 2023), a
+   licence for nurses, doctors and teachers. An exam is not the same thing, and the model once said it was. So when the ad
+   asks for one and the CV never mentions one, the panel says so in plain code, whatever the AI wrote. */
+const LICENCE_AD = /(?<![\p{L}])(legitimation|legitimerad|leg\.|skyddad yrkestitel|bevis (?:om|för) (?:skyddad )?yrkestitel|intyg (?:från|av) socialstyrelsen|bevis från socialstyrelsen|lärarlegitimation|förskollärarlegitimation|licensed|registered nurse)(?![\p{L}])/iu;
+const LICENCE_CV = /(?<![\p{L}])(legitimation|legitimerad|leg\.|skyddad yrkestitel|yrkestitel|bevis (?:om|för|från)|intyg (?:från|av|om)|lärarlegitimation|förskollärarlegitimation|licen[cs]e|licensed|registered nurse|certificate from socialstyrelsen)(?![\p{L}])/iu;
+function licenceGap(cv, ad) {
+  const m = String(ad || "").match(LICENCE_AD);
+  if (!m || LICENCE_CV.test(String(cv || ""))) return null;
+  return { asked: m[1] };
+}
+module.exports = { factCheck, checkAll, review, traceText, lineParts, keywordImpact, missingTerms, cleanAd, trimAd, licenceGap,
   _test: { inSource, titleInSource, tokens, isTitle, isNameLike, isGeneric, degreeLevels, claimCheck, figures, isProductName } };

@@ -21,9 +21,18 @@ QA = [ad(f'2{i:02d}', 'Kvalitetsingenjör', f'Firma {i} AB', f'55600010{i:02d}',
          ('Vi söker en kvalitetsingenjör med erfarenhet av FMEA. ' if i < 9 else 'Vi söker en kvalitetsingenjör. ') + ('Python är ett plus.' if i < 3 else '')) for i in range(12)]
 
 COUNT_DOWN = {'on': False}
+COUNT_QS = []
 async def mentor_search(route):
     q = parse_qs(urlparse(route.request.url).query)
     if COUNT_DOWN['on'] and q.get('limit', [''])[0] in ('1', '60'): return await route.abort()   # the Mentor's open-ad counts
+    qq = q.get('q', [''])[0]
+    if q.get('limit', [''])[0] in ('1', '60'): COUNT_QS.append(qq)
+    # A phrase in quotes finds nothing, as on Platsbanken where ads rarely use a model's phrase word for word. Its words
+    # without quotes find the ads that mention all of them.
+    if q.get('limit', [''])[0] in ('1', '60') and qq.startswith('"') and ' ' in qq: return await route.fulfill(**ok({"total": {"value": 0}, "hits": []}))
+    if qq.lower() == 'produktionschef tillverkning': return await route.fulfill(**ok({"total": {"value": 3}, "hits": []}))
+    if qq.lower() == 'utbildare kvalitetsteknik': return await route.fulfill(**ok({"total": {"value": 0}, "hits": []}))
+    if qq.lower() == 'utbildare': return await route.fulfill(**ok({"total": {"value": 12}, "hits": []}))
     if 'kvalitetsingenjör' in q.get('q', [''])[0].lower() and q.get('qfields') != ['location']:
         return await route.fulfill(**ok({"total": {"value": 34}, "hits": QA}))
     if 'kvalitetschef' in q.get('q', [''])[0].lower():   # none near Göteborg, seven in the whole country
@@ -97,7 +106,11 @@ async def main():
             await pg.wait_for_function("((document.querySelector('#mt-main .mt-block-head p') || {}).textContent || '').startsWith('Open ads now in all of Sweden · counted ')", timeout=10000)
             check('open ads counted from Platsbanken', '34 open ads' in await m.locator('.mt-role', has_text='Kvalitetsingenjör').inner_text()
                   and '7 open ads' in await m.locator('.mt-role', has_text='Quality Manager').inner_text()
-                  and 'No open ads right now' in await m.locator('.mt-role', has_text='Production Manager').inner_text())
+                  and 'No open ads right now' in await m.locator('.mt-role', has_text='Functional Safety Engineer').inner_text())
+            check('a role is counted by its words, not as a quoted phrase', '3 open ads' in await m.locator('.mt-role', has_text='Production Manager').inner_text()
+                  and 'produktionschef tillverkning' in COUNT_QS and not any(x.startswith('"') for x in COUNT_QS), COUNT_QS)
+            fmea = await m.locator('.mt-role', has_text='FMEA Trainer').inner_text()
+            check('with nothing for all its words, the first word is counted and the card says so', '12 open ads for "utbildare"' in fmea, fmea)
             check('how often a skill is named in those ads', 'Named in 25% of 12 recent ads for Kvalitetsingenjör' in await m.locator('.mt-course', has_text='Python for engineers').inner_text()
                   and 'Named in 75% of 12' in await m.locator('.mt-course', has_text='AIAG-VDA').inner_text()
                   and 'Rarely named' in await m.locator('.mt-course', has_text='AI tools').inner_text())

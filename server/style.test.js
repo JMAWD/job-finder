@@ -4,7 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert");
 const fs = require("node:fs");
 const path = require("node:path");
-const { stripDashes, styleCheck, tidyCv, keepContact } = require("./style.js");
+const { stripDashes, styleCheck, tidyCv, keepContact, fixWordOrder, wordOrderSlips } = require("./style.js");
 const { factCheck } = require("./factcheck.js");
 
 const EM = "\u2014", EN = "\u2013";
@@ -117,4 +117,23 @@ test("contact details the CV doesn't have are removed from the top of a CV or le
 test("two jobs with different numbers of bullets are not called even", () => {
   const two = "## Erfarenhet\n### A, X (2021 - nu)\n- Planerar in- och utleveranser för 30 kunder\n- Samordnar åkerier och bokar transporter\n- Tog fram ett nytt plockflöde\n### B, Y (2016 - 2021)\n- Plock, pack och inleverans i kyl- och frysmiljö\n- Skyddsombud 2019-2021";
   assert.equal(styleCheck(two).even, false);
+});
+
+test("Swedish word order is put right in a main clause, and left alone where it is already right", () => {
+  // From the audit of 25 Oct 2026: "Jag gärna berättar mer" in a cover letter
+  assert.equal(fixWordOrder("Jag gärna berättar mer om mina erfarenheter."), "Jag berättar gärna mer om mina erfarenheter.");
+  assert.equal(fixWordOrder("Hej!\n\nJag också har erfarenhet av demensvård. Vi aldrig glömmer en brukare."), "Hej!\n\nJag har också erfarenhet av demensvård. Vi glömmer aldrig en brukare.");
+  assert.equal(fixWordOrder("- Jag inte bara arbetade"), "- Jag inte bara arbetade");   // "bara" is no verb
+  assert.equal(fixWordOrder("Det är därför jag gärna berättar mer."), "Det är därför jag gärna berättar mer.");   // not at the start
+  assert.equal(fixWordOrder("Jag berättar gärna mer."), "Jag berättar gärna mer.");
+  assert.deepEqual(wordOrderSlips("Jag gärna berättar mer."), ["Jag gärna berättar"]);
+  assert.deepEqual(styleCheck("Jag gärna berättar mer.", { task: "letter" }).order, ["Jag gärna berättar"]);
+});
+
+test("a Swedish answer has its word order fixed on the way out, an English one is left as it is", async () => {
+  const { finish } = require("./pipeline.js");
+  const sv = await finish({ text: "Jag gärna berättar mer.", task: "interview", lang: "sv" }, null);
+  assert.equal(sv.text, "Jag berättar gärna mer.");
+  const en = await finish({ text: "Jag gärna berättar mer.", task: "interview", lang: "en" }, null);
+  assert.equal(en.text, "Jag gärna berättar mer.");
 });

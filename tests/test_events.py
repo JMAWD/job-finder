@@ -91,6 +91,8 @@ async def main():
         check('events in the field, soonest first, four at a time', got == ['Øredev Developers Conference', 'Jobbmässa i Göteborg', 'Embedded Expo Väst', 'Datacenter Forum Stockholm'], got)
         text = await pg.locator('#events').inner_text()
         check('the count of all matching events', (await pg.locator('#events .ev-n').inner_text()) == '5')
+        check('the panel comes after the first three employers, so the jobs come first', await pg.evaluate("""(() => { const ev = document.getElementById('events'), cards = [...document.querySelectorAll('#list > article.co')];
+          return ev.parentElement.id === 'list' && cards.length > 0 && ev.previousElementSibling === cards[Math.min(2, cards.length - 1)]; })()"""))
         check('public fairs, other fields, school fairs, cancelled and past events are left out',
               not any(x in text for x in ['Comic Con', 'Byggmaterialdagen', 'Gymnasiemässan', 'DevOps Day', 'Hantverksfestivalen', 'Agro']), text)
         check('job fairs far away are left out', 'Luleå' not in text)
@@ -135,6 +137,11 @@ async def main():
         await search(pg, 'Skåne', 'zzz')
         await pg.wait_for_timeout(300)
         check('with nothing in the field and no job fair nearby there is no panel', await pg.locator('#events').is_hidden())
+        await search(pg, 'Skåne', 'software engineer')
+        await pg.wait_for_selector('#events .ev-name', timeout=10000)
+        got = await names(pg)
+        check('a county search gets distances too, and a trade fair as far away as Stockholm is left out', 'Øredev Developers Conference' in got and 'Datacenter Forum Stockholm' not in got
+              and 'km away' in await pg.locator('#events').inner_text(), got)
 
         phone = await browser.new_context(locale='en-US', viewport={'width': 375, 'height': 812}, is_mobile=True)
         await setup(phone)

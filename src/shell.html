@@ -366,7 +366,17 @@ input[aria-invalid="true"] { border-color: var(--signal); }
 .fc ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
 .fc li { overflow-wrap: anywhere; }
 .fc.fc-style { border-left-color: var(--line-strong); background: var(--sunk); color: var(--ink); }
-.fc .fc-kind { font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+.fc .fc-kind { color: var(--muted); margin-right: 2px; }
+.fc .fc-in { display: block; color: var(--muted); font-size: 12.5px; font-style: italic; }
+.fc-sum { margin: 0; max-width: 80ch; font-size: 13.5px; line-height: 1.5; padding: 6px 10px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line-strong); }
+.fc-sum.ok { color: var(--accent-ink); }
+.fc-sum.warn { background: var(--signal-soft); color: var(--ink); }
+.fc-sum .linkbtn { margin-left: 4px; }
+.tl-checks { display: grid; gap: 10px; }
+.tl-checks:focus { outline: none; }
+.tl-stale, .tl-licence { margin: 0; max-width: 80ch; border: 1px solid var(--line-strong); border-left: 3px solid var(--signal); border-radius: 0 8px 8px 0; background: var(--warn-soft); color: var(--ink); padding: 9px 12px; font-size: 13.5px; line-height: 1.5; }
+.tl-stale { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.tl-stale p { margin: 0; flex: 1 1 260px; }
 /* Where each sentence comes from, what stays out of downloads, the keyword match, the ad's length, plain text */
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
 .src-sum, .q-panel, .tl-adwarn { border: 1px solid var(--line-strong); border-left: 3px solid var(--line-strong); border-radius: 0 8px 8px 0; background: var(--surface); color: var(--ink); padding: 9px 12px; display: grid; gap: 6px; max-width: 80ch; font-size: 13.5px; line-height: 1.5; }
@@ -401,8 +411,25 @@ footer h3 { font-family: var(--font-display); font-stretch: 112%; font-size: 15p
 footer p { margin: 0; }
 
 @media (max-width: 980px) { .panel { grid-template-columns: minmax(0, 1fr); padding-left: 0; } }
+.search-sum, .filters-btn { display: none; }
+.tl-terms { display: grid; gap: 6px; }
+.tl-terms .row { gap: 6px; }
+.chip-btn { font: inherit; font-size: 13px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); cursor: pointer; }
+.chip-btn.on { background: var(--accent-soft, var(--surface)); border-color: var(--accent); color: var(--accent-ink); }
+.chip-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.next-step { display: grid; gap: 6px; margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font-size: 13.5px; line-height: 1.5; max-width: 80ch; }
+.next-step p { margin: 0; }
+.funnel { display: grid; gap: 8px; margin: 0 0 18px; }
+.funnel h3 { margin: 0; }
+.funnel .stats { margin-top: 0; }
+.filter-rows { display: grid; gap: 10px; }
 @media (max-width: 720px) {
   .controls { position: static; }
+  .filters-btn { display: inline-flex; justify-self: start; }
+  .controls:not(.open) .filter-rows { display: none; }
+  body.folded #view-res .mast h1, body.folded #view-res .lede, body.folded #view-res .mast-top, body.folded #search { display: none; }
+  body.folded .search-sum { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0 0 10px; }
+  .search-sum p { margin: 0; font-weight: 600; flex: 1 1 200px; overflow-wrap: anywhere; }
   .topbar-inner { gap: 0 12px; }
   .tabs { order: 3; flex-basis: 100%; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0; margin-inline: -16px; }
   .tab { position: relative; flex-direction: column; justify-content: center; gap: 3px; padding: 8px 2px 7px; font-size: 12.5px; line-height: 1.2; white-space: nowrap; text-align: center; min-width: 0; }
@@ -765,6 +792,7 @@ section > .mk-tiles { margin: 0 0 14px; }
     </div>
     <h1 data-t="h1">Find who's hiring</h1>
     <p class="lede" data-t="lede">Pick a place and add the words that describe the work you want, like a job title, a skill or a method. The app searches Platsbanken and other job sites, groups the ads by employer and keeps track of where you've applied.</p>
+    <div class="search-sum" id="search-sum"><p id="search-sum-text"></p><button class="btn ghost sm" id="search-edit" type="button" data-t="edit.search">Edit search</button></div>
     <form class="search" id="search" novalidate>
       <div class="row">
         <label class="field f-country"><span data-t="country">Country</span><select id="country"></select></label>
@@ -802,6 +830,8 @@ section > .mk-tiles { margin: 0 0 14px; }
   </div>
   <div class="wrap view-body">
     <div class="controls" data-ta="filters.label" aria-label="Filter the results">
+      <button class="btn ghost sm filters-btn" id="filters-btn" type="button" aria-expanded="false" aria-controls="filter-rows" data-t="filters.btn">Filter and sort</button>
+      <div class="filter-rows" id="filter-rows">
       <div class="row">
         <div class="field grow"><label class="label" for="q" data-t="filter">Filter</label><input type="search" id="q" data-tp="filter.ph" placeholder="Employer, role, place or contact"></div>
         <div class="field"><label class="label" for="field" data-t="field">Field</label><select id="field"><option value="" data-t="allfields">All fields</option></select></div>
@@ -818,6 +848,8 @@ section > .mk-tiles { margin: 0 0 14px; }
         <span class="spacer"></span>
         <button class="btn ghost sm" id="expand-all" type="button">Expand all</button>
         <button class="btn ghost sm" id="export" type="button" data-t="export">Export CSV</button>
+        <button class="btn ghost sm" id="export-xlsx" type="button" data-t="export.xlsx">Excel file</button>
+      </div>
       </div>
       <div class="count" id="count" aria-live="polite"></div>
     </div>

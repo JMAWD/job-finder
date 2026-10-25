@@ -23,10 +23,10 @@ const MENTOR = {
     { title: "Kvalitetsingenjör", tier: "direct", directions: ["deeper"], match: 90, why: "Matches your current work almost one to one.", gaps: [], gap_months: 0, search: "kvalitetsingenjör" },
     { title: "Supplier Quality Engineer", tier: "direct", directions: ["deeper", "advise"], match: 82, why: "Your supplier audits are the core of this role.", gaps: ["PPAP"], gap_months: 2, search: "FMEA" },
     { title: "Quality Manager", tier: "stretch", directions: ["lead"], match: 64, why: "You already lead improvement work.", gaps: ["Leading a team", "Owning ISO 9001"], gap_months: 18, search: "kvalitetschef" },
-    { title: "FMEA Trainer", tier: "stretch", directions: ["advise"], match: 60, why: "Teams need people who teach FMEA from experience.", gaps: ["Course delivery"], gap_months: 4, search: "FMEA" },
+    { title: "FMEA Trainer", tier: "stretch", directions: ["advise"], match: 60, why: "Teams need people who teach FMEA from experience.", gaps: ["Course delivery"], gap_months: 4, search: "utbildare kvalitetsteknik" },
     { title: "Functional Safety Engineer", tier: "stretch", directions: ["deeper"], match: 55, why: "Builds on your risk analysis.", gaps: ["ISO 26262"], gap_months: 30, search: "ISO 26262" },
     { title: "Software Test Engineer", tier: "pivot", directions: ["change"], match: 45, why: "You already think about how things fail.", gaps: ["Python", "Test automation"], gap_months: 12, search: "software engineer" },
-    { title: "Production Manager", tier: "pivot", directions: ["change", "lead"], match: 40, why: "You know the shop floor well.", gaps: ["Budget responsibility"], gap_months: 24, search: "produktionschef" },
+    { title: "Production Manager", tier: "pivot", directions: ["change", "lead"], match: 40, why: "You know the shop floor well.", gaps: ["Budget responsibility"], gap_months: 24, search: "produktionschef tillverkning" },
   ],
   courses: [
     course("AIAG-VDA FMEA (2019 method)", "Classroom, 2 days", "class", { hours: 16, days: 2, cost_sek: 14000, ramp_months: 0 }, ["deeper", "advise"], { deeper: 10, advise: 9 }, "FMEA", "Kvalitetsingenjör", "Brings your strongest skill up to the current method."),
