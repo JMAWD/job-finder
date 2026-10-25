@@ -17,7 +17,7 @@
 */
 const { factCheck, review } = require("./factcheck.js");
 const { stripDashes, styleCheck, tidyCv, keepContact } = require("./style.js");
-const { repairPrompt, OPTIONS } = require("./prompts.js");
+const { repairPrompt, OPTIONS, withFacts } = require("./prompts.js");
 
 const SENT = new Set(["cv", "letter"]);   // the texts that go to the employer
 function clean(text, { task, cv }) {
@@ -29,16 +29,18 @@ function clean(text, { task, cv }) {
 const jobHeadings = t => (String(t || "").match(/^\s*###\s/gm) || []).length;
 
 /**
- * @param {object} a     { text, task, lang, cv, ad, job: { title, employer }, extra, year }
+ * @param {object} a     { text, task, lang, cv, facts, ad, job: { title, employer }, extra, year }; facts is what the
+ *                       person added that the CV leaves out, and every check reads it as part of the CV
  * @param {function} ask (messages, options) => Promise<{ text, error, cut, tokens }>: one more model call, or null for none
  * @returns {Promise<{ text, check, style, fixed, repairTokens, trace, counts, impact }>}
  */
-async function finish({ text, task, lang, cv = "", ad = "", job = {}, extra = "", year = new Date().getFullYear() }, ask) {
+async function finish({ text, task, lang, cv: cvOnly = "", facts = "", ad = "", job = {}, extra = "", year = new Date().getFullYear() }, ask) {
+  const cv = cvOnly && facts ? `${cvOnly}\n\n${facts}` : cvOnly;
   const src = { cv, ad, title: job.title || "", employer: job.employer || "", extra, year, task, lang };
   const checked = Boolean(cv && ad);
   let out = clean(text, { task, cv }), check = checked ? factCheck(out, src) : null, fixed = 0, repairTokens = null;
   if (check && check.issues.length && SENT.has(task) && ask) {
-    const r = await ask(repairPrompt(lang, task, { cv, ad, text: out, issues: check.issues }), OPTIONS[task]);
+    const r = await ask(repairPrompt(lang, task, { cv: withFacts(cvOnly, facts, lang), ad, text: out, issues: check.issues }), OPTIONS[task]);
     repairTokens = r && r.tokens || null;
     if (r && r.text && !r.error && !r.cut) {
       const t2 = clean(r.text, { task, cv }), c2 = factCheck(t2, src);

@@ -7,6 +7,8 @@
 // {"cut":true} makes the answer come back as if the model ran out of room (finish_reason "length").
 // {"tone":true} makes the tailored CV break Job Tailor's writing rules: dashes, buzzwords and two jobs of the same shape.
 // {"borrow":true} makes the tailored CV add one sentence about Python, which the ad asks for and the CV doesn't have.
+// When the CV ends with what the person added ("Tillagt av personen:" or "Added by the person:"), the tailored CV takes its
+// first line in as a bullet under the first job, the way the model is told to.
 import http from "node:http";
 let last = null, count = 0, mode = { status: 200, delay: 300, mentorBad: false, invent: false, cut: false, tone: false, borrow: false };
 const course = (name, provider, format, extra, directions, priority, skill, forRole, why) => ({ name, provider, format, ...extra, directions, priority, why, skill, for_role: forRole });
@@ -68,7 +70,9 @@ http.createServer(async (req, res) => {
     if (/Translate the job ad into natural/.test(ask)) return send(200, { choices: [{ message: { content: "# Quality Engineer\n\nWe are looking for a quality engineer who can use FMEA and wants to drive quality improvements in production.\n\n## Experience\n- Experience with FMEA\n- Supplier audits" } }], usage: { prompt_tokens: 800, completion_tokens: 120 } });
     const task = /cover letter|personligt brev/i.test(ask) ? "letter" : /Tailor the CV|Anpassa CV/i.test(ask) ? "cv" : /interview|intervju/i.test(ask) ? "interview" : "match";
     const borrowed = ANSWERS.cv.replace("tillsammans med konstruktion och produktion\n", "tillsammans med konstruktion och produktion. Arbetade med Python i testmiljön.\n");
-    const content = mode.tone && task === "cv" ? TONE_CV : mode.invent && task === "cv" ? ANSWERS.cv + "\n\n### Senior kvalitetsingenjör, Bosch Rexroth (2012–nu)\n- Ledde FMEA" : mode.borrow && task === "cv" ? borrowed : mode.cut ? ANSWERS[task].split("## Utbildning")[0].trim() : ANSWERS[task];
+    const added = (ask.match(/\n(?:Tillagt av personen|Added by the person):\n([^\n]+)/) || [])[1];
+    let content = mode.tone && task === "cv" ? TONE_CV : mode.invent && task === "cv" ? ANSWERS.cv + "\n\n### Senior kvalitetsingenjör, Bosch Rexroth (2012–nu)\n- Ledde FMEA" : mode.borrow && task === "cv" ? borrowed : mode.cut ? ANSWERS[task].split("## Utbildning")[0].trim() : ANSWERS[task];
+    if (added && task === "cv" && !mode.tone && !mode.cut) content = content.replace("- Utbildade kollegor i riskanalys\n", `- Utbildade kollegor i riskanalys\n- ${added.trim()}\n`);
     return send(200, { choices: [{ message: { content }, finish_reason: mode.cut ? "length" : "stop" }], usage: { prompt_tokens: 1200, completion_tokens: 300 } });
   }
   send(404, {});

@@ -394,6 +394,10 @@ input[aria-invalid="true"] { border-color: var(--signal); }
 .q-tag { font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--ink); border: 1px solid var(--signal); border-radius: 999px; padding: 0 6px; white-space: nowrap; vertical-align: 1px; }
 .tl-out .q-block { background: var(--signal-soft); border-radius: 4px; }
 .tl-out .q-block.kept { background: var(--sunk); }
+/* What the CV leaves out, under an answer, with the button that runs the task again */
+.tl-more { border: 1px solid var(--line-strong); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; background: var(--surface); color: var(--ink); padding: 10px 12px; display: grid; gap: 6px; max-width: 80ch; }
+.tl-more textarea { width: 100%; min-height: 76px; resize: vertical; font-size: 13.5px; line-height: 1.45; }
+.tl-more p[hidden] { display: none; }
 .tl-plain { display: grid; gap: 6px; max-width: 80ch; }
 .tl-plain textarea { width: 100%; min-height: 220px; resize: vertical; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; }
 /* Feedback links in the footer */
@@ -983,8 +987,23 @@ const I18N = {
   "tl.code": ["Access code", "Åtkomstkod"], "tl.lang": ["Write in", "Skriv på"],
   "tl.code.hint": ["The AI step is a free beta. Ask {who} for an access code.", "AI-steget är en gratis beta. Be {who} om en åtkomstkod."],
   "tl.code.who": ["the person who shared Job Finder with you", "den som delade Job Finder med dig"],
-  "tl.extra": ["Anything to add? (optional)", "Något att lägga till? (valfritt)"],
+  "tl.extra": ["Wishes for the text (optional)", "Önskemål om texten (valfritt)"],
   "tl.extra.ph": ["e.g. keep it short, mention that I can start in March", "t.ex. håll det kort, nämn att jag kan börja i mars"],
+  // What the CV leaves out: written under an answer, used like the CV for this job, and the task run again
+  "tl.more": ["Anything your CV leaves out?", "Något som ditt CV saknar?"],
+  "tl.more.hint": ["Something true you forgot, like a course, a tool you used or a task in one of your jobs. Say which job it belongs to. It's used like your CV for this job only, and the fact check counts it as yours, so write only what you could talk about in an interview.",
+    "Något som stämmer men som du glömt, till exempel en kurs, ett verktyg du använt eller en uppgift i ett av dina jobb. Skriv vilket jobb det hör till. Det används som ditt CV, bara för det här jobbet, och faktakontrollen räknar det som ditt, så skriv bara det du kan berätta om på en intervju."],
+  "tl.more.ph": ["e.g. In my last job I also trained new staff. Forklift licence, 2019.", "t.ex. I mitt senaste jobb lärde jag också upp nyanställda. Truckkort, 2019."],
+  "tl.more.go.doc": ["Tailor again with this", "Anpassa igen med detta"], "tl.more.go": ["Generate again with this", "Skapa igen med detta"],
+  "tl.more.tocv": ["Add to my CV for every job", "Lägg till i mitt CV för alla jobb"],
+  "tl.more.used": ["This text was written with what you added.", "Den här texten skrevs med det du lade till."],
+  "tl.more.notyet.doc": ["Not used yet. Press Tailor again with this.", "Inte använt än. Tryck på Anpassa igen med detta."],
+  "tl.more.notyet": ["Not used yet. Press Generate again with this.", "Inte använt än. Tryck på Skapa igen med detta."],
+  "tl.more.added": ["Added to the end of your CV, so every job and the Mentor can use it. You can move it to the right place in the CV box.", "Tillagt sist i ditt CV, så att alla jobb och Mentorn kan använda det. Du kan flytta det till rätt ställe i CV-rutan."],
+  "tl.more.empty": ["Write what your CV leaves out first.", "Skriv först det som ditt CV saknar."],
+  "tl.more.old": ["The server couldn't read what you added yet, so this text was written without it. Add it to your CV for every job instead, or try again later.", "Servern kunde inte läsa det du lade till än, så texten skrevs utan det. Lägg till det i ditt CV för alla jobb i stället, eller försök igen senare."],
+  "tl.lose": ["Generating again replaces this text, with your changes and the sentences you chose to keep. Download or copy it first if you want it.", "Om du skapar igen ersätts den här texten, med dina ändringar och meningarna du valde att behålla. Ladda ner eller kopiera den först om du vill ha kvar den."],
+  "tl.lose.go": ["Replace it", "Ersätt den"], "tl.lose.no": ["Keep this text", "Behåll texten"],
   "tl.what": ["What to write", "Vad ska skrivas"],
   "tl.t.match": ["Match check", "Matchning"], "tl.t.cv": ["Tailored CV", "Anpassat CV"], "tl.t.letter": ["Cover letter", "Personligt brev"], "tl.t.interview": ["Interview prep", "Intervjuförberedelse"],
   "tl.d.match": ["How well your CV fits this ad, what's missing, and which words from the ad to use where they're true.", "Hur väl ditt CV passar annonsen, vad som saknas och vilka ord från annonsen du kan använda där de stämmer."],
@@ -1005,8 +1024,8 @@ const I18N = {
   "tl.applyon": ["Apply on {site}", "Sök på {site}"],
   "tl.markq": ["Sent your application?", "Har du skickat ansökan?"], "tl.mark": ["Mark as applied", "Markera som sökt"],
   "tl.marked": ["Marked as applied. You'll find it under My applications.", "Markerad som sökt. Du hittar den under Mina ansökningar."],
-  "tl.privacy": ["When you press Generate, your CV, the ad and your wishes are sent to the Job Finder server and on to an AI model hosted by Scaleway in Paris. Translate ad sends only the ad text; your CV is not needed or sent. The server keeps no copy. Your CV and the answers are saved only in this browser.",
-    "När du trycker på Skapa skickas ditt CV, annonsen och dina önskemål till Job Finders server och vidare till en AI-modell hos Scaleway i Paris. Översätt annons skickar bara annonstexten; ditt CV behövs inte och skickas inte. Servern sparar ingen kopia. Ditt CV och svaren sparas bara i den här webbläsaren."],
+  "tl.privacy": ["When you press Generate, your CV, the ad, your wishes and anything you added to your CV are sent to the Job Finder server and on to an AI model hosted by Scaleway in Paris. Translate ad sends only the ad text; your CV is not needed or sent. The server keeps no copy. Your CV and the answers are saved only in this browser.",
+    "När du trycker på Skapa skickas ditt CV, annonsen, dina önskemål och det du lagt till i ditt CV till Job Finders server och vidare till en AI-modell hos Scaleway i Paris. Översätt annons skickar bara annonstexten; ditt CV behövs inte och skickas inte. Servern sparar ingen kopia. Ditt CV och svaren sparas bara i den här webbläsaren."],
   "tl.e.nocode": ["Enter your access code first.", "Skriv in din åtkomstkod först."],
   "tl.e.code": ["That access code wasn't accepted. Check it, or ask for a new one.", "Åtkomstkoden godkändes inte. Kontrollera den eller be om en ny."],
   "tl.e.limit": ["Your code has reached its limit ({perHour} an hour, {perDay} a day). Try again later.", "Din kod har nått sin gräns ({perHour} i timmen, {perDay} per dag). Försök igen senare."],
@@ -2409,7 +2428,7 @@ function restoreBackup(file) {
     if (isObj(d.seen)) store.set("jf-seen", { ...d.seen, ...store.get("jf-seen", {}) });
     if (isObj(d.search) && !store.get("jf-search", null)) { store.set("jf-search", d.search); fillForm(d.search); }
     if (typeof d.cv === "string" && d.cv.trim() && !store.get("jf-cv", "").trim()) store.set("jf-cv", d.cv);
-    if (isObj(d.tailor)) { for (const [id, x] of Object.entries(d.tailor)) if (isObj(x) && !tailorStore[id]) tailorStore[id] = { ad: typeof x.ad === "string" ? x.ad : undefined, extra: String(x.extra || ""), lang: x.lang === "en" ? "en" : x.lang === "sv" ? "sv" : undefined, lastTask: TASKS.includes(x.lastTask) ? x.lastTask : undefined, out: isObj(x.out) ? Object.fromEntries(Object.entries(x.out).filter(([k, o]) => TASKS.includes(k) && isObj(o) && typeof o.text === "string")) : {} }; saveTailor(); }
+    if (isObj(d.tailor)) { for (const [id, x] of Object.entries(d.tailor)) if (isObj(x) && !tailorStore[id]) tailorStore[id] = { ad: typeof x.ad === "string" ? x.ad : undefined, extra: String(x.extra || ""), ...(x.facts ? { facts: String(x.facts).slice(0, 3000) } : {}), lang: x.lang === "en" ? "en" : x.lang === "sv" ? "sv" : undefined, lastTask: TASKS.includes(x.lastTask) ? x.lastTask : undefined, out: isObj(x.out) ? Object.fromEntries(Object.entries(x.out).filter(([k, o]) => TASKS.includes(k) && isObj(o) && typeof o.text === "string")) : {} }; saveTailor(); }
     if (validMentor(d.mentor) && !mentor) { mentor = { at: String(d.mentor.at || ""), lang: d.mentor.lang === "en" ? "en" : "sv", cvHash: String(d.mentor.cvHash || ""), data: d.mentor.data, counts: null }; store.set("jf-mentor", mentor); }
     if (isObj(d.mentorAnswers) && !store.get("jf-mentor-ans", null)) { for (const [k, opts] of MT_Q) if (opts.includes(d.mentorAnswers[k])) mtAns[k] = d.mentorAnswers[k]; store.set("jf-mentor-ans", mtAns); }
     const ok = [store.set("jf-apps", apps), store.set("jf-hidden", [...hidden]), store.set("jf-people", people), store.set("jf-links", links)].every(Boolean);
@@ -2698,12 +2717,13 @@ function initWelcome() {
    Opens a panel over the list with the full ad, the person's CV and four things the AI can write.
    Platsbanken ads can also be translated inline; translation sends only the ad text, without a CV.
    The CV and access code are kept in this browser. Translation sends only the ad text; Generate sends the CV,
-   ad and any extra wishes to the tailoring server, which forwards them to an AI model hosted in the EU. */
+   ad, any extra wishes and anything the person added that their CV leaves out to the tailoring server, which forwards
+   them to an AI model hosted in the EU. */
 const TASKS = ["match", "cv", "letter", "interview"];
 const DOC_TASKS = new Set(["cv", "letter"]);   // the texts that go to the employer, so they download as a PDF with no title of ours
 const TAILOR_TIMEOUT = 110000;
 let tl = null;   // the open job: { id, title, employer, muni, url, src, task, busy, ctrl }
-let tailorStore = store.get("jf-tailor", {});   // ad id -> { ad, extra, out: { task: { text, at, model, lang, check, trace, impact, keep } } }
+let tailorStore = store.get("jf-tailor", {});   // ad id -> { ad, extra, facts, out: { task: { text, at, model, lang, facts, check, trace, impact, keep } } }
 const saveTailor = () => store.set("jf-tailor", tailorStore);
 const tlEntry = id => tailorStore[id] || (tailorStore[id] = { out: {} });
 const fullAds = new Map(), adFails = new Set();   // ads fetched in full, and Platsbanken ads that couldn't be fetched this time
@@ -3188,14 +3208,14 @@ function reviewText(text, { task = tl?.task, outLang, ad } = {}) {
   if (!m || !tl) return null;
   try {
     const e = tlEntry(tl.id), o = e.out[task];
-    const r = m.review(text, { cv: store.get("jf-cv", ""), ad: ad ?? e.ad ?? tl.adText ?? "", title: tl.title, employer: tl.employer, extra: e.extra || "", year: new Date().getFullYear(), task, lang: outLang || o?.lang || e.lang || lang });
+    const r = m.review(text, { cv: cvWithFacts(e), ad: ad ?? e.ad ?? tl.adText ?? "", title: tl.title, employer: tl.employer, extra: e.extra || "", year: new Date().getFullYear(), task, lang: outLang || o?.lang || e.lang || lang });
     return { check: cleanCheck(r), trace: String(r.trace), impact: task === "cv" ? cleanImpact(r.impact) : null };
   } catch (err) { console.warn("The fact check failed", err); return null; }
 }
 function restyle(text) {
   if (localStyle === undefined) localStyle = compiled(STYLE_SRC, m => m.styleCheck);
   if (!localStyle || !tl || !DOC_TASKS.has(tl.task)) return null;
-  try { const e = tlEntry(tl.id); return cleanStyle(localStyle(text, { cv: store.get("jf-cv", ""), ad: e.ad ?? tl.adText ?? "", task: tl.task })); }
+  try { const e = tlEntry(tl.id); return cleanStyle(localStyle(text, { cv: cvWithFacts(e), ad: e.ad ?? tl.adText ?? "", task: tl.task })); }
   catch (err) { console.warn("The style check failed", err); return null; }
 }
 
@@ -3332,6 +3352,35 @@ function download(blob, name) {
   link.href = url; link.download = name;
   document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
+/* ---------- What the CV leaves out ----------
+   Under an answer the person can write down true things their CV forgot and run the task again. They are kept for this
+   job only, sent to the model at the end of the CV (server/prompts.js) and read as part of the CV by every check, here
+   and on the server. "Add to my CV for every job" moves them into the saved CV instead, for other jobs and the Mentor. */
+const MAX_FACTS = 3000;
+const cvWithFacts = e => { const cv = store.get("jf-cv", ""), f = String(e?.facts || "").trim(); return cv && f ? `${cv}\n\n${f}` : cv; };
+// Whether the answer on screen used what is in the box now: a key for the line under the box, or "" for none
+function factsState(out, f, task) {
+  if (!out || !f) return "";
+  return out.facts === f ? "tl.more.used" : DOC_TASKS.has(task) ? "tl.more.notyet.doc" : "tl.more.notyet";
+}
+// Generating again replaces the answer, so one the person has edited or kept sentences in is asked about first
+const wouldLose = o => Boolean(o && (o.edited || (Array.isArray(o.keep) && o.keep.length)));
+const loseHtml = () => `<div class="tl-adwarn tl-lose" role="alert"><p>${esc(t("tl.lose"))}</p>
+    <div class="row"><button class="btn sm" type="button" data-tl="replace">${esc(t("tl.lose.go"))}</button><button class="btn ghost sm" type="button" data-tl="noreplace">${esc(t("tl.lose.no"))}</button></div></div>`;
+function factsHtml(out, e, task) {
+  const f = String(e.facts || "").trim();
+  if (!out && !f && !tl.factsMsg) return "";
+  const state = factsState(out, f, task), bad = tl.factsMsg === "tl.more.empty" || tl.factsMsg === "tl.more.old";
+  return `<section class="tl-more" aria-labelledby="tl-more-l">
+      <label class="tl-label" id="tl-more-l" for="tl-facts">${esc(t("tl.more"))}</label>
+      <p class="tl-hint" id="tl-facts-hint">${esc(t("tl.more.hint"))}</p>
+      <textarea id="tl-facts" data-tl="facts" rows="3" maxlength="${MAX_FACTS}" aria-describedby="tl-facts-hint tl-facts-state" placeholder="${esc(t("tl.more.ph"))}">${esc(e.facts || "")}</textarea>
+      <p class="tl-hint${state === "tl.more.used" ? " tl-ok" : ""}" id="tl-facts-state"${state ? "" : " hidden"}>${state ? esc(t(state)) : ""}</p>
+      <div class="row">${out ? `<button class="btn sm" type="button" data-tl="regen"${tl.busy ? " disabled" : ""}>${esc(t(DOC_TASKS.has(task) ? "tl.more.go.doc" : "tl.more.go"))}</button>` : ""}<button class="btn ghost sm" type="button" data-tl="tocv">${esc(t("tl.more.tocv"))}</button></div>
+      ${tl.confirm === "regen" ? loseHtml() : ""}
+      ${tl.factsMsg ? `<p class="${bad ? "tl-err" : "tl-hint tl-ok"}" role="${bad ? "alert" : "status"}">${esc(t(tl.factsMsg))}</p>` : ""}
+    </section>`;
+}
 function appliedHtml(id) {
   const st = apps[id]?.status;
   if (tl.marked) return `<p class="tl-hint tl-ok" role="status">${esc(t("tl.marked"))}</p>`;
@@ -3372,7 +3421,9 @@ function tailorHtml() {
       <div class="tl-tasks" role="tablist" aria-label="${esc(t("tl.what"))}">${TASKS.map(k => `<button type="button" role="tab" class="tl-task" data-tl="task" data-task="${k}" aria-selected="${k === task}" tabindex="${k === task ? 0 : -1}">${esc(t("tl.t." + k))}${e.out[k] ? ' <span class="tl-dot" aria-hidden="true">●</span>' : ""}</button>`).join("")}</div>
       <section class="tl-result" role="tabpanel" aria-live="polite">
         <p class="tl-desc">${esc(t("tl.d." + task))}</p>
+        ${out ? "" : factsHtml(null, e, task)}
         <div class="row"><button class="btn" type="button" data-tl="go"${tl.busy ? " disabled" : ""}>${esc(tl.busy ? t("tl.busy") : out ? t("tl.again") : t("tl.go"))}</button><span class="tl-status" id="tl-status">${esc(tl.status || "")}</span></div>
+        ${tl.confirm === "go" ? loseHtml() : ""}
         ${out ? "" : `<p class="tl-hint">${esc(t("ai.before"))}</p>`}
         ${tl.error ? `<p class="tl-err" role="alert">${tl.error}</p>` : ""}
         ${adWarnHtml()}
@@ -3394,6 +3445,7 @@ function tailorHtml() {
           ${tl.pdfLost ? `<p class="tl-hint" role="status">${esc(t("tl.pdflost", { n: tl.pdfLost }))}</p>` : ""}
           ${embedded && !tl.plain ? `<p class="tl-hint">${esc(t("pt.embedded"))}</p>` : ""}
           ${plainHtml(out, ann)}`}
+          ${tl.editing ? "" : factsHtml(out, e, task)}
           ${appliedHtml(job.id)}` : appliedHtml(job.id)}
       </section>
       <p class="tl-hint tl-privacy">${esc(t("tl.privacy"))}</p>
@@ -3402,7 +3454,7 @@ function tailorHtml() {
 function flushTailor() {
   if (!tl) return;
   if (tl.editing) { const ta = $("tl-edit"); if (ta) tl.editDraft = ta.value; }
-  for (const k of ["cv", "code", "ad", "extra", "lang"]) { clearTimeout(tlTimers[k]); const el = $("tl-" + k); if (el) saveField(k, el.value); }
+  for (const k of ["cv", "code", "ad", "extra", "facts", "lang"]) { clearTimeout(tlTimers[k]); const el = $("tl-" + k); if (el) saveField(k, el.value); }
 }
 function drawTailor(focusSel) {
   flushTailor();
@@ -3434,6 +3486,8 @@ async function generate() {
   if (!tl || tl.busy) return;
   const id = tl.id, task = tl.task, e = tlEntry(id);
   const cv = ($("tl-cv")?.value || "").trim(), ad = ($("tl-ad")?.value || "").trim(), code = ($("tl-code")?.value || "").trim(), outLang = $("tl-lang")?.value || lang, extra = ($("tl-extra")?.value || "").trim();
+  const factsRaw = ($("tl-facts")?.value ?? e.facts ?? "").slice(0, MAX_FACTS), facts = factsRaw.trim();
+  tl.confirm = ""; tl.factsMsg = "";
   const stop = (k, sel, v) => { tl.error = esc(t(k, v)); drawTailor(sel); };
   if (!code) return stop("tl.e.nocode", "#tl-code");
   if (cv.length < 200) return stop("tl.e.cv", "#tl-cv");
@@ -3446,7 +3500,7 @@ async function generate() {
     return drawTailor('[data-tl="excerpt"]');
   }
   const excerpt = ad.length <= MAX_AD && (ad.length < FULL_AD || fromListing), cutFrom = tl.adCutFrom || 0;
-  store.set("jf-cv", cv); store.set("jf-code", code); e.ad = ad; e.extra = extra; e.lang = outLang; saveTailor();
+  store.set("jf-cv", cv); store.set("jf-code", code); e.ad = ad; e.extra = extra; e.lang = outLang; if (factsRaw || e.facts) e.facts = factsRaw; saveTailor();
   tl.busy = true; tl.error = ""; tl.adWarn = ""; tl.status = t("tl.wait", { s: 0 }); tl.editing = false; tl.editDraft = null; tl.pdfLost = 0; tl.plain = false; tl.plainMsg = "";
   drawTailor('[data-tl="go"]');
   const started = Date.now(), tick = setInterval(() => { if (tl?.id === id && tl.busy) { tl.status = t("tl.wait", { s: Math.round((Date.now() - started) / 1000) }); const s = $("tl-status"); if (s) s.textContent = tl.status; } }, 1000);
@@ -3455,10 +3509,13 @@ async function generate() {
   let msg = "";
   try {
     const r = await fetch(ABOUT.tailor, { method: "POST", headers: { "Content-Type": "application/json" }, signal: ctrl.signal,
-      body: JSON.stringify({ code, task, lang: outLang, cv, extra, job: { title: tl.title, employer: tl.employer, text: ad }, ...(excerpt || cutFrom ? { excerpt: true } : {}) }) });
+      body: JSON.stringify({ code, task, lang: outLang, cv, extra, ...(facts ? { facts } : {}), job: { title: tl.title, employer: tl.employer, text: ad }, ...(excerpt || cutFrom ? { excerpt: true } : {}) }) });
     const j = await r.json().catch(() => ({}));
     if (r.ok && j.text) {
-      const o = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.cut ? { cut: true } : {}), ...(+j.fixed > 0 ? { fixed: Math.min(99, +j.fixed) } : {}), ...(cleanStyle(j.style) ? { style: cleanStyle(j.style) } : {}), ...(cleanCheck(j.check) ? { check: cleanCheck(j.check) } : {}),
+      // The server says it read the additions; one from before they existed ignores them, and the panel says so
+      const usedFacts = Boolean(facts && j.facts === true);
+      if (facts && !usedFacts) tl.factsMsg = "tl.more.old";
+      const o = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(usedFacts ? { facts } : {}), ...(j.cut ? { cut: true } : {}), ...(+j.fixed > 0 ? { fixed: Math.min(99, +j.fixed) } : {}), ...(cleanStyle(j.style) ? { style: cleanStyle(j.style) } : {}), ...(cleanCheck(j.check) ? { check: cleanCheck(j.check) } : {}),
         ...(typeof j.trace === "string" ? { trace: j.trace } : {}), ...(cleanImpact(j.impact) ? { impact: cleanImpact(j.impact) } : {}),
         ...(excerpt ? { excerpt: true } : {}), ...(j.adTrimmed ? { adTrimmed: { from: +j.adTrimmed.from || 0, to: +j.adTrimmed.to || 0 } } : cutFrom ? { adTrimmed: { from: cutFrom, to: ad.length } } : {}) };
       // A server from before the trace: the same code works it out here
@@ -3482,7 +3539,7 @@ function onTailorClick(e) {
   const el = e.target.closest("[data-tl]"); if (!el || !tl) return;
   const k = el.dataset.tl;
   if (k === "close") closeTailor();
-  else if (k === "task") { flushTailor(); saveEdit(); tl.task = el.dataset.task; tl.error = ""; tl.pdfLost = 0; tl.plain = false; tl.plainMsg = ""; tlEntry(tl.id).lastTask = tl.task; saveTailor(); drawTailor(`[data-task="${tl.task}"]`); }
+  else if (k === "task") { flushTailor(); saveEdit(); tl.task = el.dataset.task; tl.error = ""; tl.confirm = ""; tl.factsMsg = ""; tl.pdfLost = 0; tl.plain = false; tl.plainMsg = ""; tlEntry(tl.id).lastTask = tl.task; saveTailor(); drawTailor(`[data-task="${tl.task}"]`); }
   else if (k === "excerpt") {
     // A long ad is cut at a paragraph here, in the ad box, so what is sent is what the person sees
     const ta = $("tl-ad");
@@ -3507,7 +3564,7 @@ function onTailorClick(e) {
     const o = tlEntry(tl.id).out[tl.task]; if (!o) return;
     download(new Blob([plainText(sendText(o)) + "\n"], { type: "text/plain;charset=utf-8" }), docName(o, "txt"));
   }
-  else if (k === "edit") { tl.editing = true; tl.editDraft = null; tl.pdfLost = 0; drawTailor("#tl-edit"); }
+  else if (k === "edit") { tl.confirm = ""; tl.editing = true; tl.editDraft = null; tl.pdfLost = 0; drawTailor("#tl-edit"); }
   else if (k === "save") { flushTailor(); saveEdit(); drawTailor(".fc"); }
   else if (k === "cancel") { tl.editing = false; tl.editDraft = null; drawTailor('[data-tl="edit"]'); }
   else if (k === "pdf") {
@@ -3518,7 +3575,24 @@ function onTailorClick(e) {
     download(pdf.blob, docName(o, "pdf"));
     if (pdf.lost !== tl.pdfLost) { tl.pdfLost = pdf.lost; drawTailor('[data-tl="pdf"]'); }
   }
-  else if (k === "go") generate();
+  else if (k === "go" || k === "regen") {
+    flushTailor();
+    if (wouldLose(tlEntry(tl.id).out[tl.task])) { tl.confirm = k; drawTailor('[data-tl="replace"]'); }
+    else generate();
+  }
+  else if (k === "replace") generate();
+  else if (k === "noreplace") { const from = tl.confirm || "go"; tl.confirm = ""; drawTailor(`[data-tl="${from}"]`); }
+  else if (k === "tocv") {
+    // Moved into the saved CV, so every job and the Mentor read it, and taken out of the box so it isn't sent twice
+    flushTailor();
+    const e = tlEntry(tl.id), f = String(e.facts || "").trim();
+    if (!f) { tl.factsMsg = "tl.more.empty"; return drawTailor("#tl-facts"); }
+    const cvEl = $("tl-cv"), cv = (cvEl ? cvEl.value : store.get("jf-cv", "")).replace(/\s+$/, ""), next = cv ? `${cv}\n\n${f}` : f;
+    store.set("jf-cv", next); if (cvEl) cvEl.value = next;
+    const fEl = $("tl-facts"); if (fEl) fEl.value = "";
+    e.facts = ""; saveTailor(); tl.factsMsg = "tl.more.added";
+    drawTailor('[data-tl="tocv"]');
+  }
   else if (k === "refetch") refetchAd();
   else if (k === "load") $("tl-file").click();
   else if (k === "apply") { if (!["Applied", "Interview", "Offer"].includes(apps[tl.id]?.status)) { tl.askApplied = true; setTimeout(() => { if (tl) drawTailor('[data-tl="mark"]'); }, 0); } }
@@ -3547,14 +3621,19 @@ function saveField(k, v) {
   const e = tlEntry(tl.id);
   if (k === "ad") { if (v === (e.ad ?? tl.adText ?? "")) return; e.ad = v; }
   else if (k === "extra") { if (v === (e.extra || "")) return; e.extra = v; }
+  else if (k === "facts") { v = v.slice(0, MAX_FACTS); if (v === (e.facts || "")) return; e.facts = v; }
   else if (k === "lang") { if (v === (e.lang || tl.lang || lang)) return; e.lang = v; }
   saveTailor();
 }
 function onTailorInput(e) {
   const el = e.target, k = el.dataset.tl;
   if (k === "edit-text" && tl) { tl.editDraft = el.value; return; }
-  if (!["cv", "code", "ad", "extra", "lang"].includes(k) || !tl) return;
+  if (!["cv", "code", "ad", "extra", "facts", "lang"].includes(k) || !tl) return;
   if (k === "ad") { tl.adOk = false; tl.adCutFrom = 0; }   // a changed ad is looked at again before it's sent
+  if (k === "facts") {
+    const s = $("tl-facts-state"), key = factsState(tlEntry(tl.id).out[tl.task], el.value.trim(), tl.task);
+    if (s) { s.hidden = !key; s.textContent = key ? t(key) : ""; s.className = "tl-hint" + (key === "tl.more.used" ? " tl-ok" : ""); }
+  }
   clearTimeout(tlTimers[k]);
   tlTimers[k] = setTimeout(() => saveField(k, el.value), k === "lang" ? 0 : 400);
 }

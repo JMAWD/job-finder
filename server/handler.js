@@ -24,7 +24,8 @@ const { cleanAd, trimAd } = require("./factcheck.js");
 
 // An ad longer than MAX_AD is cut at a paragraph and the answer says so, rather than refused. A short excerpt (the few
 // lines a listing shows) is accepted down to MIN_EXCERPT when the person has chosen to go ahead with it.
-const MAX_CV = 20000, MAX_AD = 20000, MAX_EXTRA = 2000, MIN_AD = 100, MIN_EXCERPT = 30;
+// MAX_FACTS is for what the person adds that their CV leaves out, read as part of the CV.
+const MAX_CV = 20000, MAX_AD = 20000, MAX_EXTRA = 2000, MAX_FACTS = 3000, MIN_AD = 100, MIN_EXCERPT = 30;
 const usage = new Map();   // access code hash -> timestamps of recent requests (per running instance)
 
 const env = k => (process.env[k] || "").trim();
@@ -118,11 +119,13 @@ async function handle(event) {
 
   const job = task === "translate" ? { text: ad } : { title: String(req.job?.title || "").slice(0, 300), employer: String(req.job?.employer || "").slice(0, 200), text: ad, excerpt: excerpt || Boolean(adTrimmed) };
   const extra = typeof req.extra === "string" ? req.extra.slice(0, MAX_EXTRA) : "";
+  // Only the tasks that read both a CV and an ad take additions to the CV; the Mentor reads the saved CV alone
+  const facts = needsCv && needsAd && typeof req.facts === "string" ? req.facts.trim().slice(0, MAX_FACTS).trim() : "";
   const started = Date.now();
   const model = req.model && list("AI_MODELS").includes(req.model) ? req.model : (env("AI_MODEL") || "mistral-medium-3.5-128b");
   const mentor = task === "mentor";
   const year = new Date().getFullYear();
-  const out = await callModel(PROMPTS[task](lang, { cv, job, extra, year }), model, OPTIONS[task]);
+  const out = await callModel(PROMPTS[task](lang, { cv, job, extra, facts, year }), model, OPTIONS[task]);
   const data = mentor && !out.error ? parseMentor(out.text) : null;
   if (mentor && !out.error && !data) out.error = "ai_bad_format";
   // Cleaned in code, fact-checked, corrected once if the CV or letter claims something the CV doesn't back up, and
@@ -130,15 +133,15 @@ async function handle(event) {
   let check = null, style = null, fixed = 0, trace = null, counts = null, impact = null;
   if (!out.error && !mentor && task !== "translate") {
     const ask = (messages, options) => callModel(messages, model, { ...options, timeout: Math.max(15000, Math.min(options?.timeout || 90000, 100000 - (Date.now() - started))) });
-    const done = await finish({ text: out.text, task, lang, cv: needsCv ? cv : "", ad: needsCv && needsAd ? ad : "", job, extra, year }, ask);
+    const done = await finish({ text: out.text, task, lang, cv: needsCv ? cv : "", facts, ad: needsCv && needsAd ? ad : "", job, extra, year }, ask);
     ({ check, style, fixed, trace, counts, impact } = done); out.text = done.text;
   }
   // Only sizes, timings and how many things the check flagged are logged, never the CV, the ad or the flagged words
-  console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null, ...(out.cut ? { cut: true } : {}), ...(check ? { flagged: check.issues.length } : {}), ...(fixed ? { fixed } : {}), ...(style ? { even: style.even, buzzwords: style.words.length } : {}),
+  console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ...(facts ? { factsChars: facts.length } : {}), ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null, ...(out.cut ? { cut: true } : {}), ...(check ? { flagged: check.issues.length } : {}), ...(fixed ? { fixed } : {}), ...(style ? { even: style.even, buzzwords: style.words.length } : {}),
     ...(counts ? { sentences: counts } : {}), ...(impact ? { terms: impact.terms, before: impact.before, after: impact.after, unsupported: impact.unsupported.length } : {}), ...(adTrimmed ? { adTrimmed: adTrimmed.from } : {}), ...(excerpt ? { excerpt: true } : {}) }));
   if (out.error) return fail(out.error === "ai_busy" ? 503 : 502, out.error, okOrigin);
   return reply(200, mentor ? { data, model: out.model, tokens: out.tokens } : { text: out.text, model: out.model, tokens: out.tokens, ...(out.cut ? { cut: true } : {}), ...(check ? { check } : {}), ...(fixed ? { fixed } : {}), ...(style ? { style } : {}),
-    ...(trace != null ? { trace } : {}), ...(impact ? { impact } : {}), ...(adTrimmed ? { adTrimmed } : {}), ...(excerpt ? { excerpt: true } : {}) }, okOrigin);
+    ...(trace != null ? { trace } : {}), ...(impact ? { impact } : {}), ...(adTrimmed ? { adTrimmed } : {}), ...(excerpt ? { excerpt: true } : {}), ...(facts ? { facts: true } : {}) }, okOrigin);
 }
 
 module.exports = { handle, _test: { usage, sha256 } };

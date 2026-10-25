@@ -2,12 +2,13 @@
    Opens a panel over the list with the full ad, the person's CV and four things the AI can write.
    Platsbanken ads can also be translated inline; translation sends only the ad text, without a CV.
    The CV and access code are kept in this browser. Translation sends only the ad text; Generate sends the CV,
-   ad and any extra wishes to the tailoring server, which forwards them to an AI model hosted in the EU. */
+   ad, any extra wishes and anything the person added that their CV leaves out to the tailoring server, which forwards
+   them to an AI model hosted in the EU. */
 const TASKS = ["match", "cv", "letter", "interview"];
 const DOC_TASKS = new Set(["cv", "letter"]);   // the texts that go to the employer, so they download as a PDF with no title of ours
 const TAILOR_TIMEOUT = 110000;
 let tl = null;   // the open job: { id, title, employer, muni, url, src, task, busy, ctrl }
-let tailorStore = store.get("jf-tailor", {});   // ad id -> { ad, extra, out: { task: { text, at, model, lang, check, trace, impact, keep } } }
+let tailorStore = store.get("jf-tailor", {});   // ad id -> { ad, extra, facts, out: { task: { text, at, model, lang, facts, check, trace, impact, keep } } }
 const saveTailor = () => store.set("jf-tailor", tailorStore);
 const tlEntry = id => tailorStore[id] || (tailorStore[id] = { out: {} });
 const fullAds = new Map(), adFails = new Set();   // ads fetched in full, and Platsbanken ads that couldn't be fetched this time
@@ -492,14 +493,14 @@ function reviewText(text, { task = tl?.task, outLang, ad } = {}) {
   if (!m || !tl) return null;
   try {
     const e = tlEntry(tl.id), o = e.out[task];
-    const r = m.review(text, { cv: store.get("jf-cv", ""), ad: ad ?? e.ad ?? tl.adText ?? "", title: tl.title, employer: tl.employer, extra: e.extra || "", year: new Date().getFullYear(), task, lang: outLang || o?.lang || e.lang || lang });
+    const r = m.review(text, { cv: cvWithFacts(e), ad: ad ?? e.ad ?? tl.adText ?? "", title: tl.title, employer: tl.employer, extra: e.extra || "", year: new Date().getFullYear(), task, lang: outLang || o?.lang || e.lang || lang });
     return { check: cleanCheck(r), trace: String(r.trace), impact: task === "cv" ? cleanImpact(r.impact) : null };
   } catch (err) { console.warn("The fact check failed", err); return null; }
 }
 function restyle(text) {
   if (localStyle === undefined) localStyle = compiled(STYLE_SRC, m => m.styleCheck);
   if (!localStyle || !tl || !DOC_TASKS.has(tl.task)) return null;
-  try { const e = tlEntry(tl.id); return cleanStyle(localStyle(text, { cv: store.get("jf-cv", ""), ad: e.ad ?? tl.adText ?? "", task: tl.task })); }
+  try { const e = tlEntry(tl.id); return cleanStyle(localStyle(text, { cv: cvWithFacts(e), ad: e.ad ?? tl.adText ?? "", task: tl.task })); }
   catch (err) { console.warn("The style check failed", err); return null; }
 }
 
@@ -636,6 +637,35 @@ function download(blob, name) {
   link.href = url; link.download = name;
   document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
+/* ---------- What the CV leaves out ----------
+   Under an answer the person can write down true things their CV forgot and run the task again. They are kept for this
+   job only, sent to the model at the end of the CV (server/prompts.js) and read as part of the CV by every check, here
+   and on the server. "Add to my CV for every job" moves them into the saved CV instead, for other jobs and the Mentor. */
+const MAX_FACTS = 3000;
+const cvWithFacts = e => { const cv = store.get("jf-cv", ""), f = String(e?.facts || "").trim(); return cv && f ? `${cv}\n\n${f}` : cv; };
+// Whether the answer on screen used what is in the box now: a key for the line under the box, or "" for none
+function factsState(out, f, task) {
+  if (!out || !f) return "";
+  return out.facts === f ? "tl.more.used" : DOC_TASKS.has(task) ? "tl.more.notyet.doc" : "tl.more.notyet";
+}
+// Generating again replaces the answer, so one the person has edited or kept sentences in is asked about first
+const wouldLose = o => Boolean(o && (o.edited || (Array.isArray(o.keep) && o.keep.length)));
+const loseHtml = () => `<div class="tl-adwarn tl-lose" role="alert"><p>${esc(t("tl.lose"))}</p>
+    <div class="row"><button class="btn sm" type="button" data-tl="replace">${esc(t("tl.lose.go"))}</button><button class="btn ghost sm" type="button" data-tl="noreplace">${esc(t("tl.lose.no"))}</button></div></div>`;
+function factsHtml(out, e, task) {
+  const f = String(e.facts || "").trim();
+  if (!out && !f && !tl.factsMsg) return "";
+  const state = factsState(out, f, task), bad = tl.factsMsg === "tl.more.empty" || tl.factsMsg === "tl.more.old";
+  return `<section class="tl-more" aria-labelledby="tl-more-l">
+      <label class="tl-label" id="tl-more-l" for="tl-facts">${esc(t("tl.more"))}</label>
+      <p class="tl-hint" id="tl-facts-hint">${esc(t("tl.more.hint"))}</p>
+      <textarea id="tl-facts" data-tl="facts" rows="3" maxlength="${MAX_FACTS}" aria-describedby="tl-facts-hint tl-facts-state" placeholder="${esc(t("tl.more.ph"))}">${esc(e.facts || "")}</textarea>
+      <p class="tl-hint${state === "tl.more.used" ? " tl-ok" : ""}" id="tl-facts-state"${state ? "" : " hidden"}>${state ? esc(t(state)) : ""}</p>
+      <div class="row">${out ? `<button class="btn sm" type="button" data-tl="regen"${tl.busy ? " disabled" : ""}>${esc(t(DOC_TASKS.has(task) ? "tl.more.go.doc" : "tl.more.go"))}</button>` : ""}<button class="btn ghost sm" type="button" data-tl="tocv">${esc(t("tl.more.tocv"))}</button></div>
+      ${tl.confirm === "regen" ? loseHtml() : ""}
+      ${tl.factsMsg ? `<p class="${bad ? "tl-err" : "tl-hint tl-ok"}" role="${bad ? "alert" : "status"}">${esc(t(tl.factsMsg))}</p>` : ""}
+    </section>`;
+}
 function appliedHtml(id) {
   const st = apps[id]?.status;
   if (tl.marked) return `<p class="tl-hint tl-ok" role="status">${esc(t("tl.marked"))}</p>`;
@@ -676,7 +706,9 @@ function tailorHtml() {
       <div class="tl-tasks" role="tablist" aria-label="${esc(t("tl.what"))}">${TASKS.map(k => `<button type="button" role="tab" class="tl-task" data-tl="task" data-task="${k}" aria-selected="${k === task}" tabindex="${k === task ? 0 : -1}">${esc(t("tl.t." + k))}${e.out[k] ? ' <span class="tl-dot" aria-hidden="true">●</span>' : ""}</button>`).join("")}</div>
       <section class="tl-result" role="tabpanel" aria-live="polite">
         <p class="tl-desc">${esc(t("tl.d." + task))}</p>
+        ${out ? "" : factsHtml(null, e, task)}
         <div class="row"><button class="btn" type="button" data-tl="go"${tl.busy ? " disabled" : ""}>${esc(tl.busy ? t("tl.busy") : out ? t("tl.again") : t("tl.go"))}</button><span class="tl-status" id="tl-status">${esc(tl.status || "")}</span></div>
+        ${tl.confirm === "go" ? loseHtml() : ""}
         ${out ? "" : `<p class="tl-hint">${esc(t("ai.before"))}</p>`}
         ${tl.error ? `<p class="tl-err" role="alert">${tl.error}</p>` : ""}
         ${adWarnHtml()}
@@ -698,6 +730,7 @@ function tailorHtml() {
           ${tl.pdfLost ? `<p class="tl-hint" role="status">${esc(t("tl.pdflost", { n: tl.pdfLost }))}</p>` : ""}
           ${embedded && !tl.plain ? `<p class="tl-hint">${esc(t("pt.embedded"))}</p>` : ""}
           ${plainHtml(out, ann)}`}
+          ${tl.editing ? "" : factsHtml(out, e, task)}
           ${appliedHtml(job.id)}` : appliedHtml(job.id)}
       </section>
       <p class="tl-hint tl-privacy">${esc(t("tl.privacy"))}</p>
@@ -706,7 +739,7 @@ function tailorHtml() {
 function flushTailor() {
   if (!tl) return;
   if (tl.editing) { const ta = $("tl-edit"); if (ta) tl.editDraft = ta.value; }
-  for (const k of ["cv", "code", "ad", "extra", "lang"]) { clearTimeout(tlTimers[k]); const el = $("tl-" + k); if (el) saveField(k, el.value); }
+  for (const k of ["cv", "code", "ad", "extra", "facts", "lang"]) { clearTimeout(tlTimers[k]); const el = $("tl-" + k); if (el) saveField(k, el.value); }
 }
 function drawTailor(focusSel) {
   flushTailor();
@@ -738,6 +771,8 @@ async function generate() {
   if (!tl || tl.busy) return;
   const id = tl.id, task = tl.task, e = tlEntry(id);
   const cv = ($("tl-cv")?.value || "").trim(), ad = ($("tl-ad")?.value || "").trim(), code = ($("tl-code")?.value || "").trim(), outLang = $("tl-lang")?.value || lang, extra = ($("tl-extra")?.value || "").trim();
+  const factsRaw = ($("tl-facts")?.value ?? e.facts ?? "").slice(0, MAX_FACTS), facts = factsRaw.trim();
+  tl.confirm = ""; tl.factsMsg = "";
   const stop = (k, sel, v) => { tl.error = esc(t(k, v)); drawTailor(sel); };
   if (!code) return stop("tl.e.nocode", "#tl-code");
   if (cv.length < 200) return stop("tl.e.cv", "#tl-cv");
@@ -750,7 +785,7 @@ async function generate() {
     return drawTailor('[data-tl="excerpt"]');
   }
   const excerpt = ad.length <= MAX_AD && (ad.length < FULL_AD || fromListing), cutFrom = tl.adCutFrom || 0;
-  store.set("jf-cv", cv); store.set("jf-code", code); e.ad = ad; e.extra = extra; e.lang = outLang; saveTailor();
+  store.set("jf-cv", cv); store.set("jf-code", code); e.ad = ad; e.extra = extra; e.lang = outLang; if (factsRaw || e.facts) e.facts = factsRaw; saveTailor();
   tl.busy = true; tl.error = ""; tl.adWarn = ""; tl.status = t("tl.wait", { s: 0 }); tl.editing = false; tl.editDraft = null; tl.pdfLost = 0; tl.plain = false; tl.plainMsg = "";
   drawTailor('[data-tl="go"]');
   const started = Date.now(), tick = setInterval(() => { if (tl?.id === id && tl.busy) { tl.status = t("tl.wait", { s: Math.round((Date.now() - started) / 1000) }); const s = $("tl-status"); if (s) s.textContent = tl.status; } }, 1000);
@@ -759,10 +794,13 @@ async function generate() {
   let msg = "";
   try {
     const r = await fetch(ABOUT.tailor, { method: "POST", headers: { "Content-Type": "application/json" }, signal: ctrl.signal,
-      body: JSON.stringify({ code, task, lang: outLang, cv, extra, job: { title: tl.title, employer: tl.employer, text: ad }, ...(excerpt || cutFrom ? { excerpt: true } : {}) }) });
+      body: JSON.stringify({ code, task, lang: outLang, cv, extra, ...(facts ? { facts } : {}), job: { title: tl.title, employer: tl.employer, text: ad }, ...(excerpt || cutFrom ? { excerpt: true } : {}) }) });
     const j = await r.json().catch(() => ({}));
     if (r.ok && j.text) {
-      const o = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(j.cut ? { cut: true } : {}), ...(+j.fixed > 0 ? { fixed: Math.min(99, +j.fixed) } : {}), ...(cleanStyle(j.style) ? { style: cleanStyle(j.style) } : {}), ...(cleanCheck(j.check) ? { check: cleanCheck(j.check) } : {}),
+      // The server says it read the additions; one from before they existed ignores them, and the panel says so
+      const usedFacts = Boolean(facts && j.facts === true);
+      if (facts && !usedFacts) tl.factsMsg = "tl.more.old";
+      const o = { text: j.text, at: new Date().toISOString(), model: j.model || "", lang: outLang, ...(usedFacts ? { facts } : {}), ...(j.cut ? { cut: true } : {}), ...(+j.fixed > 0 ? { fixed: Math.min(99, +j.fixed) } : {}), ...(cleanStyle(j.style) ? { style: cleanStyle(j.style) } : {}), ...(cleanCheck(j.check) ? { check: cleanCheck(j.check) } : {}),
         ...(typeof j.trace === "string" ? { trace: j.trace } : {}), ...(cleanImpact(j.impact) ? { impact: cleanImpact(j.impact) } : {}),
         ...(excerpt ? { excerpt: true } : {}), ...(j.adTrimmed ? { adTrimmed: { from: +j.adTrimmed.from || 0, to: +j.adTrimmed.to || 0 } } : cutFrom ? { adTrimmed: { from: cutFrom, to: ad.length } } : {}) };
       // A server from before the trace: the same code works it out here
@@ -786,7 +824,7 @@ function onTailorClick(e) {
   const el = e.target.closest("[data-tl]"); if (!el || !tl) return;
   const k = el.dataset.tl;
   if (k === "close") closeTailor();
-  else if (k === "task") { flushTailor(); saveEdit(); tl.task = el.dataset.task; tl.error = ""; tl.pdfLost = 0; tl.plain = false; tl.plainMsg = ""; tlEntry(tl.id).lastTask = tl.task; saveTailor(); drawTailor(`[data-task="${tl.task}"]`); }
+  else if (k === "task") { flushTailor(); saveEdit(); tl.task = el.dataset.task; tl.error = ""; tl.confirm = ""; tl.factsMsg = ""; tl.pdfLost = 0; tl.plain = false; tl.plainMsg = ""; tlEntry(tl.id).lastTask = tl.task; saveTailor(); drawTailor(`[data-task="${tl.task}"]`); }
   else if (k === "excerpt") {
     // A long ad is cut at a paragraph here, in the ad box, so what is sent is what the person sees
     const ta = $("tl-ad");
@@ -811,7 +849,7 @@ function onTailorClick(e) {
     const o = tlEntry(tl.id).out[tl.task]; if (!o) return;
     download(new Blob([plainText(sendText(o)) + "\n"], { type: "text/plain;charset=utf-8" }), docName(o, "txt"));
   }
-  else if (k === "edit") { tl.editing = true; tl.editDraft = null; tl.pdfLost = 0; drawTailor("#tl-edit"); }
+  else if (k === "edit") { tl.confirm = ""; tl.editing = true; tl.editDraft = null; tl.pdfLost = 0; drawTailor("#tl-edit"); }
   else if (k === "save") { flushTailor(); saveEdit(); drawTailor(".fc"); }
   else if (k === "cancel") { tl.editing = false; tl.editDraft = null; drawTailor('[data-tl="edit"]'); }
   else if (k === "pdf") {
@@ -822,7 +860,24 @@ function onTailorClick(e) {
     download(pdf.blob, docName(o, "pdf"));
     if (pdf.lost !== tl.pdfLost) { tl.pdfLost = pdf.lost; drawTailor('[data-tl="pdf"]'); }
   }
-  else if (k === "go") generate();
+  else if (k === "go" || k === "regen") {
+    flushTailor();
+    if (wouldLose(tlEntry(tl.id).out[tl.task])) { tl.confirm = k; drawTailor('[data-tl="replace"]'); }
+    else generate();
+  }
+  else if (k === "replace") generate();
+  else if (k === "noreplace") { const from = tl.confirm || "go"; tl.confirm = ""; drawTailor(`[data-tl="${from}"]`); }
+  else if (k === "tocv") {
+    // Moved into the saved CV, so every job and the Mentor read it, and taken out of the box so it isn't sent twice
+    flushTailor();
+    const e = tlEntry(tl.id), f = String(e.facts || "").trim();
+    if (!f) { tl.factsMsg = "tl.more.empty"; return drawTailor("#tl-facts"); }
+    const cvEl = $("tl-cv"), cv = (cvEl ? cvEl.value : store.get("jf-cv", "")).replace(/\s+$/, ""), next = cv ? `${cv}\n\n${f}` : f;
+    store.set("jf-cv", next); if (cvEl) cvEl.value = next;
+    const fEl = $("tl-facts"); if (fEl) fEl.value = "";
+    e.facts = ""; saveTailor(); tl.factsMsg = "tl.more.added";
+    drawTailor('[data-tl="tocv"]');
+  }
   else if (k === "refetch") refetchAd();
   else if (k === "load") $("tl-file").click();
   else if (k === "apply") { if (!["Applied", "Interview", "Offer"].includes(apps[tl.id]?.status)) { tl.askApplied = true; setTimeout(() => { if (tl) drawTailor('[data-tl="mark"]'); }, 0); } }
@@ -851,14 +906,19 @@ function saveField(k, v) {
   const e = tlEntry(tl.id);
   if (k === "ad") { if (v === (e.ad ?? tl.adText ?? "")) return; e.ad = v; }
   else if (k === "extra") { if (v === (e.extra || "")) return; e.extra = v; }
+  else if (k === "facts") { v = v.slice(0, MAX_FACTS); if (v === (e.facts || "")) return; e.facts = v; }
   else if (k === "lang") { if (v === (e.lang || tl.lang || lang)) return; e.lang = v; }
   saveTailor();
 }
 function onTailorInput(e) {
   const el = e.target, k = el.dataset.tl;
   if (k === "edit-text" && tl) { tl.editDraft = el.value; return; }
-  if (!["cv", "code", "ad", "extra", "lang"].includes(k) || !tl) return;
+  if (!["cv", "code", "ad", "extra", "facts", "lang"].includes(k) || !tl) return;
   if (k === "ad") { tl.adOk = false; tl.adCutFrom = 0; }   // a changed ad is looked at again before it's sent
+  if (k === "facts") {
+    const s = $("tl-facts-state"), key = factsState(tlEntry(tl.id).out[tl.task], el.value.trim(), tl.task);
+    if (s) { s.hidden = !key; s.textContent = key ? t(key) : ""; s.className = "tl-hint" + (key === "tl.more.used" ? " tl-ok" : ""); }
+  }
   clearTimeout(tlTimers[k]);
   tlTimers[k] = setTimeout(() => saveField(k, el.value), k === "lang" ? 0 : 400);
 }

@@ -125,16 +125,32 @@ Write only the name line, the contact line and the letter, with no subject line 
   },
 };
 
+/* ---------- What the person adds that their CV leaves out ----------
+   After reading an answer, the person can write down true things their CV forgot (a course, a tool used in a job, a
+   task) and run the task again. They go to the model at the end of the CV, under a heading of their own, and the fact
+   check reads them as part of the CV (pipeline.js), so nothing in them is flagged. */
+const FACTS_HEAD = { sv: "Tillagt av personen:", en: "Added by the person:" };
+const withFacts = (cv, facts, lang) => facts ? `${cv}\n\n${FACTS_HEAD[lang]}\n${facts}` : cv;
+const FACTS_NOTE = {
+  sv: `\nI slutet av CV:t, under "${FACTS_HEAD.sv.slice(0, -1)}", har personen skrivit sådant som CV:t saknar. Det är lika sant som resten av CV:t och räknas som en del av det överallt där de här instruktionerna säger "CV:t". Skriv aldrig att något har lagts till.`,
+  en: `\nAt the end of the CV, under "${FACTS_HEAD.en.slice(0, -1)}", the person has written things their CV leaves out. They are as true as the rest of the CV and count as part of it everywhere these instructions say "the CV". Never say that anything was added.`,
+};
+const FACTS_PLACE = {
+  sv: " Lägg in varje sak där den hör hemma i CV:t: en kunskap bland kunskaperna, en uppgift eller ett resultat under den tjänst där det hörde till, en kurs eller ett certifikat med utbildningen eller i sitt avsnitt, och en tjänst som CV:t saknar som en egen tjänst. Gör inget eget avsnitt av dem.",
+  en: " Put each one where it belongs in the CV: a skill with the skills, a task or result under the job it was part of, a course or certificate with the education or in its own section, and a job the CV leaves out as a job of its own. Don't make a section of its own for them.",
+};
+
 function build(task) {
-  return (lang, { cv, job, extra }) => [
+  return (lang, { cv, job, extra, facts = "" }) => [
     { role: "system", content: RULES[lang] },
     { role: "user", content: [
       ASK[task][lang],
+      facts ? FACTS_NOTE[lang] + (task === "cv" ? FACTS_PLACE[lang] : "") : "",
       extra ? (lang === "sv" ? `\nPersonens egna önskemål: ${extra}` : `\nThe person's own wishes: ${extra}`) : "",
       // A short excerpt, or the first part of a very long ad: the rest is not to be guessed at
       job.excerpt ? (lang === "sv" ? "\nAnnonsen nedan är bara ett utdrag. Gissa inte vad resten av annonsen efterfrågar." : "\nThe ad below is only an excerpt. Do not guess what the rest of the ad asks for.") : "",
       lang === "sv" ? `\n<annons>\nTitel: ${job.title}\nArbetsgivare: ${job.employer}\n\n${job.text}\n</annons>` : `\n<job_ad>\nTitle: ${job.title}\nEmployer: ${job.employer}\n\n${job.text}\n</job_ad>`,
-      `\n<cv>\n${cv}\n</cv>`,
+      `\n<cv>\n${withFacts(cv, facts, lang)}\n</cv>`,
     ].join("\n") },
   ];
 }
@@ -247,4 +263,4 @@ const OPTIONS = {
   translate: { maxTokens: 6000, temperature: 0.1 },
 };
 
-module.exports = { PROMPTS, TASKS, AD_TASKS, CV_TASKS, OPTIONS, parseMentor, repairPrompt };
+module.exports = { PROMPTS, TASKS, AD_TASKS, CV_TASKS, OPTIONS, parseMentor, repairPrompt, withFacts };
