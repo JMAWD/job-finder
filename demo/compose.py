@@ -2,24 +2,24 @@
 
     python3 demo/compose.py            # English, from demo/out/raw/
     python3 demo/compose.py sv         # Swedish, from demo/out/raw-sv/
-    python3 demo/compose.py retailor   # the 1.8 clip, from demo/out/raw-retailor/
+    python3 demo/compose.py new        # what's new in 1.8, from demo/out/raw-new/
 
 Adds a title card, the captions (highlighted words in **double stars**), a pointer with click rings and an end card,
 in the seafoam and sunshine colours. Writes demo/out/job-finder-demo.mp4 (job-finder-demo-sv.mp4 in Swedish,
-job-finder-demo-retailor.mp4 for the 1.8 clip, 1080 x 1080, 30 fps) and a cover image. The 1.8 clip also shows the
-PDF it downloaded, with the lines Sam added marked."""
+job-finder-demo-new.mp4 for what's new, 1080 x 1080, 30 fps) and a cover image. What's new also cuts to the PDF it
+downloaded, with the lines Sam added marked, where record.py marked the cut."""
 import asyncio, bisect, json, pathlib, re, subprocess, sys
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 from playwright.async_api import async_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LANG = 'sv' if 'sv' in sys.argv[1:] else 'en'
-CLIP = 'retailor' if 'retailor' in sys.argv[1:] else ''
-SUF = '-retailor' if CLIP else '' if LANG == 'en' else '-sv'
+CLIP = 'new' if 'new' in sys.argv[1:] else ''
+SUF = '-new' if CLIP else '' if LANG == 'en' else '-sv'
 OUT = ROOT / 'demo' / 'out'; RAW = OUT / ('raw' + SUF)
 S, FPS = 1080, 30
 GREEN, DEEP, SUN, MIST = '#1c6b5a', '#0f2e27', '#ffd86a', '#cde8de'
-TITLE_S, END_S, PDF_S, FADE = 3.6, 4.8, 4.2, 0.4
+TITLE_S, END_S, PDF_S, FADE = (2.4, 3.4, 2.4, 0.3) if CLIP else (3.6, 4.8, 2.6, 0.4)
 FONT = '/usr/share/fonts/opentype/inter/Inter-Bold.otf'
 
 LOGO = f"""<svg viewBox="0 0 64 64" width="64" height="64"><rect width="64" height="64" rx="14" fill="#134f42"/><circle cx="28" cy="28" r="14" fill="none" stroke="{SUN}" stroke-width="6"/>
@@ -41,9 +41,9 @@ END = {'en': ("<h1>Free. No account.<br>Swedish and English.</h1><div class=\"ur
               "<p>Advice based on your experience and plans, never your age.</p><p class=\"small\">Demo with fictional companies, people and ads.</p>"),
        'sv': ("<h1>Gratis. Inget konto.<br>Svenska och engelska.</h1><div class=\"url\">jmawd.github.io/job-finder</div>"
               "<p>Råd utifrån din erfarenhet och dina planer, aldrig din ålder.</p><p class=\"small\">Demo med påhittade företag, personer och annonser.</p>")}[LANG]
-if CLIP:   # The 1.8 clip opens by naming the one change, and closes on what step 2 promises
-    TITLE = ("<div class=\"tag\">NEW IN 1.8</div><h1>Tell the AI what<br>your CV forgot.</h1>"
-             "<p>Job Finder checks everything the AI writes against your CV. Now you can add what's true but missing.</p>")
+if CLIP:   # What's new: a short title, and an end card on what step 2 promises
+    TITLE = ("<div class=\"tag\">WHAT'S NEW</div><h1>Six new things<br>in Job Finder</h1>"
+             "<p>A free job search for Sweden, with an AI that sticks to your CV.</p>")
     END = ("<h1>Free. No account.<br>Checked against<br>your CV.</h1><div class=\"url\">jmawd.github.io/job-finder</div>"
            "<p>Tailoring is in a small beta and needs an access code.</p><p class=\"small\">Demo with fictional companies, people and ads.</p>")
 
@@ -57,7 +57,7 @@ async def cards():
 
 def caption_sprite(text):
     """The caption bar as an RGBA image: deep green, a sunshine rule on top, white text with the starred words in yellow."""
-    font = ImageFont.truetype(FONT, 40); pad, lh, maxw = 44, 54, S - 88
+    font = ImageFont.truetype(FONT, 31); pad, lh, maxw, top = 32, 40, S - 64, 14
     words, hi, buf, sp, gap = [], False, '', False, False   # words: (text, highlighted, space before it)
     for tok in re.split(r'(\*\*|\s+)', text):
         if tok == '**': hi = not hi
@@ -69,11 +69,11 @@ def caption_sprite(text):
         if cur and x + gap + font.getlength(w) > maxw: lines.append(cur); cur, x, gap = [], 0, 0
         cur.append((w, hi, x + gap)); x += gap + font.getlength(w)
     lines.append(cur)
-    h = 2 * 30 + lh * len(lines) + 6
-    im = Image.new('RGBA', (S, h), (15, 46, 39, 244)); d = ImageDraw.Draw(im)
-    d.rectangle([0, 0, S, 5], fill=SUN)
+    h = 2 * top + lh * len(lines) + 4
+    im = Image.new('RGBA', (S, h), (15, 46, 39, 236)); d = ImageDraw.Draw(im)
+    d.rectangle([0, 0, S, 3], fill=SUN)
     for i, line in enumerate(lines):
-        for w, hi, x in line: d.text((pad + x, 30 + 6 + i * lh), w, font=font, fill=SUN if hi else '#ffffff')
+        for w, hi, x in line: d.text((pad + x, top + 4 + i * lh), w, font=font, fill=SUN if hi else '#ffffff')
     return im
 
 def cursor_sprite():
@@ -159,10 +159,18 @@ def main():
         x, y = cursor_at(t); im.alpha_composite(arrow, (int(x) - 2, int(y) - 2))
         return im.convert('RGB')
     # The shots in order, each (length, frame at a time within it), with a cross-fade at every cut
-    shots = [(TITLE_S, lambda t: title), (app_len, app_frame)]
-    if CLIP and (RAW / 'cv.pdf').exists():
-        pdf = pdf_card(ev['caps'][-1][2]); shots.append((PDF_S, lambda t: pdf))
-    shots.append((END_S, lambda t: endcard))
+    # The app is cut where record.py marked a shot of its own (the PDF), and jumps over what it said to skip (waiting for
+    # the AI, or getting from one view to the next). Every cut cross-fades.
+    shots, done = [(TITLE_S, lambda t: title)], 0
+    def upto(at):
+        if at - done > 0.3: shots.append((at - done, lambda t, o=done: app_frame(o + t)))
+    marks = [(a - start, 'card', c) for a, k, c in ev.get('inserts', []) if k == 'pdf' and (RAW / 'cv.pdf').exists()]
+    marks += [(a - start, 'skip', b - start) for a, b in ev.get('skips', []) if b]
+    for at, kind, x in sorted(marks, key=lambda m: m[0]):
+        upto(at)
+        if kind == 'card': card = pdf_card(x); shots.append((PDF_S, lambda t, im=card: im)); done = at
+        else: done = max(done, x)
+    upto(app_len); shots.append((END_S, lambda t: endcard))
     cuts = [sum(s[0] for s in shots[:i + 1]) for i in range(len(shots))]
     total = cuts[-1]
     ff = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{S}x{S}', '-r', str(FPS), '-i', '-',

@@ -23,12 +23,12 @@ const MENTOR = {
     { title: "DevOps Engineer", tier: "pivot", directions: ["change", "deeper"], match: 41, why: "You already keep a CI pipeline running.", gaps: ["Cloud infrastructure"], gap_months: 12, search: "DevOps" },
   ],
   courses: [
-    course("ISTQB Advanced Test Management", "Self-study, exam via accredited provider", "self", { hours: 60, cost_sek: 7500, ramp_months: 0 }, ["lead", "advise"], { lead: 10, advise: 7 }, "ISTQB", "Test Lead", "The standard qualification for test leads, building on your Foundation level."),
-    course("UGL leadership course", "Residential course, 5 days", "class", { hours: 43, days: 5, cost_sek: 26000, ramp_months: 3 }, ["lead"], { lead: 9 }, "ledarskap", "QA Lead", "The usual first leadership course in Swedish industry."),
-    course("AI tools for testers", "Self-paced online", "self", { hours: 6, cost_sek: 0, ramp_months: 0 }, ["deeper", "lead", "change", "advise"], 6, "Copilot", "Test Lead", "A few hours is enough to start using AI on test design and reports."),
-    course("Professional Scrum Product Owner", "Self-study, online exam", "self", { hours: 20, cost_sek: 2200, ramp_months: 1 }, ["change", "lead"], { change: 10, lead: 5 }, "Scrum", "Product Owner", "A recognised start if you want to move into product work."),
-    course("ISTQB Advanced Test Automation Engineering", "Self-study, exam via accredited provider", "self", { hours: 50, cost_sek: 7500, ramp_months: 0 }, ["deeper"], { deeper: 10 }, "Robot Framework", "Test Automation Engineer", "Puts a name on the automation work you already do."),
-    course("Kubernetes for developers", "Self-paced online", "self", { hours: 30, cost_sek: 3000, ramp_months: 2 }, ["change", "deeper"], { change: 8, deeper: 4 }, "Kubernetes", "DevOps Engineer", "Where CI pipelines run today."),
+    course("ISTQB Advanced Test Management", "Västkust Testakademi", "self", { hours: 60, cost_sek: 7500, ramp_months: 0 }, ["lead", "advise"], { lead: 10, advise: 7 }, "ISTQB", "Test Lead", "The standard qualification for test leads, building on your Foundation level."),
+    course("UGL leadership course", "Ledarskapshuset Väst", "class", { hours: 43, days: 5, cost_sek: 26000, ramp_months: 3 }, ["lead"], { lead: 9 }, "ledarskap", "QA Lead", "The usual first leadership course in Swedish industry."),
+    course("AI tools for testers", "Testkollektivet", "self", { hours: 6, cost_sek: 0, ramp_months: 0 }, ["deeper", "lead", "change", "advise"], 6, "Copilot", "Test Lead", "A few hours is enough to start using AI on test design and reports."),
+    course("Professional Scrum Product Owner", "Agila Akademin", "self", { hours: 20, cost_sek: 2200, ramp_months: 1 }, ["change", "lead"], { change: 10, lead: 5 }, "Scrum", "Product Owner", "A recognised start if you want to move into product work."),
+    course("ISTQB Advanced Test Automation Engineering", "Västkust Testakademi", "self", { hours: 50, cost_sek: 7500, ramp_months: 0 }, ["deeper"], { deeper: 10 }, "Robot Framework", "Test Automation Engineer", "Puts a name on the automation work you already do."),
+    course("Kubernetes for developers", "Molnskolan", "self", { hours: 30, cost_sek: 3000, ramp_months: 2 }, ["change", "deeper"], { change: 8, deeper: 4 }, "Kubernetes", "DevOps Engineer", "Where CI pipelines run today."),
   ],
 };
 const ANSWERS = {
@@ -69,7 +69,7 @@ Senior test engineer who plans and runs release testing for a vehicle telematics
 const CV_DRAFTS = {
   first: tailoredCv({ borrowed: ", following ISO 26262" }),
   corrected: tailoredCv(),
-  added: tailoredCv({ skill: "\n- ISO 26262 functional safety testing", task: "\n- Wrote the functional safety test cases for the unit to ISO 26262" }),
+  added: tailoredCv({ skill: "\n- ISO 26262 safety testing", task: "\n- Wrote the ISO 26262 safety test cases for the telematics unit" }),
 };
 ANSWERS.cv = CV_DRAFTS.first;
 
@@ -115,15 +115,15 @@ http.createServer(async (req, res) => {
   if (req.method !== "POST" || req.url !== "/v1/chat/completions") return send(404, {});
   const msg = JSON.parse(body).messages, sv = /^Du /.test(msg[0].content);
   if (/career mentor|karriärmentor/.test(msg[0].content)) {
-    await new Promise(r => setTimeout(r, 2600));
+    await new Promise(r => setTimeout(r, 1600));
     return send(200, { choices: [{ message: { content: "```json\n" + JSON.stringify(sv ? MENTOR_SV : MENTOR) + "\n```" } }], usage: { prompt_tokens: 1500, completion_tokens: 1800 } });
   }
   const ask = msg[1].content;
   const reply = (content, ms) => new Promise(r => setTimeout(r, ms)).then(() => send(200, { choices: [{ message: { content }, finish_reason: "stop" }], usage: { prompt_tokens: 1200, completion_tokens: 300 } }));
   // The server's one correction pass after the fact check (server/pipeline.js): the CV without what was flagged
-  if (!sv && /A check in code found/.test(ask) && /<text>\n# Sam Ekström/.test(ask)) return reply(CV_DRAFTS.corrected, 700);
+  if (!sv && /A check in code found/.test(ask) && /<text>\n# Sam Ekström/.test(ask)) return reply(CV_DRAFTS.corrected, 500);
   const task = /cover letter|personligt brev/i.test(ask) ? "letter" : /Tailor the CV|Anpassa CV/i.test(ask) ? "cv" : /interview|intervju/i.test(ask) ? "interview" : "match";
   // What Sam wrote under the answer comes at the end of the CV, under a heading of its own (server/prompts.js)
-  if (!sv && task === "cv" && /\nAdded by the person:\n[^\n]*ISO 26262/.test(ask)) return reply(CV_DRAFTS.added, 2400);
-  await reply((sv ? ANSWERS_SV : ANSWERS)[task], 2400);
+  if (!sv && task === "cv" && /\nAdded by the person:\n[^\n]*ISO 26262/.test(ask)) return reply(CV_DRAFTS.added, 1500);
+  await reply((sv ? ANSWERS_SV : ANSWERS)[task], 1500);
 }).listen(+process.argv[2] || 8798, "127.0.0.1");

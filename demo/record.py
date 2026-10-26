@@ -2,11 +2,12 @@
 
     python3 build.py && python3 demo/record.py && python3 demo/compose.py          # English
     python3 demo/record.py sv && python3 demo/compose.py sv                        # Swedish: Swedish ads, CV, AI answers and captions
-    python3 demo/record.py retailor && python3 demo/compose.py retailor            # New in 1.8: tell the AI what your CV forgot (English)
+    python3 demo/record.py new && python3 demo/compose.py new                      # What's new in 1.8, about ten seconds a feature (English)
 
-Writes demo/out/raw/ (raw-sv/ for Swedish, raw-retailor/ for the 1.8 clip): one JPEG per screen update (1080 x 1080) and
-events.json with the cursor path, clicks and captions; the 1.8 clip also keeps the PDF it downloads. compose.py turns that
-into the finished video and a cover image. Companies, people and ads are made up."""
+Writes demo/out/raw/ (raw-sv/ for Swedish, raw-new/ for what's new): one JPEG per screen update (1080 x 1080) and
+events.json with the cursor path, clicks, captions and highlight boxes; what's new also keeps the PDF it downloads, and
+marks where compose.py cuts to it. compose.py turns that into the finished video and a cover image. Companies, people and
+ads are made up."""
 import asyncio, base64, hashlib, json, os, pathlib, re, shutil, subprocess, sys, tempfile, time, urllib.request
 from datetime import date, timedelta
 from urllib.parse import urlparse, parse_qs
@@ -14,9 +15,10 @@ from playwright.async_api import async_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LANG = 'sv' if 'sv' in sys.argv[1:] else 'en'
-CLIP = 'retailor' if 'retailor' in sys.argv[1:] else ''   # the short clip for 1.8: what your CV leaves out, and tailoring again
-if CLIP and LANG != 'en': sys.exit('The retailor clip is English only.')
-RAW = ROOT / 'demo' / 'out' / ('raw-retailor' if CLIP else 'raw' if LANG == 'en' else 'raw-sv')
+CLIP = 'new' if 'new' in sys.argv[1:] else ''   # what's new in 1.8: one short scene for each new feature
+if CLIP and LANG != 'en': sys.exit("The what's-new clip is English only.")
+RAW = ROOT / 'demo' / 'out' / ('raw-new' if CLIP else 'raw' if LANG == 'en' else 'raw-sv')
+SAFE = 80                       # the caption bar covers the bottom of the page: nothing is clicked lower than this (CSS pixels)
 SERVER, AI = 'http://127.0.0.1:8787', 'http://127.0.0.1:8798'
 CODE = 'BETA-DEMO1'
 W, SCALE = 800, 1.35            # the page is 800 x 800 CSS pixels, captured at 1080 x 1080
@@ -124,11 +126,13 @@ TX = {
                      'An AI **tailors your cover letter** to the ad, using only your CV', 'The Mentor **reads your CV** and suggests what to do next', 'Pick a **direction** and the advice changes instantly',
                      'Roles to apply for **now**, **within reach**, or as a **change of track**', 'What to learn next, fitted to your **time, budget and plans**',
                      'One click from a suggested role to **its job ads**', 'New: pick **your colours**, and every page follows'],
-               # The 1.8 clip: what gets typed after picking ISO from the ad's words, and its captions
-               fact='I wrote the ISO 26262 functional safety test cases for the telematics unit at Göta Telematics',
-               new=['Step 2 writes a **whole tailored CV** from your CV, for one job ad', "The AI's first draft borrowed **ISO 26262** from the ad. The fact check **caught it**, so it was taken out.",
-                    'But Sam **did** work to ISO 26262. His CV just never said so.', '**Tailor again**, and it goes under the job where it happened',
-                    'Every sentence traces to **your CV**, the new one included', 'In the PDF, **ready to send**']),
+               # What's new in 1.8: what gets typed after picking ISO from the ad's words, and one short line per caption
+               fact='Wrote the ISO 26262 safety test cases at Göta Telematics',
+               new=['**Fairs and events** in your field, next to the jobs', '**Know before you apply**: patterns in their hiring',
+                    'A **whole tailored CV**, checked against your own', 'Took **ISO 26262** from the ad? Caught and taken out',
+                    'Tell it **what your CV forgot**, then tailor again', 'Download it as a **PDF**, ready to send',
+                    'The **Mentor**: roles and courses that fit your CV', 'Every course has a **Find this course** link',
+                    'The **Market**: is your field hiring more than last year?']),
     'sv': dict(locale='sv-SE', kw=('testledare', 'testautomatisering'), note='Ringde Sara i måndags. Sök före fredag', letter='Personligt brev', lead='Leda människor eller projekt', qa='QA-ledare',
                caps=['Sök bland **lediga jobb** på ort och egna sökord', 'Annonserna samlas **per arbetsgivare**, med kontakter och tidigare rekryteringar',
                      '**Håll koll** på var du har sökt, med egna anteckningar', 'En AI **anpassar ditt personliga brev** till annonsen, bara utifrån ditt CV',
@@ -140,11 +144,26 @@ TX = {
 def ok(body): return dict(status=200, content_type='application/json', headers={'access-control-allow-origin': '*'}, body=json.dumps(body))
 def has(a, term): return term.lower() in (a['headline'] + ' ' + a['description']['text']).lower()
 
-# Fairs and events in your field: empty venue calendars, so the demo doesn't reach the real sites
+# Fairs and events in your field: small made-up venue calendars, so the demo doesn't reach the real sites. Two events at
+# Åbymässan in Mölndal and a job fair in Göteborg fit a Göteborg search.
 EVENT_HOSTS = re.compile(r'^https://(stockholmsmassan\.se|www\.malmomassan\.se|www\.kistamassan\.se|data\.visitsweden\.com)/')
-async def no_events(route):
+def sm_event(id, title, start, cats, tag, venue, excerpt, length=1):
+    return {"id": id, "title": title, "url": f"https://stockholmsmassan.se/kalender/{id}/", "start_date": f"{day(start)} 01:00:00",
+            "end_date": f"{day(start + length - 1)} 23:59:00", "excerpt": f"<p>{excerpt}</p>", "hide_from_listings": False,
+            "categories": [{"name": c} for c in cats], "tags": [{"name": tag}], "venue": {"venue": venue}}
+CALENDAR = {"events": [
+    sm_event(1, 'Testdagen Väst', 12, ['IT'], 'Konferens', 'Åbymässan', 'En dag om testautomatisering, kvalitet och AI i testarbetet.'),
+    sm_event(2, 'Embedded Expo Väst', 30, ['Industri', 'IT'], 'Fackmässa', 'Åbymässan', 'Inbyggda system, verifiering och test, med seminarier för test leads.', 2)],
+    "next_rest_url": None}
+JOB_FAIR = {"results": 1, "resource": {"children": [{"entryId": "21", "metadata": {"@graph": [
+    {"@id": "urn:21", "@type": "schema:Event", "schema:name": "Jobbmässa i Göteborg", "schema:startDate": {"@value": f"{day(20)}T10:00:00+01:00"},
+     "schema:endDate": {"@value": day(20)}, "schema:url": {"@id": "https://example.se/21"}, "schema:geo": {"@id": "_:g21"},
+     "schema:description": [{"@value": "A job fair.", "@language": "en"}, {"@value": "En jobbmässa.", "@language": "sv"}]},
+    {"@id": "_:g21", "@type": "schema:GeoCoordinates", "schema:latitude": 57.70, "schema:longitude": 11.97}]}}]}}
+async def events(route):
     u = route.request.url
-    await route.fulfill(**ok({"events": []} if 'tribe' in u else {"resource": {"children": []}} if 'visitsweden' in u else []))
+    body = CALENDAR if 'tribe' in u else JOB_FAIR if 'visitsweden' in u else []
+    await route.fulfill(**{**ok(body), 'headers': {'access-control-allow-origin': '*', 'access-control-expose-headers': 'X-WP-Total, X-WP-TotalPages', 'x-wp-total': '0', 'x-wp-totalpages': '1'}})
 async def jobsearch(route):
     url = route.request.url; q = parse_qs(urlparse(url).query)
     if '/ad/' in url:
@@ -167,25 +186,46 @@ async def joblinks(route):
     hits = [l for l in LINKS if term and term in (l['headline'] + ' ' + l['brief']).lower()]
     await route.fulfill(**ok({"total": {"value": len(hits)}, "hits": hits}))
 
+# Nordvik's last two years of ads, for its hiring history and Know before you apply: the test lead job has come back three
+# times in a year, and nearly all its jobs are permanent. (days ago, title, duration)
+NORDVIK_PAST = [(40, 'Test Lead, Embedded Systems'), (120, 'Test Automation Engineer'), (150, 'Test Lead, Embedded Systems'),
+                (200, 'Software Engineer, Embedded'), (290, 'Test Lead, Embedded Systems'), (400, 'Test Engineer'), (470, 'HIL Test Engineer'),
+                (560, 'Systems Engineer'), (650, 'Test Engineer', 'Visstid')]
 async def history(route):
-    q = parse_qs(urlparse(route.request.url).query); n = HIRED.get(q.get('employer', [''])[0], 0)
-    hits = [{"id": f"h{i}", "publication_date": day(-40 - 70 * i) + "T08:00:00", "occupation_group": {"concept_id": "g_test"}} for i in range(n)]
-    await route.fulfill(**ok({"total": {"value": len(hits)}, "hits": hits}))
+    q = parse_qs(urlparse(route.request.url).query); org = q.get('employer', [''])[0]
+    past = NORDVIK_PAST if org == '5560100001' else [(40 + 70 * i, None) for i in range(HIRED.get(org, 0))]
+    hits = [{"id": f"h{i}", "publication_date": day(-p[0]) + "T08:00:00", "occupation_group": {"concept_id": "g_test"},
+             **({"headline": p[1], "duration": {"label": p[2] if len(p) > 2 else 'Tills vidare'}} if p[1] else {})} for i, p in enumerate(past)]
+    since = q.get('historical-from', [''])[0][:10]
+    if q.get('limit') == ['0']: hits = [h for h in hits if h['publication_date'][:10] >= since]   # the count for the past 6 months
+    await route.fulfill(**ok({"total": {"value": len(hits)}, "hits": [] if q.get('limit') == ['0'] else hits}))
 
 class Rec:
     """Drives the page like a person would and notes where the pointer was, when it clicked and which caption shows."""
     def __init__(self, pg):
         self.pg, self.x, self.y = pg, W * 0.62, W * 0.7
-        self.path, self.clicks, self.caps, self.spots = [(time.time(), self.x, self.y)], [], [], []
-    async def spot(self, loc, hold=2.4, pad=6):
-        """Draws a sunshine box around the text of an element for `hold` seconds (compose.py draws it). The page mustn't scroll meanwhile."""
+        self.path, self.clicks, self.caps, self.spots, self.inserts, self.skips = [(time.time(), self.x, self.y)], [], [], [], [], []
+    async def spot(self, loc, hold=2.4, pad=6, whole=False):
+        """Draws a sunshine box for `hold` seconds (compose.py draws it) around the text of an element, or around the whole
+        element (a panel or card) with whole=True. The page mustn't scroll meanwhile."""
         # The lines of text inside the element, not markup that reaches outside it (sentence marks carry a tooltip)
-        b = await loc.evaluate("""e => { const box = e.getBoundingClientRect(), r = document.createRange(); r.selectNodeContents(e);
+        b = await loc.evaluate("""(e, whole) => { const box = e.getBoundingClientRect();
+            if (whole) return { x: box.left, y: box.top, w: box.width, h: box.height };
+            const r = document.createRange(); r.selectNodeContents(e);
             const rs = [...r.getClientRects()].filter(q => q.width > 0 && q.height > 0 && q.top >= box.top - 2 && q.bottom <= box.bottom + 2);
             const x = Math.min(...rs.map(q => q.left)), y = Math.min(...rs.map(q => q.top));
-            return { x, y, w: Math.max(...rs.map(q => q.right)) - x, h: Math.max(...rs.map(q => q.bottom)) - y }; }""")
-        t0 = time.time(); self.spots.append([t0, t0 + hold, b['x'] - pad, b['y'] - pad, b['w'] + 2 * pad, b['h'] + 2 * pad])
+            return { x, y, w: Math.max(...rs.map(q => q.right)) - x, h: Math.max(...rs.map(q => q.bottom)) - y }; }""", whole)
+        if whole: pad = 2
+        h = min(b['h'] + 2 * pad, W - SAFE - (b['y'] - pad))       # never into the caption bar
+        t0 = time.time(); self.spots.append([t0, t0 + hold, b['x'] - pad, b['y'] - pad, b['w'] + 2 * pad, h])
         await asyncio.sleep(hold)
+    def mark(self, kind, caption):
+        """Tells compose.py to cut away here, to a shot of its own (the PDF), with this caption."""
+        self.cap_off(); self.inserts.append([time.time(), kind, caption])
+    def skip(self):
+        """compose.py leaves out what happens from here until unskip(): waiting for the AI, or getting from one view to the next."""
+        self.skips.append([time.time(), None])
+    def unskip(self): self.skips[-1][1] = time.time()
     async def move(self, x, y, dur=0.55):
         n = max(2, int(dur * 40)); x0, y0 = self.x, self.y
         for i in range(1, n + 1):
@@ -195,7 +235,7 @@ class Rec:
             await asyncio.sleep(dur / n)
     async def point(self, loc, dx=0.5, dy=0.5, dur=0.55):
         b = await loc.bounding_box()
-        if b['y'] < 0 or b['y'] + b['height'] > W - 90:      # off screen or under the caption: bring it into view first
+        if b['y'] < 0 or b['y'] + b['height'] > W - SAFE:      # off screen or under the caption: bring it into view first
             await self.scroll(loc, top=160, wait=1.0); b = await loc.bounding_box()
         await self.move(b['x'] + b['width'] * dx, b['y'] + b['height'] * dy, dur)
     async def click(self, loc, dx=0.5, dy=0.5, dur=0.55, pause=0.15):
@@ -288,61 +328,82 @@ async def scenes(r, pg):
     r.cap_off(); await hold(0.3)
 
 async def preroll(pg):
-    """Before the 1.8 clip starts: the search for test lead jobs in Göteborg, with Nordvik Automotive open."""
+    """Before what's new starts: Göteborg and test lead filled in, ready to search."""
     await pg.fill('#place', 'Göteborg')
     await pg.click('#kw-input'); await pg.keyboard.type(TX['kw'][0]); await pg.keyboard.press('Enter')
-    await pg.click('#go')
-    await pg.wait_for_function("document.getElementById('msg').textContent.length > 0", timeout=20000)
-    nordvik = pg.locator('article.co', has_text='Nordvik Automotive')
-    await nordvik.locator('button.exp').click(); await pg.wait_for_timeout(600)
-    await Rec(pg).scroll(nordvik, top=8, wait=1.0)      # the employer's name at the top, the role and its Tailor button below
+    await pg.evaluate('document.activeElement.blur()'); await pg.wait_for_timeout(500)
 
-async def scenes_retailor(r, pg):
-    """New in 1.8: the first draft borrows ISO 26262 from the ad and the fact check takes it out; Sam says how it's true
-    for him, tailors again, and it comes back under the right job, traced to his CV and in the PDF."""
+async def scenes_new(r, pg):
+    """What's new in 1.8, about ten seconds a feature: fairs and events, know before you apply, the whole tailored CV and its
+    fact check, telling it what your CV forgot (with a cut to the PDF), the Mentor's courses and the Market."""
     hold, c = asyncio.sleep, TX['new']
     nordvik, dlg = pg.locator('article.co', has_text='Nordvik Automotive'), pg.locator('#tailor')
-    # 1. A whole tailored CV
-    r.cap(c[0]); await hold(1.0)
-    await r.click(nordvik.locator('article.role').first.locator('[data-tailor]')); await hold(1.0)
-    await r.click(dlg.locator('.tl-task', has_text='Tailored CV')); await hold(0.6)
-    await r.click(dlg.locator('[data-tl=go]')); await hold(0.6)
-    await pg.wait_for_selector('#tailor .tl-out', timeout=20000); await hold(0.6)
-    await r.scroll(dlg.locator('.tl-out'), top=24, wait=1.4); await hold(1.4)
-    await r.scroll(dlg.locator('.tl-out h5', has_text='Göta Telematics'), top=60, wait=1.3); await hold(1.4)
-    # 2. The fact check caught the borrowed claim, and the correction pass took it out
+    # 1. Fairs and events in your field
+    r.cap(c[0]); await hold(0.3)
+    await r.click(pg.locator('#go'))
+    await pg.wait_for_selector('#events .ev-name', timeout=20000); await hold(0.4)
+    ev = pg.locator('#events')
+    await r.scroll(ev, top=40, wait=1.0)
+    await r.point(ev.locator('.ev-name').first, dx=0.9); await r.spot(ev, 2.6, whole=True)
+    # 2. Know before you apply
     r.cap(c[1])
-    fc = dlg.locator('#tl-checks .fc')
-    await r.scroll(fc, top=150, wait=1.3)
-    await r.point(fc, dx=0.82, dy=0.9); await r.spot(fc, 3.2)
-    # 3. Sam did work to it: he picks it from the ad's words and says how
+    await r.scroll(nordvik, top=8, wait=0.9)
+    await r.click(nordvik.locator('button.exp'))
+    await pg.wait_for_selector('article.co .signals .sig', timeout=10000); await hold(0.3)
+    sig = nordvik.locator('.signals')
+    await r.scroll(sig, top=40, wait=1.0)
+    await r.point(sig.locator('.sig').first, dx=0.8, dy=0.3); await r.spot(sig, 3.0, whole=True)
+    # 3. A whole tailored CV, and the fact check
     r.cap(c[2])
-    await r.move(W - 24, W * 0.42, dur=0.4)      # out of the way, so nothing lights up under the pointer while the panel scrolls
-    await r.scroll(dlg.locator('.tl-more'), top=30, wait=1.3); await hold(1.0)
-    await r.click(dlg.locator('[data-tl=term][data-w="ISO"]')); await hold(0.5)
-    await r.type(TX['fact'], delay=0.045); await hold(1.4)
-    # 4. Tailor again
+    role = nordvik.locator('article.role').first
+    await r.scroll(role, top=40, wait=0.8)
+    await r.click(role.locator('[data-tailor]')); await hold(0.5)
+    await r.click(dlg.locator('.tl-task', has_text='Tailored CV')); await hold(0.2)
+    await r.click(dlg.locator('[data-tl=go]')); await hold(0.7); r.skip()
+    await pg.wait_for_selector('#tailor .tl-out', timeout=20000); await hold(0.2)
+    await r.scroll(dlg.locator('.tl-out'), top=20, wait=0.9); r.unskip(); await hold(1.4)
     r.cap(c[3])
-    await r.click(dlg.locator('[data-tl=regen]')); await hold(0.4)
-    await r.scroll(dlg.locator('#tl-status'), top=300, wait=0.8)      # the panel redraws at the top; show it writing
-    await pg.wait_for_function("(document.querySelector('#tailor .tl-out') || {}).textContent?.includes('functional safety test cases')", timeout=20000); await hold(0.2)
-    bullet = lambda: dlg.locator('.tl-out li', has_text='functional safety test cases')
-    await r.scroll(dlg.locator('.tl-out h5', has_text='Göta Telematics'), top=120, wait=1.3)
-    await r.point(bullet(), dx=0.72, dy=0.7); await r.spot(bullet(), 2.8)
-    # 5. Where each sentence comes from: all of it from the CV
+    fc = dlg.locator('#tl-checks .fc')
+    await r.scroll(fc, top=150, wait=1.0)
+    await r.point(fc, dx=0.82, dy=0.9); await r.spot(fc, 2.3)
+    # 4. What your CV forgot, tailored again, then a cut to the PDF
     r.cap(c[4])
-    await r.scroll(dlg.locator('.src-sum'), top=60, wait=1.3)
-    await r.spot(dlg.locator('.src-sum .src-line'), 1.8)
-    await r.click(dlg.locator('[data-tl=sources]')); await hold(0.9)
-    await r.scroll(dlg.locator('.tl-out h5', has_text='Göta Telematics'), top=120, wait=1.3)
-    await r.point(bullet(), dx=0.72, dy=0.7); await r.spot(bullet(), 2.6)
-    # 6. The PDF (compose.py shows the page it downloads)
-    r.cap(c[5])
-    await r.scroll(dlg.locator('[data-tl=pdf]'), top=260, wait=1.1)
+    await r.move(W - 24, W * 0.42, dur=0.3)      # out of the way, so nothing lights up under the pointer while the panel scrolls
+    await r.scroll(dlg.locator('.tl-more'), top=30, wait=0.7)
+    await r.click(dlg.locator('[data-tl=term][data-w="ISO"]')); await hold(0.2)
+    await r.type(TX['fact'], delay=0.022); await hold(0.2)
+    await r.click(dlg.locator('[data-tl=regen]')); await hold(0.2)
+    await r.scroll(dlg.locator('#tl-status'), top=300, wait=0.5); r.skip()      # the panel redraws at the top; show it writing
+    await pg.wait_for_function("(document.querySelector('#tailor .tl-out') || {}).textContent?.includes('ISO 26262 safety test cases')", timeout=20000)
+    bullet = dlg.locator('.tl-out li', has_text='ISO 26262 safety test cases')
+    await r.scroll(dlg.locator('.tl-out h5', has_text='Göta Telematics'), top=120, wait=0.8); r.unskip(); await hold(0.3)
+    await r.point(bullet, dx=0.72, dy=0.7); await r.spot(bullet, 2.0)
     async with pg.expect_download() as info:
         await r.click(dlg.locator('[data-tl=pdf]'))
     await (await info.value).save_as(str(RAW / 'cv.pdf'))
-    await hold(0.9)
+    r.mark('pdf', c[5]); r.skip()
+    # 5. The Mentor, with a way to look up each course
+    await r.click(dlg.locator('.tl-close')); await hold(0.2)
+    await r.scroll_top(0.5)
+    await r.click(pg.locator('#tab-mentor')); await hold(0.4)
+    await r.move(W * 0.3, W * 0.5, dur=0.2); r.unskip(); r.cap(c[6]); await hold(0.5)
+    await r.click(pg.locator('#mentor [data-mt=go]')); await hold(0.7); r.skip()
+    await pg.wait_for_selector('#mentor .mt-role', timeout=20000); await hold(0.2)
+    role = pg.locator('#mentor .mt-role').first
+    await r.scroll(role, top=60, wait=0.8); r.unskip(); await hold(0.2)
+    await r.point(role, dx=0.8, dy=0.3); await r.spot(role, 1.8, whole=True)
+    r.cap(c[7])
+    course = pg.locator('#mentor .mt-course').first
+    await r.scroll(course, top=120, wait=0.8)
+    await r.point(course.locator('.mt-find a'), dx=0.8); await r.spot(course, 2.1, whole=True)
+    # 6. The Market
+    r.skip(); await r.scroll_top(0.5); await r.move(W * 0.5, W * 0.3, dur=0.2); r.unskip()
+    r.cap(c[8])
+    await r.click(pg.locator('#tab-market')); await hold(0.3)
+    verdict = pg.locator('#view-market .mk-verdict')
+    await r.scroll(verdict, top=40, wait=0.8)
+    await r.point(verdict.locator('h2'), dx=0.9); await r.spot(verdict, 2.6, whole=True)
+    r.cap_off(); await hold(0.2)
 
 async def main():
     RAW.mkdir(parents=True, exist_ok=True)
@@ -365,7 +426,7 @@ async def main():
             await ctx.add_init_script(f"""if (!localStorage.getItem('jf-cv')) {{ localStorage.setItem('jf-cv', {json.dumps(json.dumps(CV))});
                 localStorage.setItem('jf-code', '"{CODE}"'); localStorage.setItem('jf-lang', '"{LANG}"'); localStorage.setItem('jf-palette', '"seafoam"'); }}""")
             await ctx.route('https://jobsearch.api.jobtechdev.se/**', jobsearch)
-            await ctx.route(EVENT_HOSTS, no_events)
+            await ctx.route(EVENT_HOSTS, events)
             await ctx.route('https://links.api.jobtechdev.se/**', joblinks)
             await ctx.route('https://historical.api.jobtechdev.se/**', history)
             pg = await ctx.new_page(); errors = []; pg.on('pageerror', lambda e: errors.append(str(e)))
@@ -381,7 +442,7 @@ async def main():
             if CLIP: await preroll(pg)
             r = Rec(pg); start = time.time()
             await pg.mouse.move(r.x, r.y)
-            try: await (scenes_retailor if CLIP else scenes)(r, pg)
+            try: await (scenes_new if CLIP else scenes)(r, pg)
             except Exception:
                 await pg.screenshot(path=str(RAW / 'error.png')); raise
             end = time.time()
@@ -391,7 +452,7 @@ async def main():
         names = []
         for i, (ts, data) in enumerate(sorted(frames)):
             name = f'f{i:05d}.jpg'; (RAW / name).write_bytes(base64.b64decode(data)); names.append([ts, name])
-        (RAW / 'events.json').write_text(json.dumps({'start': start, 'end': end, 'scale': SCALE, 'frames': names, 'path': r.path, 'clicks': r.clicks, 'caps': r.caps, 'spots': r.spots}))
+        (RAW / 'events.json').write_text(json.dumps({'start': start, 'end': end, 'scale': SCALE, 'frames': names, 'path': r.path, 'clicks': r.clicks, 'caps': r.caps, 'spots': r.spots, 'inserts': r.inserts, 'skips': r.skips}))
         print(f'{len(names)} frames, {end - start:.1f} s')
     finally:
         for pr in procs: pr.terminate()
