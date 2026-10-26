@@ -252,6 +252,9 @@ function mtEffort(x) {
   if (c.format === "class") { const prep = Math.round(Math.max(0, c.hours - Math.max(1, c.days) * 7.5)); return tn(Math.max(1, Math.round(c.days)), "mt.eff.class1", "mt.eff.class") + (prep ? t("mt.eff.prep", { h: prep }) : ""); }
   return t("mt.eff.self", { h: Math.round(c.hours), d: mtDur(x.completion), pace: t("mt.tp." + mtAns.time) });
 }
+// The courses come from the model, not a catalogue, so each card gets a web search for the course and its provider. The
+// person can see in one click whether it exists, what it costs now and when it starts.
+const mtFindUrl = c => "https://www.google.com/search?q=" + encodeURIComponent([c.name, c.provider].filter(Boolean).join(" "));
 function mtCourseItem(x) {
   const c = x.c, counts = mtCountsHere(), dm = counts && counts.demand[fold(c.name)];
   const demand = dm ? (dm.p >= 3 ? t("mt.demand", { p: dm.p, n: dm.n, role: dm.role }) : t("mt.demand.rare", { role: dm.role })) : "";
@@ -260,6 +263,7 @@ function mtCourseItem(x) {
     <div class="mt-course-meta">${c.provider ? `<span>${esc(c.provider)}</span>` : ""}<span>${esc(mtEffort(x))}</span></div>
     ${c.why ? `<p>${esc(c.why)}</p>` : ""}
     ${demand ? `<div class="mono mt-demand">${esc(demand)}</div>` : ""}
+    <div class="mt-find"><a href="${esc(mtFindUrl(c))}" target="_blank" rel="noopener" aria-label="${esc(t("mt.find.l", { name: c.name }))}">${esc(t("mt.find"))}</a></div>
   </li>`;
 }
 function mtMainHtml() {

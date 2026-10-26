@@ -7,7 +7,7 @@ Word file, access code errors, the advice and what was read from the CV, open-ad
 answers re-ranking roles and courses without a new AI call, the jump from a role to Find jobs, the CV shared with
 step 2, Swedish, a phone-sized screen, reloading and the backup."""
 import asyncio, hashlib, json, os, pathlib, re, subprocess, sys, tempfile, time, urllib.request
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, quote
 from playwright.async_api import async_playwright
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
@@ -117,6 +117,18 @@ async def main():
             check('no share shown for a generic word like "utbildning"', await m.locator('.mt-course', has_text='Train the trainer').locator('.mt-demand').count() == 0)
             order = await m.locator('.mt-course h4').all_inner_texts()
             check('unsure of direction: courses ranked by the track the person is on', order == ['AIAG-VDA FMEA (2019 method)', 'Train the trainer', 'AI tools for quality work', 'UGL leadership course', 'Python for engineers'], order)
+            # The courses come from the model, so each one can be looked up, and cost and hours read as estimates
+            fmea_c = m.locator('.mt-course', has_text='AIAG-VDA')
+            find = fmea_c.locator('.mt-find a')
+            check('each course has a link to look it up', await m.locator('.mt-course .mt-find a').count() == len(order)
+                  and await find.inner_text() == 'Find this course'
+                  and await find.get_attribute('href') == 'https://www.google.com/search?q=' + quote('AIAG-VDA FMEA (2019 method) VDA QMC', safe='()')
+                  and await find.get_attribute('target') == '_blank' and await find.get_attribute('rel') == 'noopener'
+                  and 'opens in a new tab' in await find.get_attribute('aria-label'))
+            check('cost and hours shown as estimates', await fmea_c.locator('.mt-cost').inner_text() == 'about 14,000 SEK'
+                  and 'about 6 h' in await m.locator('.mt-course', has_text='AI tools').inner_text()
+                  and await m.locator('.mt-course', has_text='Python').locator('.mt-cost').inner_text() == 'Free')
+            check('and the page says so', 'costs and hours are estimates' in await m.locator('.mt-check').inner_text())
 
             # The four answers re-rank the advice in the browser
             await pg.click('label[for=mt-dir-lead]')
