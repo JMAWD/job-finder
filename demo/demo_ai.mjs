@@ -37,6 +37,41 @@ const ANSWERS = {
   cv: "## Profile\nSenior test engineer with ten years of embedded and connected-product testing.\n\n## Key skills\n- Test strategy\n- Python test automation",
   interview: "## Likely questions\n1. How do you decide what to test first in a release?\n2. Tell us about the regression suite you built.",
 };
+// The whole tailored CV for the "retailor" clip, in three versions. The first draft borrows ISO 26262 from the ad, the way
+// the live model does; the server's fact check catches it and asks for a correction, which takes it out. After Sam writes
+// under the answer that he did work to ISO 26262, the CV comes back with it under the job where it happened.
+const tailoredCv = ({ skill = "", task = "", borrowed = "" } = {}) => `# Sam Ekström
+Göteborg
+
+## Profile
+Senior test engineer who plans and runs release testing for a vehicle telematics unit and built the team's automated regression suite in Python. Works with risk-based testing and hardware-in-the-loop, and holds the ISTQB Foundation certificate.
+
+## Key skills
+- Test strategy and risk-based testing${skill}
+- Python, pytest and Jenkins
+- Hardware-in-the-loop
+- Jira
+
+## Experience
+### Senior Test Engineer, Göta Telematics AB (2019 – now)
+- Plan and run release testing for a vehicle telematics unit${borrowed}${task}
+- Built the team's automated regression suite in Python
+- Run the suite in CI with Jenkins
+
+### Test Engineer, Brännö Software AB (2016 – 2019)
+- System and integration testing of IoT gateways
+
+## Education
+### BSc Computer Engineering (2016)
+
+## Certificates
+- ISTQB Foundation`;
+const CV_DRAFTS = {
+  first: tailoredCv({ borrowed: ", following ISO 26262" }),
+  corrected: tailoredCv(),
+  added: tailoredCv({ skill: "\n- ISO 26262 functional safety testing", task: "\n- Wrote the functional safety test cases for the unit to ISO 26262" }),
+};
+ANSWERS.cv = CV_DRAFTS.first;
 
 // The same answers in Swedish, for the Swedish demo
 const MENTOR_SV = {
@@ -84,7 +119,11 @@ http.createServer(async (req, res) => {
     return send(200, { choices: [{ message: { content: "```json\n" + JSON.stringify(sv ? MENTOR_SV : MENTOR) + "\n```" } }], usage: { prompt_tokens: 1500, completion_tokens: 1800 } });
   }
   const ask = msg[1].content;
+  const reply = (content, ms) => new Promise(r => setTimeout(r, ms)).then(() => send(200, { choices: [{ message: { content }, finish_reason: "stop" }], usage: { prompt_tokens: 1200, completion_tokens: 300 } }));
+  // The server's one correction pass after the fact check (server/pipeline.js): the CV without what was flagged
+  if (!sv && /A check in code found/.test(ask) && /<text>\n# Sam Ekström/.test(ask)) return reply(CV_DRAFTS.corrected, 700);
   const task = /cover letter|personligt brev/i.test(ask) ? "letter" : /Tailor the CV|Anpassa CV/i.test(ask) ? "cv" : /interview|intervju/i.test(ask) ? "interview" : "match";
-  await new Promise(r => setTimeout(r, 2400));
-  send(200, { choices: [{ message: { content: (sv ? ANSWERS_SV : ANSWERS)[task] } }], usage: { prompt_tokens: 1200, completion_tokens: 300 } });
+  // What Sam wrote under the answer comes at the end of the CV, under a heading of its own (server/prompts.js)
+  if (!sv && task === "cv" && /\nAdded by the person:\n[^\n]*ISO 26262/.test(ask)) return reply(CV_DRAFTS.added, 2400);
+  await reply((sv ? ANSWERS_SV : ANSWERS)[task], 2400);
 }).listen(+process.argv[2] || 8798, "127.0.0.1");

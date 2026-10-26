@@ -2,17 +2,21 @@
 
     python3 build.py && python3 demo/record.py && python3 demo/compose.py          # English
     python3 demo/record.py sv && python3 demo/compose.py sv                        # Swedish: Swedish ads, CV, AI answers and captions
+    python3 demo/record.py retailor && python3 demo/compose.py retailor            # New in 1.8: tell the AI what your CV forgot (English)
 
-Writes demo/out/raw/ (raw-sv/ for Swedish): one JPEG per screen update (1080 x 1080) and events.json with the cursor path,
-clicks and captions. compose.py turns that into the finished video and a cover image. Companies, people and ads are made up."""
+Writes demo/out/raw/ (raw-sv/ for Swedish, raw-retailor/ for the 1.8 clip): one JPEG per screen update (1080 x 1080) and
+events.json with the cursor path, clicks and captions; the 1.8 clip also keeps the PDF it downloads. compose.py turns that
+into the finished video and a cover image. Companies, people and ads are made up."""
 import asyncio, base64, hashlib, json, os, pathlib, re, shutil, subprocess, sys, tempfile, time, urllib.request
 from datetime import date, timedelta
 from urllib.parse import urlparse, parse_qs
 from playwright.async_api import async_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-LANG = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] in ('en', 'sv') else 'en'
-RAW = ROOT / 'demo' / 'out' / ('raw' if LANG == 'en' else 'raw-sv')
+LANG = 'sv' if 'sv' in sys.argv[1:] else 'en'
+CLIP = 'retailor' if 'retailor' in sys.argv[1:] else ''   # the short clip for 1.8: what your CV leaves out, and tailoring again
+if CLIP and LANG != 'en': sys.exit('The retailor clip is English only.')
+RAW = ROOT / 'demo' / 'out' / ('raw-retailor' if CLIP else 'raw' if LANG == 'en' else 'raw-sv')
 SERVER, AI = 'http://127.0.0.1:8787', 'http://127.0.0.1:8798'
 CODE = 'BETA-DEMO1'
 W, SCALE = 800, 1.35            # the page is 800 x 800 CSS pixels, captured at 1080 x 1080
@@ -34,7 +38,8 @@ SARA = {"name": "Sara Lindqvist", "description": "Test manager", "email": "sara.
 ADS = [
     ad('301', 'Test Lead, Embedded Systems', 'Nordvik Automotive AB', '5560100001', GBG,
        "We're looking for a test lead to plan and run verification of our embedded control units for heavy vehicles. You'll own the test strategy for each release, "
-       "lead a team of five test engineers and work closely with our test automation team. Experience with ISTQB, Python and hardware-in-the-loop testing is a plus.", contacts=[SARA]),
+       "lead a team of five test engineers and work closely with our test automation team. Our test work follows ISO 26262, so experience of functional safety testing is a big plus. "
+       "Experience with ISTQB, Python and hardware-in-the-loop testing is a plus.", contacts=[SARA]),
     ad('302', 'Test Automation Engineer', 'Nordvik Automotive AB', '5560100001', GBG,
        "Join our test automation team and build the pipelines that test every software release of our control units, in Python and CI.", pub=-3),
     ad('303', 'QA Automation Engineer', 'Kvarnby Games AB', '5560100002', GBG, "Kvarnby Games is growing and needs a QA engineer who loves test automation for our mobile games.", deadline=40),
@@ -118,7 +123,12 @@ TX = {
                caps=['Search **live job ads** by place and keywords', 'Ads grouped **by employer**, with contacts and hiring history', "**Track** where you've applied, with your own notes",
                      'An AI **tailors your cover letter** to the ad, using only your CV', 'The Mentor **reads your CV** and suggests what to do next', 'Pick a **direction** and the advice changes instantly',
                      'Roles to apply for **now**, **within reach**, or as a **change of track**', 'What to learn next, fitted to your **time, budget and plans**',
-                     'One click from a suggested role to **its job ads**', 'New: pick **your colours**, and every page follows']),
+                     'One click from a suggested role to **its job ads**', 'New: pick **your colours**, and every page follows'],
+               # The 1.8 clip: what gets typed after picking ISO from the ad's words, and its captions
+               fact='I wrote the ISO 26262 functional safety test cases for the telematics unit at Göta Telematics',
+               new=['Step 2 writes a **whole tailored CV** from your CV, for one job ad', "The AI's first draft borrowed **ISO 26262** from the ad. The fact check **caught it**, so it was taken out.",
+                    'But Sam **did** work to ISO 26262. His CV just never said so.', '**Tailor again**, and it goes under the job where it happened',
+                    'Every sentence traces to **your CV**, the new one included', 'In the PDF, **ready to send**']),
     'sv': dict(locale='sv-SE', kw=('testledare', 'testautomatisering'), note='Ringde Sara i måndags. Sök före fredag', letter='Personligt brev', lead='Leda människor eller projekt', qa='QA-ledare',
                caps=['Sök bland **lediga jobb** på ort och egna sökord', 'Annonserna samlas **per arbetsgivare**, med kontakter och tidigare rekryteringar',
                      '**Håll koll** på var du har sökt, med egna anteckningar', 'En AI **anpassar ditt personliga brev** till annonsen, bara utifrån ditt CV',
@@ -166,7 +176,16 @@ class Rec:
     """Drives the page like a person would and notes where the pointer was, when it clicked and which caption shows."""
     def __init__(self, pg):
         self.pg, self.x, self.y = pg, W * 0.62, W * 0.7
-        self.path, self.clicks, self.caps = [(time.time(), self.x, self.y)], [], []
+        self.path, self.clicks, self.caps, self.spots = [(time.time(), self.x, self.y)], [], [], []
+    async def spot(self, loc, hold=2.4, pad=6):
+        """Draws a sunshine box around the text of an element for `hold` seconds (compose.py draws it). The page mustn't scroll meanwhile."""
+        # The lines of text inside the element, not markup that reaches outside it (sentence marks carry a tooltip)
+        b = await loc.evaluate("""e => { const box = e.getBoundingClientRect(), r = document.createRange(); r.selectNodeContents(e);
+            const rs = [...r.getClientRects()].filter(q => q.width > 0 && q.height > 0 && q.top >= box.top - 2 && q.bottom <= box.bottom + 2);
+            const x = Math.min(...rs.map(q => q.left)), y = Math.min(...rs.map(q => q.top));
+            return { x, y, w: Math.max(...rs.map(q => q.right)) - x, h: Math.max(...rs.map(q => q.bottom)) - y }; }""")
+        t0 = time.time(); self.spots.append([t0, t0 + hold, b['x'] - pad, b['y'] - pad, b['w'] + 2 * pad, b['h'] + 2 * pad])
+        await asyncio.sleep(hold)
     async def move(self, x, y, dur=0.55):
         n = max(2, int(dur * 40)); x0, y0 = self.x, self.y
         for i in range(1, n + 1):
@@ -268,6 +287,63 @@ async def scenes(r, pg):
         await r.click(pg.locator(f'#palette .pal[data-p={k}]'), dur=0.45, pause=0.1); await hold(wait)
     r.cap_off(); await hold(0.3)
 
+async def preroll(pg):
+    """Before the 1.8 clip starts: the search for test lead jobs in Göteborg, with Nordvik Automotive open."""
+    await pg.fill('#place', 'Göteborg')
+    await pg.click('#kw-input'); await pg.keyboard.type(TX['kw'][0]); await pg.keyboard.press('Enter')
+    await pg.click('#go')
+    await pg.wait_for_function("document.getElementById('msg').textContent.length > 0", timeout=20000)
+    nordvik = pg.locator('article.co', has_text='Nordvik Automotive')
+    await nordvik.locator('button.exp').click(); await pg.wait_for_timeout(600)
+    await Rec(pg).scroll(nordvik, top=8, wait=1.0)      # the employer's name at the top, the role and its Tailor button below
+
+async def scenes_retailor(r, pg):
+    """New in 1.8: the first draft borrows ISO 26262 from the ad and the fact check takes it out; Sam says how it's true
+    for him, tailors again, and it comes back under the right job, traced to his CV and in the PDF."""
+    hold, c = asyncio.sleep, TX['new']
+    nordvik, dlg = pg.locator('article.co', has_text='Nordvik Automotive'), pg.locator('#tailor')
+    # 1. A whole tailored CV
+    r.cap(c[0]); await hold(1.0)
+    await r.click(nordvik.locator('article.role').first.locator('[data-tailor]')); await hold(1.0)
+    await r.click(dlg.locator('.tl-task', has_text='Tailored CV')); await hold(0.6)
+    await r.click(dlg.locator('[data-tl=go]')); await hold(0.6)
+    await pg.wait_for_selector('#tailor .tl-out', timeout=20000); await hold(0.6)
+    await r.scroll(dlg.locator('.tl-out'), top=24, wait=1.4); await hold(1.4)
+    await r.scroll(dlg.locator('.tl-out h5', has_text='Göta Telematics'), top=60, wait=1.3); await hold(1.4)
+    # 2. The fact check caught the borrowed claim, and the correction pass took it out
+    r.cap(c[1])
+    fc = dlg.locator('#tl-checks .fc')
+    await r.scroll(fc, top=150, wait=1.3)
+    await r.point(fc, dx=0.82, dy=0.9); await r.spot(fc, 3.2)
+    # 3. Sam did work to it: he picks it from the ad's words and says how
+    r.cap(c[2])
+    await r.move(W - 24, W * 0.42, dur=0.4)      # out of the way, so nothing lights up under the pointer while the panel scrolls
+    await r.scroll(dlg.locator('.tl-more'), top=30, wait=1.3); await hold(1.0)
+    await r.click(dlg.locator('[data-tl=term][data-w="ISO"]')); await hold(0.5)
+    await r.type(TX['fact'], delay=0.045); await hold(1.4)
+    # 4. Tailor again
+    r.cap(c[3])
+    await r.click(dlg.locator('[data-tl=regen]')); await hold(0.4)
+    await r.scroll(dlg.locator('#tl-status'), top=300, wait=0.8)      # the panel redraws at the top; show it writing
+    await pg.wait_for_function("(document.querySelector('#tailor .tl-out') || {}).textContent?.includes('functional safety test cases')", timeout=20000); await hold(0.2)
+    bullet = lambda: dlg.locator('.tl-out li', has_text='functional safety test cases')
+    await r.scroll(dlg.locator('.tl-out h5', has_text='Göta Telematics'), top=120, wait=1.3)
+    await r.point(bullet(), dx=0.72, dy=0.7); await r.spot(bullet(), 2.8)
+    # 5. Where each sentence comes from: all of it from the CV
+    r.cap(c[4])
+    await r.scroll(dlg.locator('.src-sum'), top=60, wait=1.3)
+    await r.spot(dlg.locator('.src-sum .src-line'), 1.8)
+    await r.click(dlg.locator('[data-tl=sources]')); await hold(0.9)
+    await r.scroll(dlg.locator('.tl-out h5', has_text='Göta Telematics'), top=120, wait=1.3)
+    await r.point(bullet(), dx=0.72, dy=0.7); await r.spot(bullet(), 2.6)
+    # 6. The PDF (compose.py shows the page it downloads)
+    r.cap(c[5])
+    await r.scroll(dlg.locator('[data-tl=pdf]'), top=260, wait=1.1)
+    async with pg.expect_download() as info:
+        await r.click(dlg.locator('[data-tl=pdf]'))
+    await (await info.value).save_as(str(RAW / 'cv.pdf'))
+    await hold(0.9)
+
 async def main():
     RAW.mkdir(parents=True, exist_ok=True)
     for f in RAW.glob('*'): f.unlink()
@@ -302,9 +378,10 @@ async def main():
             cdp.on('Page.screencastFrame', on_frame)
             await cdp.send('Page.startScreencast', {'format': 'jpeg', 'quality': 95, 'maxWidth': 1080, 'maxHeight': 1080, 'everyNthFrame': 1})
             await asyncio.sleep(0.6)
+            if CLIP: await preroll(pg)
             r = Rec(pg); start = time.time()
             await pg.mouse.move(r.x, r.y)
-            try: await scenes(r, pg)
+            try: await (scenes_retailor if CLIP else scenes)(r, pg)
             except Exception:
                 await pg.screenshot(path=str(RAW / 'error.png')); raise
             end = time.time()
@@ -314,7 +391,7 @@ async def main():
         names = []
         for i, (ts, data) in enumerate(sorted(frames)):
             name = f'f{i:05d}.jpg'; (RAW / name).write_bytes(base64.b64decode(data)); names.append([ts, name])
-        (RAW / 'events.json').write_text(json.dumps({'start': start, 'end': end, 'scale': SCALE, 'frames': names, 'path': r.path, 'clicks': r.clicks, 'caps': r.caps}))
+        (RAW / 'events.json').write_text(json.dumps({'start': start, 'end': end, 'scale': SCALE, 'frames': names, 'path': r.path, 'clicks': r.clicks, 'caps': r.caps, 'spots': r.spots}))
         print(f'{len(names)} frames, {end - start:.1f} s')
     finally:
         for pr in procs: pr.terminate()
