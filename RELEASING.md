@@ -33,6 +33,8 @@ The workflow needs one repository secret, `SCW_SECRET_KEY`. Make it its own key,
 3. Open the application → API keys → Generate. Copy the secret key.
 4. GitHub: repo Settings → Secrets and variables → Actions → New repository secret, name `SCW_SECRET_KEY`, paste it.
 
+To check the key without releasing: Actions → Release → Run workflow, tick the check box. It only reads the function's status.
+
 If the key leaks: delete it on the application, make a new one, replace the secret. It can only change serverless functions in that project.
 
 ## Changing a function setting
