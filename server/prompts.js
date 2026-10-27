@@ -69,42 +69,48 @@ ${REGULATED.en}`,
   cv: {
     sv: `Anpassa CV:t till annonsen och skriv hela det nya CV:t, färdigt att skicka till arbetsgivaren.
 Skriv bara själva CV:t. Inga råd, inga kommentarer om vad du har ändrat, inga anteckningar om vad som saknas och ingenting före eller efter CV:t.
-Att anpassa betyder att välja, ordna och formulera om det som redan står i CV:t så att det annonsen bryr sig om syns först: i profilen, i ordningen på kunskaperna och i vilka punkter som får mest plats. Det betyder aldrig att lägga till något. Annonsens ord får användas bara för samma sak som CV:t redan beskriver.
+Att anpassa betyder att välja, ordna och formulera om det som redan står i CV:t så att det annonsen bryr sig om syns först: i profilen, i nyckelresultaten, i ordningen på kunskaperna och i vilka punkter som får mest plats. Det betyder aldrig att lägga till något. Annonsens ord får användas bara för samma sak som CV:t redan beskriver.
 Använd exakt den här formen i Markdown:
 # Personens namn som det står i CV:t. Saknar CV:t namn, skriv [Ditt namn].
 En rad med de kontaktuppgifter som står i CV:t (ort, e-post, telefon, LinkedIn), åtskilda med " · ". Utelämna det som inte finns.
 ## Profil
 Tre meningar om vem personen är i yrket och vad hen har gjort som spelar roll för just det här jobbet. Bara fakta ur CV:t, och inga egenskaper som CV:t inte nämner. Presentera personen med en yrkestitel ur CV:t, aldrig med annonsens titel om den inte står i CV:t. Behåll antalet år och de siffror CV:t själv anger, de är bland det starkaste i ett CV.
+## Nyckelresultat
+Tre till sex punkter, en per rad som börjar med "- ", med det personen har åstadkommit som spelar mest roll för just det här jobbet. Bara resultat som CV:t självt anger: en siffra, något som blev klart eller levererades, något som blev bättre eller förändrades. En arbetsuppgift eller ett ansvar är inget resultat, och att ha varit med blir aldrig att ha lett. Skriv resultatet först och var det hände, till exempel "30 procent färre kundreklamationer på två år hos Nordvik Automotive". Ger CV:t färre än tre sådana resultat, utelämna hela avsnittet och rubriken; fyll aldrig ut med uppgifter.
+Samma resultat får inte stå med samma ord längre ner. Under tjänsten berättar punkten i stället hur det gick till, omfattningen eller metoden, och har CV:t inget mer att säga om det, stryk punkten där.
 ## Nyckelkompetenser
 6–10 kunskaper, verktyg eller metoder som står i CV:t, en per rad som börjar med "- ", det annonsen efterfrågar först. Ta aldrig med något för att annonsen nämner det.
 ## Erfarenhet
 Varje tjänst i CV:t, nyast först, utan att någon utelämnas, var och en med en rubrikrad: ### Titel, Arbetsgivare (år - år). Arbetsgivare och år exakt som i CV:t. Rubrikraderna läses av programmet som gör PDF:en, så de har alltid den formen.
 Under rubriken punkter, en per rad, som börjar med "- ". Punkterna bygger på det CV:t säger om just den tjänsten: ta CV:ts egna rader, korta, slå ihop eller formulera om dem och lägg det annonsen bryr sig om först. Flytta inga resultat mellan tjänster, och lägg inte in en kunskap från CV:ts kunskapslista under en tjänst om CV:t inte säger att den användes där.
-Vikta tjänsterna ojämnt. Ett riktigt CV är skevt: tjänsten som ligger närmast annonsen får mest detaljer, en gammal eller orelaterad tjänst kan vara bara rubrikraden utan något under. Ge den mest relevanta tjänsten fyra till sex punkter om CV:t har så mycket att ta av, en mellanliggande två eller tre och den äldsta eller minst relevanta inga alls. Ge aldrig alla tjänster lika många punkter, och skriv aldrig fler punkter än CV:t ger underlag för.
+Vikta tjänsterna ojämnt. Ett riktigt CV är skevt: tjänsten som ligger närmast annonsen får mest detaljer, en gammal eller orelaterad tjänst kan vara bara rubrikraden utan något under. Ge den mest relevanta tjänsten fyra till åtta punkter om CV:t har så mycket att ta av, en mellanliggande två eller tre och den äldsta eller minst relevanta inga alls. Ge aldrig alla tjänster lika många punkter, och skriv aldrig fler punkter än CV:t ger underlag för.
 Variera själva punkterna. Några ska vara korta, sex eller sju ord. Andra blir tjugo ord eller mer för att detaljerna är värda det. Börja inte varje punkt med ett verb i dåtid och upprepa inte samma satsbyggnad nedför listan. Likadana punkter i likadana block är det tydligaste tecknet på att ett CV är maskinskrivet.
 ## Utbildning
 Varje utbildning som ### Examen eller kurs, Skola (år), med skola och år exakt som i CV:t.
 Därefter CV:ts övriga avsnitt, till exempel certifikat, språk och körkort, var och en med en egen ##-rubrik och det som står i CV:t. Upprepa inte det som redan står under Nyckelkompetenser: har CV:t en egen lista med verktyg eller kunskaper, ta bara med resten av den, under rubriken Övriga kunskaper. Utelämna avsnitt som CV:t inte har och raden "Referenser lämnas på begäran".
-Håll CV:t till högst två sidor genom att korta äldre tjänster till en rad, inte genom att ta bort dem.`,
+Sikta på två fulla sidor när CV:t har underlag för det: använd då mer av CV:ts egna detaljer för de tjänster som ligger närmast annonsen, och ta med kurser, certifikat, projekt och språk i sin helhet. Har CV:t inte så mycket, blir det anpassade CV:t kortare; fyll aldrig ut med upprepningar, allmänna meningar eller sådant CV:t inte säger. Gå aldrig över två sidor: korta då äldre tjänster till en rad i stället för att ta bort dem.`,
     en: `Tailor the CV to the job ad and write the whole new CV, ready to send to the employer.
 Write only the CV itself. No advice, no comments on what you changed, no notes about what is missing, and nothing before or after the CV.
-Tailoring means choosing, ordering and rewording what is already in the CV so that what the ad cares about comes first: in the profile, in the order of the skills and in which bullets get the most room. It never means adding anything. The ad's words may be used only for the same thing the CV already describes.
+Tailoring means choosing, ordering and rewording what is already in the CV so that what the ad cares about comes first: in the profile, in the key achievements, in the order of the skills and in which bullets get the most room. It never means adding anything. The ad's words may be used only for the same thing the CV already describes.
 Use exactly this form in Markdown:
 # The person's name as the CV gives it. If the CV has no name, write [Your name].
 One line with the contact details the CV gives (town, email, phone, LinkedIn), separated by " · ". Leave out any it doesn't have.
 ## Profile
 Three sentences on who the person is in their work and what they have done that matters for this job. Only facts from the CV, and no personal qualities the CV doesn't name. Introduce the person with a job title from the CV, never with the ad's title unless the CV has it. Keep the number of years and the figures the CV itself gives; they are among the strongest things in a CV.
+## Key achievements
+Three to six points, one per line starting with "- ", with what the person achieved that matters most for this job. Only results the CV itself states: a figure, something finished or delivered, something that got better or changed. A duty or a responsibility is not a result, and taking part never becomes leading. Put the result first and where it happened, for example "30 percent fewer customer complaints in two years at Nordvik Automotive". If the CV gives fewer than three such results, leave out the whole section and its heading; never pad it with duties.
+The same result must not appear in the same words further down. Under the job, the bullet tells how it was done, the scope or the method instead, and if the CV has nothing more to say about it, leave that bullet out.
 ## Key skills
 6–10 skills, tools or methods that are in the CV, one per line starting with "- ", the ones the ad asks for first. Never include anything because the ad mentions it.
 ## Experience
 Every job in the CV, newest first, none left out, each with a heading line: ### Job title, Employer (years - years). Employer and years exactly as the CV has them. The heading lines are read by the software that makes the PDF, so they always keep that form.
 Under the heading, bullets, one per line, starting with "- ". The bullets build on what the CV says about that job: take the CV's own lines, shorten, merge or reword them and put what the ad cares about first. Never move results from one job to another, and don't put a skill from the CV's skills list under a job unless the CV says it was used there.
-Weight the jobs unevenly. A real CV is lopsided: the job closest to this ad carries the most detail, and an old or unrelated one may be just its heading line with nothing under it. Give the most relevant job four to six bullets if the CV has that much to draw on, a middling one two or three, and the oldest or least relevant none at all. Never give every job the same number of bullets, and never write more bullets than the CV gives material for.
+Weight the jobs unevenly. A real CV is lopsided: the job closest to this ad carries the most detail, and an old or unrelated one may be just its heading line with nothing under it. Give the most relevant job four to eight bullets if the CV has that much to draw on, a middling one two or three, and the oldest or least relevant none at all. Never give every job the same number of bullets, and never write more bullets than the CV gives material for.
 Vary the bullets themselves. Some should be short, six or seven words. Others run to twenty or more because the detail earns it. Do not open every bullet with a past-tense verb, and do not repeat the same clause shape down the list. Uniform bullets in uniform blocks are the clearest sign a CV was machine written.
 ## Education
 Each degree or course as ### Degree or course, School (years), with the school and years exactly as the CV has them.
 Then the CV's other sections, such as certificates, languages and driving licence, each under its own ## heading with what the CV says. Don't repeat what is already under Key skills: if the CV has its own list of tools or skills, include only the rest of it, under the heading Other skills. Leave out sections the CV doesn't have, and the line "References available on request".
-Keep the CV to two pages at most by cutting older jobs down to one line, not by leaving them out.`,
+Aim for two full pages when the CV has the material for it: then use more of the CV's own detail for the jobs closest to the ad, and include courses, certificates, projects and languages in full. If the CV doesn't have that much, the tailored CV is shorter; never fill space with repetition, general sentences or anything the CV doesn't say. Never go past two pages: cut older jobs down to one line rather than leaving them out.`,
   },
   // Job Tailor's letter rules: under 250 words and no placeholders, since the letter downloads ready to send
   letter: {

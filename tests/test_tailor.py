@@ -33,10 +33,13 @@ Kvalitetsingenjör, Nordvik Automotive AB, Göteborg
 - Ledde FMEA för bromssystem tillsammans med konstruktion och produktion
 - Genomförde leverantörsrevisioner och 8D-utredningar
 - Utbildade kollegor i riskanalys
+- Minskade kundreklamationerna med 30 procent på två år
+- Införde 8D som arbetssätt för alla leverantörsärenden
 
 Produktionstekniker, Svea Bearings AB, Göteborg
 2016 – 2018
 - Ansvarade för förbättringsarbete på monteringslinan
+- Kortade ställtiden på monteringslinan från 40 till 25 minuter
 
 Utbildning
 Högskoleingenjör i maskinteknik, Chalmers, 2013 – 2016
@@ -220,6 +223,18 @@ async def main():
             check('the download is a real PDF', raw_pdf.startswith(b'%PDF-1.4') and raw_pdf.rstrip().endswith(b'%%EOF'))
             import pypdf
             reader = pypdf.PdfReader(str(cv_pdf)); pdf_text = ' '.join(' '.join(x.extract_text() for x in reader.pages).split())
+            check('the PDF has key achievements at the top, before key skills', 'NYCKELRESULTAT' in pdf_text and pdf_text.index('NYCKELRESULTAT') < pdf_text.index('NYCKELKOMPETENSER') and '30 procent färre kundreklamationer' in pdf_text, pdf_text)
+            fit = await pg.evaluate('''() => {
+              const job = (n, k) => `### Ingenjör ${n}, Firma ${n} AB (20${10+n} - 20${11+n})\\n` + Array.from({length: k}, (_, i) => `- Arbetade med förbättringsarbete och riskanalys i projekt nummer ${i} tillsammans med produktion och leverantörer i flera länder`).join("\\n");
+              const md = js => `# Eva Lind\\nGöteborg · eva@example.com\\n\\n## Profil\\nKvalitetsingenjör med åtta års erfarenhet.\\n\\n## Erfarenhet\\n` + js.map((k, n) => job(n, k)).join("\\n\\n");
+              const r = js => { const x = pdfBlob(md(js), {}); return { pages: x.pages, fill: x.fill, spacing: x.spacing }; };
+              return { spill: r([8, 6, 5, 3]), early: r([8, 7, 6, 5, 4]), short: r([3, 2]), letter: (x => ({ pages: x.pages, spacing: x.spacing }))(pdfBlob("Hej,\\n\\nKort brev.", { letter: true })) };
+            }''')
+            check('a CV that spills a few lines onto page 2 is pulled back to one page', fit['spill']['pages'] == 1 and fit['spill']['spacing'] < 1, fit)
+            check('a CV that ends early on page 2 is spaced out to fill it', fit['early']['pages'] == 2 and fit['early']['fill'] >= 0.8 and fit['early']['spacing'] > 1, fit)
+            check('a short CV stays one page, never stretched past it', fit['short']['pages'] == 1 and fit['short']['fill'] <= 0.94, fit)
+            check('a letter is laid out as written', fit['letter']['spacing'] == 1, fit)
+            check('a bullet that only repeated a key achievement was taken out', 'Minskade kundreklamationerna' not in pdf_text and 'Minskade kundreklamationerna' not in await dlg.locator('.tl-out').inner_text())
             check('the PDF holds the whole CV, with Swedish letters', all(x in pdf_text for x in ['Eva Lindqvist', 'NYCKELKOMPETENSER', 'ERFARENHET', 'Kvalitetsingenjör, Nordvik Automotive AB, Göteborg', '2018 - nu',
                   'Produktionstekniker, Svea Bearings AB, Göteborg', 'Högskoleingenjör i maskinteknik, Chalmers', '2013 - 2016', 'Svenska (modersmål), engelska (flytande)', 'Ledde FMEA för bromssystem']), pdf_text)
             check('no Markdown, tips or notes in the PDF', not any(x in pdf_text for x in ['##', '**', 'kan tas bort', 'Skrivet av AI', 'Written by AI']))

@@ -61,6 +61,7 @@ Full suite only before a release.
 
 ## Recent changes
 - 2026-10-27: Set up this handoff and the Jira project JF.
+- 2026-10-27 (1.8.2): Key achievements at the top of the tailored CV (`server/prompts.js`, echo check in `server/style.js`); CV aims at two full pages from real material and `pdfBlob` fits the layout to its pages (`fitPages` in `src/tailor.js`).
 
 ## Parked
 - Moving step 2, Mentor and server to a private repo (on hold).

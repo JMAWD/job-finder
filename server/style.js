@@ -103,7 +103,7 @@ function styleCheck(text, { cv = "", ad = "", task = "cv" } = {}) {
   // Date ranges and number ranges don't count.
   const rest = out.replace(DATE_RANGE, "").replace(/\d\s*[\u2013\u2014]\s*\d/g, "");
   const dashes = (rest.match(/[ \t][\u2013\u2014](?=[ \t])|\u2014/g) || []).length;
-  return { even: (v !== null && v < UNIFORM && !twoDiffer) || sameBullets, words, dashes, order: wordOrderSlips(out).slice(0, 5) };
+  return { even: (v !== null && v < UNIFORM && !twoDiffer) || sameBullets, words, dashes, order: wordOrderSlips(out).slice(0, 5), echoes: task === "cv" ? achievementEchoes(out).echoes.slice(0, 6) : [] };
 }
 
 // The tailored CV's form, made consistent in code so the PDF always looks the same, whatever the model did:
@@ -111,7 +111,7 @@ function styleCheck(text, { cv = "", ad = "", task = "cv" } = {}) {
 //   the contact line under the name loses a separator left at its start or end ("Malmö ·");
 //   blank lines between the bullets of one job go.
 // Only sections that hold jobs are touched; education, skills and languages are left as written.
-const NOT_JOBS = /utbildning|education|kurs|course|certifi|språk|language|kunskap|kompetens|skill|verktyg|tool|teknik|technolog|övrigt|other|intress|interest|referen|körkort|licen|profil|profile|sammanfattning|summary/i;
+const NOT_JOBS = /resultat|achievement|accomplishment|highlight|utbildning|education|kurs|course|certifi|språk|language|kunskap|kompetens|skill|verktyg|tool|teknik|technolog|övrigt|other|intress|interest|referen|körkort|licen|profil|profile|sammanfattning|summary/i;
 const ABBREV = /(?:t\.ex|bl\.a|m\.m|m\.fl|e\.g|i\.e|ca|inkl|resp|etc|osv|dvs|nr|st)\.$/i;
 function sentencesOf(text) {
   const parts = text.split(/(?<=[.!?])\s+(?=[\p{Lu}\d])/u), out = [];
@@ -143,7 +143,51 @@ function tidyCv(md) {
     for (const part of parts) out.push("- " + (sentencesOf(part).length > 1 || ABBREV.test(part) ? part : part.replace(/\.$/, "")));
   }
   // No blank lines between the bullets of one job
-  return out.filter((l, i) => !(l.trim() === "" && /^- /.test(out[i - 1] || "") && /^- /.test(out[i + 1] || ""))).join("\n");
+  return dropEchoes(out.filter((l, i) => !(l.trim() === "" && /^- /.test(out[i - 1] || "") && /^- /.test(out[i + 1] || ""))).join("\n"));
+}
+
+// Key achievements: 3 to 6 points at the top of the CV, each a result the CV states. The same result may also sit
+// under its job, but not in the same words: the top says what came of it, the bullet says how. Checked in code.
+//   A bullet under a job that is all but contained in an achievement adds nothing, so it is taken out.
+//   A bullet that shares most of an achievement's words but says more is left, and the style check names the echo.
+//   More than six achievements are cut to the first six.
+const ACHIEVE = /resultat|achievement|accomplishment|highlight/i;
+const ECHO_STOP = new Set(("och med för att som den det har hade var från till hos vid inom under efter genom samt eller även över mot där "
+  + "the and for with from into was were has had our their his her its over under after through within across about than").split(" "));
+const echoWords = s => new Set(fold(s).replace(/\*\*|__/g, "").split(/[^\p{L}\d]+/u).filter(w => w && (w.length >= 3 || /\d/.test(w)) && !ECHO_STOP.has(w)).map(w => w.slice(0, 6)));
+const ITEM = /^\s*(?:[-*•]|\d+[.)])\s+(.*)/;
+function cvParts(md) {
+  const lines = String(md || "").split("\n"), points = [], bullets = [];
+  let section = "", inJob = false;
+  lines.forEach((line, i) => {
+    const h = line.match(/^\s*(#{1,6})\s+(.*)/);
+    if (h) { if (h[1].length <= 2) { section = h[2]; inJob = false; } else inJob = !NOT_JOBS.test(section); return; }
+    const item = line.match(ITEM);
+    if (!item) return;
+    if (ACHIEVE.test(section)) points.push({ i, text: item[1].trim(), words: echoWords(item[1]) });
+    else if (inJob) bullets.push({ i, text: item[1].trim(), words: echoWords(item[1]) });
+  });
+  return { lines, points, bullets };
+}
+const shared = (a, b) => [...a].filter(w => b.has(w)).length;
+function achievementEchoes(md) {
+  const { lines, points, bullets } = cvParts(md), drop = new Set(), echoes = [];
+  for (const p of points) {
+    let echoed = false;
+    for (const b of bullets) {
+      const n = shared(p.words, b.words);
+      if (b.words.size >= 3 && n / b.words.size >= 0.8) drop.add(b.i);
+      else if (n >= 4 && n / Math.min(p.words.size, b.words.size) >= 0.6) echoed = true;
+    }
+    if (echoed) echoes.push(p.text);
+  }
+  // Anything past the sixth achievement
+  points.slice(6).forEach(p => drop.add(p.i));
+  return { lines, drop, echoes };
+}
+function dropEchoes(md) {
+  const { lines, drop } = achievementEchoes(md);
+  return drop.size ? lines.filter((_, i) => !drop.has(i)).join("\n") : md;
 }
 
 // The contact line under the name keeps only what the CV has. An email, phone number or link the CV doesn't have was
@@ -177,4 +221,4 @@ const V2_ADV = "gärna|också|även|inte|aldrig|alltid|ofta|redan|verkligen|sär
 const V2 = new RegExp(`(^|[.!?]\\s+|\\n[ \\t]*(?:[-*•][ \\t]+)?)(Jag|Vi|Du|Hon|Han|Ni|De)\\s+(${V2_ADV})\\s+(\\p{Ll}+(?:ar|er|ir|or|ur|yr|år|ade|de|te))(?![\\p{L}])`, "gu");
 const fixWordOrder = text => String(text || "").replace(V2, (m, pre, subj, adv, verb) => `${pre}${subj} ${verb} ${adv}`);
 const wordOrderSlips = text => [...String(text || "").matchAll(V2)].map(m => `${m[2]} ${m[3]} ${m[4]}`);
-module.exports = { stripDashes, styleCheck, tidyCv, keepContact, fixWordOrder, wordOrderSlips, _test: { roleBlocks, variation, UNIFORM, sentencesOf } };
+module.exports = { stripDashes, styleCheck, tidyCv, dropEchoes, achievementEchoes, keepContact, fixWordOrder, wordOrderSlips, _test: { roleBlocks, variation, UNIFORM, sentencesOf } };

@@ -186,14 +186,35 @@ function splitYears(s) {
   return m && m[1].trim() ? [m[1].trim(), m[2].trim()] : [s, ""];
 }
 
+// A CV should end on a well used page. Lay it out at normal size first, then:
+//   a CV that spills only a few lines onto its last page is pulled back a page with slightly tighter type and spacing;
+//   otherwise the spacing (and a little of the type) grows while the page count holds, so a second page that ended a
+//   third of the way down is properly used instead of looking unfinished.
+// Only the layout changes, never the text: a CV with one page of material stays one page. A letter is laid out as is.
+const FIT_TIGHT = [[0.97, 0.9], [0.95, 0.82]], FIT_GROW = [1.04, 1.08, 1.12, 1.16, 1.2, 1.25];
+function fitPages(lay, letter) {
+  const base = lay(1, 1);
+  if (letter) return base;
+  let best = [1, 1];
+  if (base.n > 1 && base.fill < 0.25) {
+    for (const t of FIT_TIGHT) if (lay(...t).n < base.n) return lay(...t);
+  }
+  for (const g of FIT_GROW) {
+    const r = lay(1 + (g - 1) * 0.25, g);
+    if (r.n !== base.n || r.fill > 0.94) break;
+    best = [1 + (g - 1) * 0.25, g];
+  }
+  return lay(...best);
+}
 function pdfBlob(md, { title = "", author = "", lang: textLang = "sv", letter = false } = {}) {
   // A letter is read as running text, so it gets a slightly larger size, more line spacing and room between paragraphs
   const BODY = letter ? { size: 10.6, lead: 15.4, para: 9 } : { size: 10, lead: 13.6, para: 6 };
   const PW = 595.28, PH = 841.89, L = 56, R = 56, TOP = 56, BOTTOM = 62, FULL = PW - L - R;
   const C = { ink: "0.13 0.15 0.17", muted: "0.39 0.42 0.45", accent: "0.11 0.35 0.41", rule: "0.78 0.81 0.83" };
-  const pages = []; let pg, y, lost = 0;
+  // F scales the type and S the space between lines and sections; fitPages() below picks them per CV
+  // Most of S goes to the gaps between blocks (G); lines inside a block only open up a little (LS)
+  let pages, pg, y, lost, F = 1, S = 1, LS = 1, G = 1;
   const newPage = () => { pg = { ops: [], annots: [] }; pages.push(pg); y = PH - TOP; };
-  newPage();
   const atTop = () => y === PH - TOP;
 
   // Markdown inline (**bold**, *italic*, [link](url), `code`) -> runs of text in one font
@@ -266,6 +287,7 @@ function pdfBlob(md, { title = "", author = "", lang: textLang = "sv", letter = 
 
   // One block of text: wraps it, moves to a new page when needed, and keeps a heading with what follows it
   function block(text, { size = 10, lead = 13.6, font = "R", color = C.ink, x = L, width = FULL, tc = 0, upper = false, before = 0, keep = 0, marker = "", markerX = L, right = "" }) {
+    size *= F; lead *= F * LS; before *= G; keep *= LS;
     const rightRuns = right ? runs(right, "R") : null, rightW = right ? textW(rightRuns, size - 1, 0) : 0;
     const lines = wrap(words(runs(text, font, upper), size, tc), width - (right ? rightW + 14 : 0), size, tc);
     if (!atTop()) y -= before;
@@ -285,25 +307,27 @@ function pdfBlob(md, { title = "", author = "", lang: textLang = "sv", letter = 
   let list = [], listGap = 0, listCols = false, lastHead = 0;
   function flushList() {
     if (!list.length) return;
-    const items = list, lead = 13.6, widest = Math.max(...items.map(t => textW(runs(t, "R", false, false), 10, 0)));
+    const fz = 10 * F, items = list, lead = 13.6 * F * LS, widest = Math.max(...items.map(t => textW(runs(t, "R", false, false), fz, 0)));
     const cols = items.length < 4 || !listCols ? 1 : widest + 31 <= FULL / 3 ? 3 : widest + 31 <= FULL / 2 ? 2 : 1;
     list = [];
     if (cols === 1) { items.forEach((t, i) => block(t, { x: L + 13, width: FULL - 13, marker: "•", markerX: L + 2, before: i === 0 && listGap ? 3 : 1.5 })); return; }
     const rows = Math.ceil(items.length / cols), colW = FULL / cols;
-    if (!atTop()) y -= listGap ? 3 : 1.5;
+    if (!atTop()) y -= (listGap ? 3 : 1.5) * G;
     if (y - lead * Math.min(rows, 2) < BOTTOM) newPage();
     for (let r = 0; r < rows; r++) {
       if (y - lead < BOTTOM) newPage();
       for (let c = 0; c < cols; c++) {
         const t = items[c * rows + r]; if (t == null) continue;
-        draw(words(runs("•", "R"), 10, 0), L + c * colW + 2, y - 10, 10, C.ink);
-        draw(wrap(words(runs(t, "R"), 10, 0), colW - 13, 10, 0)[0], L + c * colW + 13, y - 10, 10, C.ink);
+        draw(words(runs("•", "R"), fz, 0), L + c * colW + 2, y - fz, fz, C.ink);
+        draw(wrap(words(runs(t, "R"), fz, 0), colW - 13, fz, 0)[0], L + c * colW + 13, y - fz, fz, C.ink);
       }
       y -= lead;
     }
   }
 
   const src = String(md || "").replace(/\r/g, "").split("\n");
+  function lay(f, sp) {
+  F = f; S = sp; LS = 1 + (sp - 1) * 0.4; G = 1 + (sp - 1) * 2; pages = []; lost = 0; list = []; listGap = 0; listCols = false; lastHead = 0; newPage();
   let gap = 0, seen = 0, contactNext = false;
   for (const raw of src) {
     if (RULE.test(raw)) continue;
@@ -318,7 +342,7 @@ function pdfBlob(md, { title = "", author = "", lang: textLang = "sv", letter = 
       contactNext = first;
     } else if (h && h[1].length === 2) {
       block(h[2], { size: 9.8, lead: 13, font: "B", color: C.accent, tc: 0.9, upper: true, before: Math.max(15, gap), keep: 56 });   // never alone at the foot of a page
-      ruleAt(y - 0.5, C.rule, 0.5); y -= 5;
+      ruleAt(y - 0.5, C.rule, 0.5); y -= 5 * G;
     } else if (h) {
       const [left, years] = splitYears(h[2].replace(/\*\*/g, ""));
       block(left, { size: 10.5, lead: 14, font: "B", before: Math.max(8, gap), keep: 24, right: years });
@@ -326,7 +350,7 @@ function pdfBlob(md, { title = "", author = "", lang: textLang = "sv", letter = 
       block(ol[2], { x: L + 17, width: FULL - 17, marker: ol[1] + ".", markerX: L, before: gap ? 3 : 1.5 });
     } else if (contactNext) {
       block(raw.trim(), { size: 9.5, lead: 13, color: C.muted, before: 2 });
-      y -= 5; ruleAt(y, C.accent, 0.9); y -= 6;
+      y -= 5 * G; ruleAt(y, C.accent, 0.9); y -= 6 * G;
     } else {
       block(raw.trim(), { size: BODY.size, lead: BODY.lead, before: gap ? BODY.para : 2 });
     }
@@ -334,6 +358,10 @@ function pdfBlob(md, { title = "", author = "", lang: textLang = "sv", letter = 
     gap = 0;
   }
   flushList();
+  // How full the last page is, from 0 to 1
+  return { n: pages.length, fill: (PH - TOP - y) / (PH - TOP - BOTTOM) };
+  }
+  const fit = fitPages(lay, letter);
   // Page numbers, only when there is more than one page
   if (pages.length > 1) pages.forEach((p, i) => {
     const label = `${i + 1} / ${pages.length}`, w = [...label].reduce((n, ch) => n + glyphW(ch.charCodeAt(0), "R") * 8 / 1000, 0);
@@ -361,7 +389,7 @@ function pdfBlob(md, { title = "", author = "", lang: textLang = "sv", letter = 
   out += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R /Info ${info} 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
   const bytes = new Uint8Array(out.length);
   for (let i = 0; i < out.length; i++) bytes[i] = out.charCodeAt(i) & 0xff;
-  return { blob: new Blob([bytes], { type: "application/pdf" }), lost, pages: pages.length };
+  return { blob: new Blob([bytes], { type: "application/pdf" }), lost, pages: pages.length, fill: Math.round(fit.fill * 100) / 100, spacing: S };
 }
 // The name a tailored CV starts with ("# Eva Lind"), unless it's still the [Your name] placeholder
 const cvName = md => { const m = String(md || "").match(/^\s*#\s+(.+)$/m); return m && !/\[/.test(m[1]) ? m[1].replace(/\*\*/g, "").trim() : ""; };
@@ -489,10 +517,11 @@ function styleHtml(st) {
   if (st.words?.length) notes.push(t("st.words", { words: st.words.join(", ") }));
   if (st.dashes) notes.push(t(st.dashes === 1 ? "st.dash1" : "st.dashes", { n: st.dashes }));
   if (st.order?.length) notes.push(t("st.order", { words: st.order.map(x => `"${x}"`).join(", ") }));
+  if (st.echoes?.length) notes.push(t(st.echoes.length === 1 ? "st.echo1" : "st.echoes", { n: st.echoes.length, words: st.echoes.map(x => `"${x}"`).join(", ") }));
   if (!notes.length) return "";
   return `<section class="fc fc-style" role="status"><p><b>${esc(t("st.title"))}</b></p><ul>${notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul></section>`;
 }
-const cleanStyle = st => st && typeof st === "object" ? { even: !!st.even, words: (Array.isArray(st.words) ? st.words : []).slice(0, 10).map(w => String(w).slice(0, 40)), dashes: +st.dashes || 0, order: (Array.isArray(st.order) ? st.order : []).slice(0, 5).map(w => String(w).slice(0, 60)) } : null;
+const cleanStyle = st => st && typeof st === "object" ? { even: !!st.even, words: (Array.isArray(st.words) ? st.words : []).slice(0, 10).map(w => String(w).slice(0, 40)), dashes: +st.dashes || 0, order: (Array.isArray(st.order) ? st.order : []).slice(0, 5).map(w => String(w).slice(0, 60)), echoes: (Array.isArray(st.echoes) ? st.echoes : []).slice(0, 6).map(w => String(w).slice(0, 120)) } : null;
 
 // server/factcheck.js and server/style.js, built into the page by build.py and compiled on first use. A browser too old
 // for their patterns goes without, and the panel says the edits weren't checked.
@@ -617,7 +646,7 @@ function checkSumHtml(o, ann) {
   const c = o.check;
   if (!c || !Array.isArray(c.issues)) return "";
   const held = (ann || []).reduce((n, a) => n + a.q.filter(Boolean).length, 0);
-  const style = o.style && (o.style.even || o.style.words?.length || o.style.dashes || o.style.order?.length);
+  const style = o.style && (o.style.even || o.style.words?.length || o.style.dashes || o.style.order?.length || o.style.echoes?.length);
   const parts = [c.issues.length ? t(c.issues.length === 1 ? "sum.issue1" : "sum.issues", { n: c.issues.length }) : t("sum.ok")];
   if (held) parts.push(t(held === 1 ? "sum.held1" : "sum.held", { n: held }));
   if (style) parts.push(t("sum.style"));
