@@ -1,0 +1,99 @@
+# Publishes a release when a new version reaches main. Bump the version with `python3 release.py X.Y.Z`, write the notes
+# in docs/releases/X.Y.Z.md, merge, and this does the rest:
+#   1. checks the version is the same in config.json, server/package.json and the built page, and that the notes exist
+#   2. builds the server ZIP and deploys it to the Scaleway function, waits until it is ready and checks it answers
+#   3. creates the GitHub release with the notes and the ZIP attached
+# The release is only made after the server deploy worked, so a published release always matches the live server.
+# A version that already has a release is skipped. To run it again by hand: Actions → Release → Run workflow.
+#
+# Needs one repository secret, SCW_SECRET_KEY: a Scaleway API secret key from an IAM application whose policy has only
+# ServerlessFunctionsFullAccess on the project (see RELEASING.md). Never the AI_KEY the function itself uses.
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths: [config.json]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  SCW_REGION: fr-par
+  SCW_FUNCTION_ID: 91af48f0-c142-4d3a-b8e0-2a5c3f7bed57   # job-finder / tailor
+  TAILOR_URL: https://jobfinderaokuqyuj-tailor.functions.fnc.fr-par.scw.cloud
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version and notes
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v=$(python3 -c "import json; print(json.load(open('config.json'))['version'])")
+          s=$(python3 -c "import json; print(json.load(open('server/package.json'))['version'])")
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          if gh release view "$v" >/dev/null 2>&1; then
+            echo "Release $v already exists, nothing to do."; echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          [ "$v" = "$s" ] || { echo "::error::config.json says $v but server/package.json says $s. Run python3 release.py $v"; exit 1; }
+          grep -q "\"version\": \"$v\"" index.html || { echo "::error::index.html is not built for $v. Run python3 build.py"; exit 1; }
+          [ -s "docs/releases/$v.md" ] || { echo "::error::Missing docs/releases/$v.md with the release notes"; exit 1; }
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Server tests
+        if: steps.v.outputs.skip == 'false'
+        working-directory: server
+        run: node --test
+
+      - name: Build the server ZIP
+        if: steps.v.outputs.skip == 'false'
+        run: |
+          python3 build.py
+          git diff --quiet -- server/titles.json || { echo "::error::server/titles.json is out of date. Run python3 build.py and commit"; exit 1; }
+          cd server && zip -q "../function-${{ steps.v.outputs.version }}.zip" handler.js prompts.js pipeline.js factcheck.js style.js titles.json package.json
+
+      - name: Deploy to Scaleway
+        if: steps.v.outputs.skip == 'false'
+        env:
+          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+        run: |
+          [ -n "$SCW_SECRET_KEY" ] || { echo "::error::Add the SCW_SECRET_KEY repository secret (see RELEASING.md)"; exit 1; }
+          zip="function-${{ steps.v.outputs.version }}.zip"
+          api="https://api.scaleway.com/functions/v1beta1/regions/$SCW_REGION/functions/$SCW_FUNCTION_ID"
+          size=$(stat -c %s "$zip")
+          up=$(curl -fsS -H "X-Auth-Token: $SCW_SECRET_KEY" "$api/upload-url?content_length=$size")
+          url=$(echo "$up" | jq -r .url)
+          headers=$(echo "$up" | jq -r '.headers // {} | to_entries[] | select(.value != null) | "-H\n\(.key): \(.value | join(","))"')
+          mapfile -t hargs <<< "$headers"
+          [ -n "$headers" ] || hargs=(-H "Content-Type: application/octet-stream")
+          curl -fsS -X PUT "${hargs[@]}" --data-binary "@$zip" "$url" > /dev/null
+          curl -fsS -X POST -H "X-Auth-Token: $SCW_SECRET_KEY" -H "Content-Type: application/json" -d '{}' "$api/deploy" > /dev/null
+          for i in $(seq 1 60); do
+            st=$(curl -fsS -H "X-Auth-Token: $SCW_SECRET_KEY" "$api" | jq -r .status)
+            echo "status: $st"
+            [ "$st" = "ready" ] && break
+            [ "$st" = "error" ] && { echo "::error::The Scaleway deploy failed. See the function's Logs in the console"; exit 1; }
+            sleep 10
+          done
+          [ "$st" = "ready" ] || { echo "::error::The deploy did not finish in 10 minutes"; exit 1; }
+          # A plain GET answers {"error":"use_post"} when the handler loaded
+          curl -sS "$TAILOR_URL" | grep -q use_post || { echo "::error::The function is ready but does not answer as expected"; exit 1; }
+
+      - name: Publish the GitHub release
+        if: steps.v.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v="${{ steps.v.outputs.version }}"
+          gh release create "$v" "function-$v.zip" --target "$GITHUB_SHA" --title "Job Finder $v" --notes-file "docs/releases/$v.md" --latest
