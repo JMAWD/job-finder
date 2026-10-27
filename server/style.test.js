@@ -137,3 +137,49 @@ test("a Swedish answer has its word order fixed on the way out, an English one i
   const en = await finish({ text: "Jag gärna berättar mer.", task: "interview", lang: "en" }, null);
   assert.equal(en.text, "Jag gärna berättar mer.");
 });
+
+// Key achievements at the top of a tailored CV, and the same result under its job in other words
+const ACH_CV = (bullets, points) => [
+  "# Eva Lind", "Göteborg · eva@example.com", "", "## Profil", "Kvalitetsingenjör med åtta års erfarenhet.", "",
+  "## Nyckelresultat", ...points.map(p => `- ${p}`), "",
+  "## Nyckelkompetenser", "- FMEA", "- 8D", "",
+  "## Erfarenhet", "### Kvalitetsingenjör, Nordvik Automotive AB (2018 - nu)", ...bullets.map(b => `- ${b}`), "",
+  "## Utbildning", "### Högskoleingenjör, Chalmers (2013 - 2016)"].join("\n");
+
+test("a bullet that only repeats a key achievement is taken out, a different one stays", () => {
+  const md = ACH_CV(
+    ["Minskade kundreklamationerna med 30 procent på två år", "Ledde FMEA och 8D med konstruktion och leverantörer", "Utbildade kollegor i riskanalys"],
+    ["30 procent färre kundreklamationer på två år hos Nordvik Automotive", "Kortade ställtiden från 40 till 25 minuter", "Införde standardiserat arbete på linan"]);
+  const out = tidyCv(md);
+  assert.ok(!/Minskade kundreklamationerna/.test(out), out);
+  assert.ok(/Ledde FMEA och 8D/.test(out) && /Utbildade kollegor/.test(out));
+  assert.ok(/30 procent färre kundreklamationer/.test(out), "the achievement itself is kept");
+  // The achievements are a list, not a job: their lines aren't touched by the job tidying and don't count as a job
+  assert.equal(styleCheck(out, { task: "cv" }).echoes.length, 0);
+});
+
+test("a bullet that echoes an achievement but says more is kept and named in the style check", () => {
+  const md = ACH_CV(
+    ["Minskade kundreklamationerna med 30 procent på två år genom FMEA på bromssystemet och veckovisa 8D-möten med tre leverantörer"],
+    ["Minskade kundreklamationerna med 30 procent på två år", "Kortade ställtiden från 40 till 25 minuter", "Införde standardiserat arbete"]);
+  const out = tidyCv(md);
+  assert.ok(/veckovisa 8D-möten/.test(out));
+  assert.deepEqual(styleCheck(out, { task: "cv" }).echoes, ["Minskade kundreklamationerna med 30 procent på två år"]);
+  assert.deepEqual(styleCheck(out, { task: "letter" }).echoes, []);
+});
+
+test("more than six key achievements are cut to six, and a CV without them is left alone", () => {
+  const pts = ["Ett", "Två", "Tre", "Fyra", "Fem", "Sex", "Sju", "Åtta"].map(n => `Resultat nummer ${n.toLowerCase()} med siffra ${n.length}0`);
+  const out = tidyCv(ACH_CV(["Ledde FMEA"], pts));
+  assert.equal(out.split("\n").filter(l => /^- Resultat nummer/.test(l)).length, 6);
+  assert.ok(!/nummer sju|nummer åtta/.test(out));
+  const plain = "# Eva\n\n## Erfarenhet\n### Kvalitetsingenjör, Nordvik (2018 - nu)\n- Ledde FMEA\n- Utbildade kollegor";
+  assert.equal(tidyCv(plain), plain);
+});
+
+test("the CV prompt asks for key achievements in both languages, only from results the CV states", () => {
+  const { PROMPTS } = require("./prompts.js");
+  const ask = lang => PROMPTS.cv(lang, { cv: "CV", job: { title: "T", employer: "E", text: "Ad" } })[1].content;
+  assert.match(ask("sv"), /## Nyckelresultat\n[\s\S]*Bara resultat som CV:t självt anger[\s\S]*utelämna hela avsnittet[\s\S]*## Nyckelkompetenser/);
+  assert.match(ask("en"), /## Key achievements\n[\s\S]*Only results the CV itself states[\s\S]*leave out the whole section[\s\S]*## Key skills/);
+});

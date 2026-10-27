@@ -221,8 +221,8 @@ test("every writing prompt carries Job Tailor's rules: no dashes as punctuation,
   }
 });
 test("the CV prompt weights jobs unevenly and varies the bullets", async () => {
-  for (const [lang, rules] of [["sv", [/Vikta tjänsterna ojämnt/, /fyra till sex punkter/, /inga alls/, /Ge aldrig alla tjänster lika många punkter/, /Börja inte varje punkt med ett verb i dåtid/]],
-    ["en", [/Weight the jobs unevenly/, /four to six bullets/, /none at all/, /Never give every job the same number of bullets/, /Do not open every bullet with a past-tense verb/]]]) {
+  for (const [lang, rules] of [["sv", [/Vikta tjänsterna ojämnt/, /fyra till åtta punkter/, /Sikta på två fulla sidor när CV:t har underlag/, /fyll aldrig ut/, /inga alls/, /Ge aldrig alla tjänster lika många punkter/, /Börja inte varje punkt med ett verb i dåtid/]],
+    ["en", [/Weight the jobs unevenly/, /four to eight bullets/, /Aim for two full pages when the CV has the material/, /never fill space/, /none at all/, /Never give every job the same number of bullets/, /Do not open every bullet with a past-tense verb/]]]) {
     _test.usage.clear(); sent.length = 0;
     await call(ok({ task: "cv", lang }));
     for (const r of rules) assert.match(sent[0].body.messages[1].content, r, lang);

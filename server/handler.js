@@ -137,7 +137,7 @@ async function handle(event) {
     ({ check, style, fixed, trace, counts, impact } = done); out.text = done.text;
   }
   // Only sizes, timings and how many things the check flagged are logged, never the CV, the ad or the flagged words
-  console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ...(facts ? { factsChars: facts.length } : {}), ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null, ...(out.cut ? { cut: true } : {}), ...(check ? { flagged: check.issues.length } : {}), ...(fixed ? { fixed } : {}), ...(style ? { even: style.even, buzzwords: style.words.length } : {}),
+  console.log(JSON.stringify({ task, lang, model, cvChars: cv.length, adChars: ad.length, ...(facts ? { factsChars: facts.length } : {}), ms: Date.now() - started, result: out.error || "ok", tokens: out.tokens || null, ...(out.cut ? { cut: true } : {}), ...(check ? { flagged: check.issues.length } : {}), ...(fixed ? { fixed } : {}), ...(style ? { even: style.even, buzzwords: style.words.length, ...(style.echoes?.length ? { echoes: style.echoes.length } : {}) } : {}),
     ...(counts ? { sentences: counts } : {}), ...(impact ? { terms: impact.terms, before: impact.before, after: impact.after, unsupported: impact.unsupported.length } : {}), ...(adTrimmed ? { adTrimmed: adTrimmed.from } : {}), ...(excerpt ? { excerpt: true } : {}) }));
   if (out.error) return fail(out.error === "ai_busy" ? 503 : 502, out.error, okOrigin);
   return reply(200, mentor ? { data, model: out.model, tokens: out.tokens } : { text: out.text, model: out.model, tokens: out.tokens, ...(out.cut ? { cut: true } : {}), ...(check ? { check } : {}), ...(fixed ? { fixed } : {}), ...(style ? { style } : {}),

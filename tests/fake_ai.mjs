@@ -47,8 +47,9 @@ const ANSWERS = {
   letter: "## Cover letter\nDear [contact person],\n\nI want to work at **Acme Robotics** because the role joins quality work and software.\n\n- Eight years of FMEA\n- Supplier audits\n\nKind regards,\n[Your name]",
   // The whole tailored CV, written only from FULL_CV in tests/test_tailor.py
   cv: "# Eva Lindqvist\nGöteborg · eva.lindqvist@example.com · 070-123 45 67\n\n## Profil\nKvalitetsingenjör med åtta års erfarenhet av **FMEA**, 8D och leverantörsrevisioner inom fordonsindustrin. Van att leda riskanalys och förbättringsarbete tillsammans med produktion och leverantörer.\n\n"
+    + "## Nyckelresultat\n- 30 procent färre kundreklamationer på två år hos Nordvik Automotive\n- Ställtiden på monteringslinan kortad från 40 till 25 minuter hos Svea Bearings\n- 8D infört som arbetssätt för alla leverantörsärenden\n\n"
     + "## Nyckelkompetenser\n- FMEA\n- 8D\n- Leverantörsrevisioner\n- Riskanalys\n- Förbättringsarbete\n- Utbildning av kollegor\n\n"
-    + "## Erfarenhet\n### Kvalitetsingenjör, Nordvik Automotive AB, Göteborg (2018 – nu)\n- Ledde FMEA för bromssystem tillsammans med konstruktion och produktion\n- Genomförde leverantörsrevisioner och 8D-utredningar\n- Utbildade kollegor i riskanalys\n\n"
+    + "## Erfarenhet\n### Kvalitetsingenjör, Nordvik Automotive AB, Göteborg (2018 – nu)\n- Ledde FMEA för bromssystem tillsammans med konstruktion och produktion\n- Genomförde leverantörsrevisioner och 8D-utredningar\n- Minskade kundreklamationerna med 30 procent på två år\n- Utbildade kollegor i riskanalys\n\n"
     + "### Produktionstekniker, Svea Bearings AB, Göteborg (2016 – 2018)\n- Ansvarade för förbättringsarbete på monteringslinan\n\n"
     + "## Utbildning\n### Högskoleingenjör i maskinteknik, Chalmers (2013 – 2016)\n\n## Språk\n- Svenska (modersmål), engelska (flytande)",
   interview: "## Troliga frågor\n1. Berätta om en FMEA du ledde.\n2. Hur arbetar du med leverantörer?",

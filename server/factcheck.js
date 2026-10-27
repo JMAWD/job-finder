@@ -143,7 +143,7 @@ const TITLE_END = /(engineer|ingenjor|manager|chef|ledare|leader|lead|head|direc
 const TITLE_START = /^(?:senior |junior |lead |principal |chief |vice )?(?:head|chief|director|manager|vp|vice president|lead|chef|ansvarig) (?:of|for|over|för|av|i)\s/;
 const isTitle = s => { const t = core(s), all = tokens(s).join(" "); return t.length > 0 && t.length <= 6 && (TITLE_END.test(t.join(" ")) || TITLE_START.test(all + " ")); };
 // Section words the AI uses in its own headings; a heading made only of these is not a role
-const GENERIC = new Set(["profile", "profil", "profiltext", "summary", "sammanfattning", "new", "ny", "skills", "kompetenser", "nyckelkompetenser", "key", "kunskaper",
+const GENERIC = new Set(["profile", "profil", "profiltext", "summary", "sammanfattning", "new", "ny", "skills", "kompetenser", "nyckelkompetenser", "key", "kunskaper", "nyckelresultat", "resultat", "achievements", "achievement", "highlights", "utvalda", "selected",
   "experience", "erfarenhet", "erfarenheter", "rewritten", "omskrivna", "bullet", "points", "punkter", "education", "utbildning", "what", "vad", "cut", "shorten", "ta", "bort",
   "korta", "kortas", "could", "be", "kan", "match", "matches", "matchar", "missing", "saknas", "weak", "svagt", "verdict", "bedomning", "samlad", "overall", "questions", "fragor",
   "likely", "troliga", "hardest", "svaraste", "ask", "stalla", "words", "ord", "terms", "begrepp", "cover", "letter", "personligt", "brev", "relevant", "most", "mest", "roles",
