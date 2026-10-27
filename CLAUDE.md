@@ -16,9 +16,9 @@ Free job search for Sweden in one HTML file, plus a small AI server for step 2 (
 - Server setup: `server/SETUP.md`
 
 ## Work list
-Jira, project Career AI (CVTAILOR), epic CVTAILOR-29 "Job Finder suite".
-https://johnmawdsley.atlassian.net/browse/CVTAILOR-29
-Open work: `parent = CVTAILOR-29 AND statusCategory != Done`. Fetch only summary and status.
+Jira project Job Finder (JF), only for this app. Nothing from other projects goes in it.
+https://johnmawdsley.atlassian.net/jira/software/projects/JF/boards
+Open work: `project = JF AND statusCategory != Done`. Fetch only summary and status.
 
 ## File map
 | Area | File |
@@ -60,7 +60,7 @@ Full suite only before a release.
 - After a change, update the README section it touched and add a line under "Recent changes" below. Keep this file under a page.
 
 ## Recent changes
-- 2026-10-27: Set up this handoff and the Jira epic CVTAILOR-29.
+- 2026-10-27: Set up this handoff and the Jira project JF.
 
 ## Parked
 - Moving step 2, Mentor and server to a private repo (on hold).
