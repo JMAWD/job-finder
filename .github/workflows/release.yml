@@ -15,6 +15,11 @@ on:
     branches: [main]
     paths: [config.json]
   workflow_dispatch:
+    inputs:
+      check_key:
+        description: "Only check that SCW_SECRET_KEY can read the function (changes nothing)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -29,7 +34,22 @@ env:
   TAILOR_URL: https://jobfinderaokuqyuj-tailor.functions.fnc.fr-par.scw.cloud
 
 jobs:
+  check-key:
+    if: github.event_name == 'workflow_dispatch' && inputs.check_key
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Read the function with the deploy key
+        env:
+          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+        run: |
+          [ -n "$SCW_SECRET_KEY" ] || { echo "::error::The SCW_SECRET_KEY secret is missing"; exit 1; }
+          code=$(curl -sS -o f.json -w '%{http_code}' -H "X-Auth-Token: $SCW_SECRET_KEY" "https://api.scaleway.com/functions/v1beta1/regions/$SCW_REGION/functions/$SCW_FUNCTION_ID")
+          [ "$code" = "200" ] || { echo "::error::Scaleway answered $code. Check the key and that its policy has ServerlessFunctionsFullAccess on the project"; exit 1; }
+          echo "The key works: function $(jq -r .name f.json), status $(jq -r .status f.json)"
+
   release:
+    if: github.event_name == 'push' || !inputs.check_key
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
