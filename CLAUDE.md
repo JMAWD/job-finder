@@ -65,6 +65,7 @@ Full suite only before a release.
 - 2026-10-27: Set up this handoff and the Jira project JF.
 - 2026-10-27 (1.8.2): Key achievements at the top of the tailored CV (`server/prompts.js`, echo check in `server/style.js`); CV aims at two full pages from real material and `pdfBlob` fits the layout to its pages (`fitPages` in `src/tailor.js`).
 - 2026-10-27: Release workflow: merging a version bump deploys to Scaleway and publishes the release (`RELEASING.md`).
+- 2026-11-01 (1.8.3): Ads whose text states another place than their address are placed by the text (`statedMunis`, `placeFromText`, `inPlace` in `src/app.js`).
 
 ## Parked
 - Moving step 2, Mentor and server to a private repo (on hold).

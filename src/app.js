@@ -14,6 +14,7 @@ const I18N = {
     "Välj en ort och skriv orden som beskriver jobbet du vill ha, till exempel en yrkestitel, en kunskap eller en metod. Appen söker i Platsbanken och på andra jobbsajter, grupperar annonserna per arbetsgivare och håller koll på var du har sökt."],
   "country": ["Country", "Land"], "place": ["City or county", "Ort eller län"],
   "place.ph": ["e.g. Göteborg or Skåne län, empty for the whole country", "t.ex. Göteborg eller Skåne län, tomt för hela landet"],
+  "addr.else": ["address given: {m}", "angiven adress: {m}"],
   "distance": ["Distance", "Avstånd"], "r0": ["Only this municipality", "Bara den här kommunen"], "r10": ["Within 10 km", "Inom 10 km"], "r25": ["Within 25 km", "Inom 25 km"], "r50": ["Within 50 km", "Inom 50 km"], "r100": ["Within 100 km", "Inom 100 km"],
   "published": ["Published", "Publicerad"], "anytime": ["Any time", "När som helst"], "d1": ["Last 24 hours", "Senaste dygnet"], "d7": ["Last 7 days", "Senaste 7 dagarna"], "d30": ["Last 30 days", "Senaste 30 dagarna"],
   "keywords": ["Keywords", "Sökord"], "kw.ph": ["Press Enter or type a comma after each one, e.g. project manager, Python, FMEA", "Tryck Enter eller skriv komma efter varje, t.ex. projektledare, Python, FMEA"],
@@ -875,15 +876,50 @@ function inPlace(geo, radius, ads, nearMunis = []) {
     for (const a of ads) if (a.muniId !== geo.muniId && a._c && a._city && fold(a._city) === fold(geo.muni) && km(a._c, geo) <= 30)
       Object.assign(a, { muni: geo.muni, muniId: geo.muniId, region: region || a.region, regionId: geo.regionId || a.regionId });
   }
+  // Ads placed by their text (_said) have no municipality id, so they're judged by the names of the places they name
+  const said = a => a._said || [];
   if (geo.mode === "county") return a => a.regionId === geo.regionId;
-  if (!((radius > 0 || geo.mode === "point") && geo.lat)) return a => a.muniId === geo.muniId;
+  if (!((radius > 0 || geo.mode === "point") && geo.lat)) return a => a.muniId === geo.muniId || said(a).some(m => fold(m) === fold(geo.muni));
   // A little more than the distance asked for, since JobTech measures it its own way
-  const r = (radius || 10) + 2, dists = new Map();
-  for (const a of ads) if (a._c && a.muniId) { if (!dists.has(a.muniId)) dists.set(a.muniId, []); dists.get(a.muniId).push(km(a._c, geo)); }
-  const near = new Set([geo.muniId, ...nearMunis, ...[...dists].filter(([, d]) => median(d) <= r).map(([m]) => m)]);
+  const r = (radius || 10) + 2, dists = new Map(), names = new Map(nearMunis.map(([id, n]) => [id, n]));
+  for (const a of ads) if (a._c && a.muniId) { names.set(a.muniId, a.muni); if (!dists.has(a.muniId)) dists.set(a.muniId, []); dists.get(a.muniId).push(km(a._c, geo)); }
+  const near = new Set([geo.muniId, ...nearMunis.map(([id]) => id), ...[...dists].filter(([, d]) => median(d) <= r).map(([m]) => m)]);
+  const nearNames = new Set([fold(geo.muni), ...[...near].map(id => fold(names.get(id))).filter(Boolean)]), knownNames = new Set([...dists.keys()].map(id => fold(names.get(id))));
   // An ad without coordinates is kept when its municipality is in the area, judged by the other ads there, or, with nothing to
   // judge by, when it's in the same county
-  return a => a._c ? km(a._c, geo) <= r : near.has(a.muniId) || (!dists.has(a.muniId) && !!a.regionId && a.regionId === geo.regionId);
+  return a => a._c ? km(a._c, geo) <= r
+    : a._said ? said(a).some(m => nearNames.has(fold(m)) || (!knownNames.has(fold(m)) && countyOf(m) === countyOf(geo.muni)))
+    : near.has(a.muniId) || (!dists.has(a.muniId) && !!a.regionId && a.regionId === geo.regionId);
+}
+// Where the ad's own text says the job is. Some ads give the employer's office as the address and the real place only in the text,
+// like "Location: Västerås, Sweden" on an ad with a Göteborg address. Only labelled lines and plain statements count, not every
+// place the text happens to mention, and only names of municipalities. Returns the municipalities named, or [].
+const LOC_RE = [
+  /(?<!\p{L})(?:(?:work|job|office)\s+)?(?:location|place of work|workplace|arbetsort|arbetsplats|placeringsort|stationeringsort|tjänsteort|placering|ort|plats)\s*:\s*([^.!?•|]{2,80})/giu,
+  /(?<!\p{L})(?:tjänsten|jobbet|rollen|du)\s+(?:är|blir|kommer att vara)\s+(?:placerad|stationerad|baserad)\s+(?:i|på)\s+([^.!?•|]{2,60})/giu,
+  /(?<!\p{L})(?:the\s+)?(?:role|position|job)\s+is\s+(?:based|located)\s+in\s+([^.!?•|]{2,60})/giu];
+const LOC_ANY = /remote|distans|valfri|flexib|anywhere|hela sverige|whole of sweden|all of sweden/i;
+// A capital first letter, or the whole name in capitals, so words like "vara" and "mark" aren't read as places
+const MUNI_NAMES = () => MUNI_NAMES.v || (MUNI_NAMES.v = [...MUNIS.map(([m]) => [m, m]), ["Gothenburg", "Göteborg"]].sort((a, b) => b[0].length - a[0].length)
+  .map(([name, muni]) => [new RegExp(`(?<!\\p{L})(?:${name}|${name.toUpperCase()})(?!\\p{L})`, "u"), muni]));
+function statedMunis(text) {
+  const out = new Set();
+  for (const re of LOC_RE) for (const m of (text || "").matchAll(re)) {
+    const seg = m[1] || m[2] || "";
+    if (LOC_ANY.test(seg)) return [];
+    let rest = seg;
+    for (const [re2, muni] of MUNI_NAMES()) if (re2.test(rest)) { out.add(muni); rest = rest.replace(re2, " "); }
+  }
+  return [...out];
+}
+// The ad's place from its text, when the text names other municipalities than the address does. The address is then most likely
+// the employer's office, so its coordinates aren't used.
+const countyOf = m => COUNTY_FULL[(MUNIS.find(([n]) => fold(n) === fold(m)) || [])[1]] || "";
+function placeFromText(a, text) {
+  const said = statedMunis(text);
+  if (!said.length || said.some(m => fold(m) === fold(a.muni))) return a;
+  const same = said.every(m => countyOf(m) === a.region);
+  return Object.assign(a, { addrMuni: a.muni, muni: said.join(", "), muniId: "", region: same ? a.region : countyOf(said[0]), regionId: same ? a.regionId : "", _c: null, _said: said });
 }
 const placeLabel = geo => geo.mode === "all" ? t("allswe") : geo.label;
 const hasRadius = (geo, p) => p.radius && (geo.mode === "muni" || geo.mode === "point");
@@ -935,14 +971,14 @@ function adLang(text) {
 function fromPB(h) {
   const wa = h.workplace_address || {}, emp = h.employer || {}, desc = (h.description?.text || "").replace(/\s+/g, " ").trim();
   const agency = STAFFING.test(emp.name || "");
-  return { id: String(h.id), src: "pb", title: cleanTitle(h.headline), employer: emp.name || "", workplace: emp.workplace || "", org: emp.organization_number || "", site: emp.url || "", logo: h.logo_url || "",
+  return placeFromText({ id: String(h.id), src: "pb", title: cleanTitle(h.headline), employer: emp.name || "", workplace: emp.workplace || "", org: emp.organization_number || "", site: emp.url || "", logo: h.logo_url || "",
     muni: wa.municipality || "", muniId: wa.municipality_concept_id || "", region: wa.region || "", regionId: wa.region_concept_id || "",
     pub: (h.publication_date || "").slice(0, 10), deadline: (h.application_deadline || "").slice(0, 10), url: h.webpage_url || adUrl(h.id),
     apply: h.application_details?.url || "", applyEmail: h.application_details?.email || "",
     occ: h.occupation?.label || "", group: h.occupation_group?.label || "", groupId: h.occupation_group?.concept_id || "", field: h.occupation_field?.label || "", fieldId: h.occupation_field?.concept_id || "",
     duration: h.duration?.label || "", hours: h.working_hours_type?.label || "", vacancies: h.number_of_vacancies || 1, exp: h.experience_required,
     agency, client: !agency && CLIENT_TEXT.test(desc), contacts: adContacts(h, agency), snippet: desc.slice(0, 500), _desc: desc, adLang: adLang(`${h.headline} ${desc}`), _text: fold(`${h.headline} ${desc} ${emp.name || ""}`),
-    _c: inSweden(wa.coordinates), _city: wa.city || "" };
+    _c: inSweden(wa.coordinates), _city: wa.city || "" }, desc);
 }
 function fromLinks(h) {
   const wa = (h.workplace_addresses || [])[0] || {}, link = (h.source_links || [])[0] || {}, emp = h.employer?.name || "", brief = (h.brief || "").replace(/\s+/g, " ").trim();
@@ -1046,7 +1082,7 @@ async function runSearch() {
       let at = -1;
       for (const v of a.terms) { const m = fd.match(kwRe(v)); if (m && (at < 0 || m.index < at)) at = m.index; }
       if (at > 200) { const start = d.lastIndexOf(" ", at - 120) + 1; a.snippet = "…" + d.slice(start, start + 500); }
-      delete a._text; delete a._by; delete a._c; delete a._city; delete a._desc;
+      delete a._text; delete a._by; delete a._c; delete a._city; delete a._desc; delete a._said;
       list.push(a);
       if (a.src === "links") linksCount++;
     }
@@ -1349,7 +1385,7 @@ function metaHtml(a) {
   if (a.deadline) m.push(deadlineHtml(a.deadline));
   if (a.duration) m.push(`<span>${esc(durLabel(a.duration))}</span>`);
   if (a.hours) m.push(`<span>${esc(hoursLabel(a.hours))}</span>`);
-  if (a.muni) m.push(`<span>${esc(a.muni)}</span>`);
+  if (a.muni) m.push(a.addrMuni ? `<span title="${esc(t("addr.else", { m: a.addrMuni }))}">${esc(a.muni)} <small>(${esc(t("addr.else", { m: a.addrMuni }))})</small></span>` : `<span>${esc(a.muni)}</span>`);
   if (a.workplace && normName(a.workplace) !== normName(a.employer)) m.push(`<span>${esc(t("atwp", { name: shortName(a.workplace) }))}</span>`);
   if (a.src === "links") m.push(`<span class="chip src">${esc(t("onsite", { site: a.source || t("othersite") }))}</span>`);
   if (a.agency) m.push(`<span class="chip via">${esc(t("recad"))}</span>`);
@@ -1876,7 +1912,7 @@ async function newAdsSinceSearch() {
     for (const h of j.hits) { const a = fromPB(h); if (!known.has(a.id) && !exRes.some(re => re.test(a._text))) fresh.set(a.id, a); }
   });
   // The same check of each ad's own address as in the search, with the places in the last results counted as in the area
-  const fits = inPlace(r.geo, p.radius, [...fresh.values()], r.ads.filter(a => a.src === "pb").map(a => a.muniId).filter(Boolean));
+  const fits = inPlace(r.geo, p.radius, [...fresh.values()], r.ads.filter(a => a.src === "pb" && a.muniId).map(a => [a.muniId, a.muni]));
   return { n: [...fresh.values()].filter(fits).length, more };
 }
 function followUpContact(sn) { const ps = sn.contacts || []; return ps.find(p => p.e) || ps.find(p => p.p) || null; }
