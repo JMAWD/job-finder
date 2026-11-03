@@ -56,7 +56,11 @@ NURSE = [ad('301', 'Sjuksköterska, akuten', 'Sahlgrenska Vård AB', '5560000021
          ad('303', 'Sjuksköterska, vårdcentral', 'Linnéstadens Vård AB', '5560000023', {**STO, 'city': 'GÖTEBORG', 'coordinates': [11.95, 57.69]}, 'Vi söker en sjuksköterska.', field='Hälso- och sjukvård'),
          # No coordinates: a neighbouring municipality is kept, one in another county isn't
          ad('304', 'Sjuksköterska, hemsjukvård', 'Mölndal Hemvård AB', '5560000024', {k: v for k, v in MOL.items() if k != 'coordinates'}, 'Sjuksköterska till hemsjukvården.', field='Hälso- och sjukvård'),
-         ad('305', 'Sjuksköterska, Malmö', 'Öresund Vård AB', '5560000025', {k: v for k, v in MAL.items() if k != 'coordinates'}, 'Sjuksköterska i Göteborg eller Malmö.', field='Hälso- och sjukvård')]
+         ad('305', 'Sjuksköterska, Malmö', 'Öresund Vård AB', '5560000025', {k: v for k, v in MAL.items() if k != 'coordinates'}, 'Sjuksköterska i Göteborg eller Malmö.', field='Hälso- och sjukvård'),
+         # The address is the employer's office in Göteborg, the job is in Västerås (like Platsbanken ad 31385811)
+         ad('306', 'Sjuksköterska, Västerås', 'Kontorshotell Vård AB', '5560000026', GBG, 'Location: Västerås, Sweden. On-site: 100% (No remote).', field='Hälso- och sjukvård'),
+         # The other way round: an address in Stockholm, and the text says the job is in Mölndal
+         ad('307', 'Sjuksköterska, mottagning', 'Huvudkontoret Vård AB', '5560000027', STO, 'Arbetsort: Mölndal. Vi söker en sjuksköterska.', field='Hälso- och sjukvård')]
 NURSE_LINKS = [{"id": "l9", "headline": "Sjuksköterska", "brief": "Stockholm.", "occupation_group": {"concept_id": "g_rn", "label": "x"}, "occupation_field": {"concept_id": "h", "label": "Hälso- och sjukvård"},
                 "employer": {"name": "Huvudstadens Vård AB"}, "workplace_addresses": [{"municipality": "Stockholm", "municipality_concept_id": "mSTO", "region_concept_id": "rST", "country": "Sverige"}],
                 "publication_date": day(-1) + "T00:00:00", "source_links": [{"label": "ledigajobb.se", "url": "https://ledigajobb.se/l9"}]}]
@@ -269,7 +273,7 @@ async def beta_checks(browser, errors):
 
 async def place_checks(browser, errors):
     """Ads that Platsbanken returns for a place but whose own address is somewhere else stay out, and so do the other job sites
-    from those places. The English name Gothenburg is Göteborg."""
+    from those places. So do ads whose text says the job is somewhere else than their address. The English name Gothenburg is Göteborg."""
     ctx = await browser.new_context(locale='en-US', viewport={'width': 1280, 'height': 1000})
     await ctx.route('https://jobsearch.api.jobtechdev.se/**', jobsearch)
     await ctx.route(EVENT_HOSTS, no_events)
@@ -281,10 +285,13 @@ async def place_checks(browser, errors):
     CALLS.clear(); msg = await search(pg)
     check('Gothenburg is Göteborg', 'in Göteborg and 25 km around' in msg, msg)
     names = sorted(x.split('\n')[0] for x in await pg.locator('article.co h2').all_inner_texts())
-    check('ads whose address is far away are left out, a nearby one without coordinates kept', names == ['Linnéstadens Vård', 'Mölndal Hemvård', 'Sahlgrenska Vård'], names)
+    check('ads whose address is far away are left out, a nearby one without coordinates kept', names == ['Huvudkontoret Vård', 'Linnéstadens Vård', 'Mölndal Hemvård', 'Sahlgrenska Vård'], names)
+    check('an ad whose text puts it in Västerås is left out, though its address is in Göteborg', 'Kontorshotell' not in await pg.locator('#list').inner_text())
+    hk = pg.locator('article.co', has_text='Huvudkontoret Vård'); await hk.locator('button.exp').click(); await pg.wait_for_timeout(200)
+    check('the place from the text is shown, with the address it gave', 'Mölndal (address given: Stockholm)' in await hk.inner_text(), await hk.inner_text())
     check('no Stockholm from the other job sites either', not any('rST' in u for u in CALLS) and 'Huvudstadens' not in await pg.locator('#list').inner_text(), CALLS)
     lv = pg.locator('article.co', has_text='Linnéstadens Vård'); await lv.locator('button.exp').click(); await pg.wait_for_timeout(200)
-    check('an address in Göteborg with Stockholm as its municipality shows as Göteborg', 'Göteborg' in await lv.inner_text() and 'Stockholm' not in await pg.locator('#list').inner_text())
+    check('an address in Göteborg with Stockholm as its municipality shows as Göteborg', 'Göteborg' in await lv.inner_text() and 'Stockholm' not in await lv.inner_text())
     await pg.select_option('#radius', '0')
     CALLS.clear(); msg = await search(pg)
     check('only this municipality uses the municipality for Gothenburg', any('municipality=mGBG' in u for u in CALLS if 'qfields' not in u), CALLS)
