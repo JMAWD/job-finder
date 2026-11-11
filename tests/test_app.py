@@ -430,6 +430,40 @@ async def main():
         names = [x.split('\n')[0] for x in await pg.locator('article.co h2').all_inner_texts()]
         check('show the new ones runs the search and lists only the new ad', names == ['Delta Tech'] and await pg.locator('#f-new').is_checked(), names)
         check('my applications shows the follow-up', 'Followed up' in await pg.locator('#apps').inner_text() and 'Applied ' in await pg.locator('#apps').inner_text())
+
+        # Export of sent applications with dates, for Arbetsförmedlingen: one row per sent application, oldest first
+        await pg.evaluate('''() => { const apps = JSON.parse(localStorage.getItem('jf-apps'));
+          apps['900'] = { status: 'Saved', note: '', updatedAt: new Date().toISOString(), snap: { title: 'Only saved', company: 'Nope AB' } };
+          apps['901'] = { status: 'Rejected', note: 'Old one', updatedAt: '2026-03-05T09:00:00Z', snap: { title: 'Montör', company: 'Gammal AB', muni: 'Borås', url: 'https://x.example/901' } };
+          localStorage.setItem('jf-apps', JSON.stringify(apps)); }''')
+        await pg.reload(); await pg.click('#tab-app')
+        ax = pg.locator('#apps .app-export')
+        check('my applications offers the dated export', await ax.count() == 1 and 'Arbetsförmedlingen' in await ax.inner_text())
+        check('it counts only sent applications', '4 applications in these dates.' in await ax.inner_text() and '1 of them were marked as sent before' in await ax.inner_text(), await ax.inner_text())
+        rows = await pg.evaluate('appRows()')
+        check('the rows are sent applications only, oldest first, with the date applied', rows[0][0] == 'Date applied' and len(rows) == 5 and rows[1][1] == 'Gammal AB' and rows[1][0] == '2026-03-05' and 'Approximate' in rows[1][10]
+              and all(r[0] <= rows[i + 2][0] for i, r in enumerate(rows[1:-1])) and not any(r[1] == 'Nope AB' for r in rows), rows)
+        await ax.locator('button[data-ax=month]').click()
+        in_month = await pg.evaluate('appRows().slice(1).map(r => r[0])')
+        check('this month runs from the 1st to today and leaves out the old one', await ax.locator('input[data-ax=from]').input_value() == TODAY.replace(day=1).isoformat()
+              and await ax.locator('input[data-ax=to]').input_value() == TODAY.isoformat() and all(TODAY.replace(day=1).isoformat() <= d <= TODAY.isoformat() for d in in_month) and '2026-03-05' not in in_month, in_month)
+        await ax.locator('button[data-ax=last]').click()
+        last_end = TODAY.replace(day=1) - timedelta(days=1)
+        check('last month is the whole previous month', await ax.locator('input[data-ax=from]').input_value() == last_end.replace(day=1).isoformat() and await ax.locator('input[data-ax=to]').input_value() == last_end.isoformat())
+        await ax.locator('input[data-ax=from]').fill('2026-03-01'); await ax.locator('input[data-ax=to]').fill('2026-03-31'); await ax.locator('input[data-ax=to]').dispatch_event('change')
+        check('a custom range picks the old one alone', '1 application in these dates.' in await ax.inner_text(), await ax.inner_text())
+        async with pg.expect_download() as dl: await ax.locator('button[data-ax=xlsx]').click()
+        d = await dl.value
+        import zipfile, io
+        data = pathlib.Path(await d.path()).read_bytes(); sheet = zipfile.ZipFile(io.BytesIO(data)).read('xl/worksheets/sheet1.xml').decode()
+        check('the Excel file holds the range and is named for it', d.suggested_filename == 'job-finder-applications-2026-03-01-2026-03-31.xlsx' and 'Gammal AB' in sheet and 'Acme' not in sheet, d.suggested_filename)
+        async with pg.expect_download() as dl: await ax.locator('button[data-ax=csv]').click()
+        csv = pathlib.Path(await (await dl.value).path()).read_text(encoding='utf-8-sig')
+        check('the CSV too', csv.splitlines()[0].startswith('Date applied,Employer,Role') and 'Gammal AB' in csv)
+        await ax.locator('button[data-ax=all]').click()
+        check('all clears the range', '4 applications' in await ax.inner_text() and await ax.locator('input[data-ax=from]').input_value() == '')
+        await pg.evaluate('''() => { const apps = JSON.parse(localStorage.getItem('jf-apps')); delete apps['900']; delete apps['901']; localStorage.setItem('jf-apps', JSON.stringify(apps)); }''')
+        await pg.click('#tab-res')
         await pg.reload()
         check('no greeting again on a reload, the one-off filter is gone', await wbx.is_hidden() and not await pg.locator('#f-new').is_checked())
 

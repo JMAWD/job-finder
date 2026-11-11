@@ -326,6 +326,15 @@ const I18N = {
   "wb.done": ["I've followed up", "Jag har hört av mig"], "wb.later": ["Remind me in a week", "Påminn mig om en vecka"],
   "wb.noted": ["Noted. I'll leave this one for two weeks.", "Noterat. Jag tar inte upp det här jobbet igen på två veckor."], "wb.snoozed": ["I'll remind you in a week.", "Jag påminner dig om en vecka."],
   "wb.moreapps": ["+{n} more in My applications", "+{n} till i Mina ansökningar"],
+  "ax.title": ["Applications sent, with dates", "Skickade ansökningar med datum"],
+  "ax.text": ["One row per application you've sent: the date you applied, employer, role, place, ad link, how to apply, status and follow-up. Useful for your activity report to Arbetsförmedlingen. Leave the dates empty to get everything.", "En rad per ansökan du har skickat: datum du sökte, arbetsgivare, jobb, ort, länk till annonsen, hur man söker, status och uppföljning. Bra till din aktivitetsrapport till Arbetsförmedlingen. Lämna datumen tomma för att få med allt."],
+  "ax.from": ["From", "Från"], "ax.to": ["To", "Till"], "ax.month": ["This month", "Den här månaden"], "ax.last": ["Last month", "Förra månaden"], "ax.all": ["All", "Alla"],
+  "ax.count0": ["No applications sent in these dates.", "Inga skickade ansökningar mellan de här datumen."],
+  "ax.count1": ["1 application in these dates.", "1 ansökan mellan de här datumen."], "ax.countN": ["{n} applications in these dates.", "{n} ansökningar mellan de här datumen."],
+  "ax.approx": ["{n} of them were marked as sent before the app saved the exact day, so their date is the day the status last changed.", "{n} av dem markerades som skickade innan appen sparade exakt dag, så deras datum är dagen statusen senast ändrades."],
+  "ax.cols": [["Date applied", "Employer", "Role", "Municipality", "Ad link", "How to apply", "Apply by", "Status", "Followed up", "Your notes", "Date note"],
+    ["Datum för ansökan", "Arbetsgivare", "Jobb", "Kommun", "Länk till annonsen", "Så söker du", "Sista ansökningsdag", "Status", "Följde upp", "Dina anteckningar", "Om datumet"]],
+  "ax.approx.cell": ["Approximate: day the status last changed", "Ungefärligt: dagen statusen senast ändrades"],
   "app.applied": ["Applied {date}", "Sökt {date}"], "app.followed": ["Followed up {date}", "Följde upp {date}"],
 
   // Trust: what the AI is and isn't, shown before and above everything it writes
@@ -1601,6 +1610,67 @@ function funnelHtml(entries) {
     <div class="stats">${tile(sent, "fn.sent")}${tile(talks, "fn.talks")}${tile(n("Offer"), "fn.offers")}${tile(n("Rejected"), "fn.no")}${tile(n("Applied"), "fn.waiting")}</div>
     <p class="tl-hint">${esc(t(talks ? "fn.line" : "fn.line0", { talks, sent }))}</p></section>`;
 }
+/* ---------- Export of sent applications, with dates ---------- */
+// For the activity report to Arbetsförmedlingen and the person's own records. One row per application with a sent status
+// (Applied, Interview, Offer, Rejected), oldest first, by the day it was first marked as applied. An application marked
+// before appliedAt was saved has no exact day: it falls back to the day its status last changed and the row says so.
+let axFrom = "", axTo = "";
+function sentDay(x) { return x.appliedAt ? localDay(new Date(x.appliedAt)) : x.updatedAt ? localDay(new Date(x.updatedAt)) : ""; }
+function sentApps() {
+  return Object.entries(apps).filter(([, x]) => SENT.has(x.status))
+    .map(([id, x]) => ({ id, x, day: sentDay(x), approx: !x.appliedAt }))
+    .filter(r => (!axFrom || r.day >= axFrom) && (!axTo || r.day <= axTo))
+    .sort((a, b) => a.day.localeCompare(b.day) || (a.x.snap?.company || "").localeCompare(b.x.snap?.company || "", "sv"));
+}
+function appRows() {
+  const rows = [t("ax.cols")];
+  for (const { id, x, day, approx } of sentApps()) {
+    const sn = x.snap || {};
+    rows.push([day, sn.company || "", sn.title || "", sn.muni || "", sn.url || adUrl(id), (sn.apply || "").replace(/^mailto:/, ""), sn.deadline || "",
+      t(x.status), x.followedUp || "", (x.note || "").replace(/\s*\n\s*/g, " "), approx ? t("ax.approx.cell") : ""]);
+  }
+  return rows;
+}
+function monthRange(back) {
+  const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - back);
+  const first = localDay(d); d.setMonth(d.getMonth() + 1); d.setDate(0);
+  return [first, back ? localDay(d) : today()];
+}
+function exportAppsHtml() {
+  if (!Object.values(apps).some(x => SENT.has(x.status))) return "";
+  const list = sentApps(), n = list.length, approx = list.filter(r => r.approx).length;
+  return `<section class="app-export" aria-labelledby="ax-h"><h3 id="ax-h">${esc(t("ax.title"))}</h3>
+    <p class="tl-hint">${esc(t("ax.text"))}</p>
+    <div class="row ax-range">
+      <label>${esc(t("ax.from"))} <input type="date" data-ax="from" value="${esc(axFrom)}"></label>
+      <label>${esc(t("ax.to"))} <input type="date" data-ax="to" value="${esc(axTo)}"></label>
+      <button class="btn ghost sm" type="button" data-ax="month">${esc(t("ax.month"))}</button>
+      <button class="btn ghost sm" type="button" data-ax="last">${esc(t("ax.last"))}</button>
+      <button class="btn ghost sm" type="button" data-ax="all">${esc(t("ax.all"))}</button>
+    </div>
+    <p class="ax-count" role="status">${esc(t(n === 0 ? "ax.count0" : n === 1 ? "ax.count1" : "ax.countN", { n }))}${approx ? " " + esc(t("ax.approx", { n: approx })) : ""}</p>
+    <div class="row"><button class="btn sm" type="button" data-ax="xlsx"${n ? "" : " disabled"}>${esc(t("export.xlsx"))}</button>
+      <button class="btn ghost sm" type="button" data-ax="csv"${n ? "" : " disabled"}>${esc(t("export"))}</button></div></section>`;
+}
+function axName(ext) { return `job-finder-${lang === "sv" ? "ansokningar" : "applications"}${axFrom || axTo ? `-${axFrom || "start"}-${axTo || today()}` : `-${today()}`}.${ext}`; }
+$("apps").addEventListener("click", e => {
+  const b = e.target.closest("button[data-ax]"); if (!b) return;
+  const k = b.dataset.ax;
+  if (k === "month" || k === "last") [axFrom, axTo] = monthRange(k === "last" ? 1 : 0);
+  else if (k === "all") axFrom = axTo = "";
+  else if (k === "csv") return downloadBlob("\ufeff" + appRows().map(r => r.map(csvCell).join(",")).join("\r\n"), axName("csv"), "text/csv;charset=utf-8");
+  else if (k === "xlsx") {
+    const url = URL.createObjectURL(xlsxBlob(appRows(), lang === "sv" ? "Ansökningar" : "Applications")), link = document.createElement("a");
+    link.href = url; link.download = axName("xlsx"); document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+    return;
+  }
+  renderApps(); $("apps").querySelector(`button[data-ax="${k}"]`)?.focus();
+});
+$("apps").addEventListener("change", e => {
+  const el = e.target; if (!el.dataset?.ax) return;
+  if (el.dataset.ax === "from") axFrom = el.value; else axTo = el.value;
+  renderApps(); $("apps").querySelector(`input[data-ax="${el.dataset.ax}"]`)?.focus();
+});
 function renderApps() {
   const entries = Object.entries(apps).filter(([, x]) => x.status);
   const order = ["Interview", "Offer", "Applied", "Saved", "Rejected", "Not interested"];
@@ -1617,7 +1687,7 @@ function renderApps() {
           ${noteHtml(id, sn.title || t("role"), x.note)}${nextHtml(id, s, sn)}${bkPromptHtml(id)}</div>
       </div>`; }).join("")}</div></div>`;
   }).join("") : `<div class="empty"><strong>${esc(t("apps.empty.title"))}</strong>${esc(t("apps.empty.text"))}</div>`;
-  $("apps").innerHTML = backupHtml() + funnelHtml(entries) + groups;
+  $("apps").innerHTML = backupHtml() + funnelHtml(entries) + exportAppsHtml() + groups;
 }
 // Moving to Applied from Saved, Not interested or no status starts a new application, so its date and any follow-up are reset.
 // Moving back to Applied from Interview, Offer or Rejected keeps the original date.
